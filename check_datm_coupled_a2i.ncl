@@ -23,14 +23,14 @@ begin
       runname = "cfsr"
   ;forcingname = "GEFS"
   ;    runname = "gefs"
-  rtsrc= "/scratch1/NCEPDEV/stmp2/Denise.Worthen/DATM/rtgen.53684/tmp/cpld_datm_mom6_cice5_2d_"+runname+"/"
+  rtsrc= "/scratch1/NCEPDEV/stmp2/Denise.Worthen/DATM/plots_sync/tmp/cpld_datm_mom6_cice5_2d_"+runname+"/"
   
-  datmflds = (/"mean_zonal_moment_flx_atm", \
-               "mean_merid_moment_flx_atm", \
+  datmflds = (/"inst_zonal_wind_height_lowest", \
+               "inst_merid_wind_height_lowest", \
                "mean_down_sw_vis_dir_flx",  \
-               "mean_net_lw_flx",          \
-               "mean_sensi_heat_flx",       \
-               "mean_laten_heat_flx",       \
+               "mean_down_lw_flx",          \
+               "inst_temp_height_lowest",   \
+               "inst_spec_humid_height_lowest", \
                "mean_prec_rate",            \
                "mean_fprec_rate"            \
               /)
@@ -40,42 +40,42 @@ begin
                1.0, \
                1.0, \
                1.0, \
-               1.0, \
+               1.0e3, \
                3600.0, \
                3600.0/)
 
   nflds = dimsizes(datmflds)
 
-  ocnflds = (/"mean_zonal_moment_flx",      \
-              "mean_merid_moment_flx",      \
-              "mean_net_sw_vis_dir_flx",    \
-              "mean_net_lw_flx",            \
-              "mean_sensi_heat_flx",        \
-              "mean_evap_rate",             \
+  iceflds = (/"inst_zonal_wind_height_lowest",      \
+              "inst_merid_wind_height_lowest",      \
+              "mean_down_sw_vis_dir_flx",   \
+              "mean_down_lw_flx",           \
+              "inst_temp_height_lowest",        \
+              "inst_spec_humid_height_lowest",             \
               "mean_prec_rate",             \
               "mean_fprec_rate"             \
               /)
 
-  ; ocn has sign changes relative to atm export
-  ocnwgts = (/-1.0, \
-              -1.0, \
+  ; ice has sign changes relative to atm export
+  icewgts = (/ 1.0, \
                1.0, \
                1.0, \
-              -1.0, \
-              -1.0*lhvap, \
+               1.0, \
+               1.0, \
+               1.0e3, \
               3600.0, \
               3600.0/)
 
   ; plot levels
   plotlevs = new((/nflds,3/), float)
-  plotlevs( 0,:) = (/  -1.00,    1.00,  0.050/)   ; dusfc
-  plotlevs( 1,:) = (/  -1.00,    1.00,  0.050/)   ; dvsfc
-  plotlevs( 2,:) = (/   0.00,  200.00, 10.000/)   ; visible direct
-  plotlevs( 3,:) = (/-200.00,  200.00, 10.000/)   ; net lw
-  plotlevs( 4,:) = (/-120.00,  120.00, 10.000/)   ; latent (evap to ocean converted)
-  plotlevs( 5,:) = (/ -20.00,  300.00, 10.000/)   ; sensible
+  plotlevs( 0,:) = (/  -5.00,    5.00,  0.500/)   ; uwind
+  plotlevs( 1,:) = (/  -5.00,    5.00,  0.500/)   ; vwind
+  plotlevs( 2,:) = (/   0.00,  100.00,  5.000/)   ; visible direct
+  plotlevs( 3,:) = (/ 100.00,  400.00, 20.000/)   ; down lw
+  plotlevs( 4,:) = (/ 240.00,  280.00,  2.000/)   ; tlowest (K) 
+  plotlevs( 5,:) = (/   0.00,    4.00,  0.200/)   ; qlowest (kg/kg)
   plotlevs( 6,:) = (/   0.00,    1.00,  0.050/)     ; lprec*3600 mm/hr
-  plotlevs( 7,:) = (/   0.00,    0.10,  0.005/)     ; fprec*3600 mm/hr
+  plotlevs( 7,:) = (/   0.00,    0.20,  0.010/)     ; fprec*3600 mm/hr
 
   cmap="BlueWhiteOrangeRed"
 
@@ -92,10 +92,9 @@ begin
        date = year+month+day+hour
   
     atmexp="field_atm_exporta_"+timestamp
-    ocnimp="field_ocn_import_"+timestamp
-    iceexp="field_ice_export_"+timestamp
+    iceimp="field_ice_import_"+timestamp
   print(atmexp)
-  print(ocnimp)
+  print(iceimp)
 
   ; atm grid coords in mediator
   gmedx_a = addfile(rtsrc+"atmlonc.nc","r")
@@ -104,47 +103,36 @@ begin
   atmlon=gmedx_a->atmlonc
   atmlat=gmedy_a->atmlatc
 
-  ; ocn grid coords in ocniator
-  gocnx_o = addfile(rtsrc+"array_med_ocn_grid_coord1.nc","r")
-  gocny_o = addfile(rtsrc+"array_med_ocn_grid_coord2.nc","r")
+  ; ice grid coords in iceiator
+  gicex_i = addfile(rtsrc+"array_med_ice_grid_coord1.nc","r")
+  gicey_i = addfile(rtsrc+"array_med_ice_grid_coord2.nc","r")
   ; atm coords
-  ocnlon=gocnx_o->lon_center
-  ocnlat=gocny_o->lat_center
+  icelon=gicex_i->lon_center
+  icelat=gicey_i->lat_center
 
 ;************************************************
 ;
 ;************************************************
 
   ; pick a field to plot
-  fldtoplot = 6
+  fldtoplot = 7
        levs = plotlevs(fldtoplot,:)
-   ofldname =  ocnflds(fldtoplot)
+   ifldname =  iceflds(fldtoplot)
    dfldname = datmflds(fldtoplot)
    wkstitle = runname+"_"+dfldname+"_"+date
-
-  ; ice fraction for masking
-   fice = addfile(rtsrc+iceexp+".nc","r")
-   aice = fice->ice_fraction(lstep,:,:)
-   aice = where(aice .gt. 0.10, default_fillvalue(typeof(aice)), 1.0)
-   aice@lat2d=ocnlat
-   aice@lon2d=ocnlon
   ; special settings
   awgt = datmwgts(fldtoplot)
-  owgt =  ocnwgts(fldtoplot)
+  iwgt =  icewgts(fldtoplot)
 
-  ; ocn import
-   focn = addfile(rtsrc+ocnimp+".nc","r")
-   aocn = focn->$ofldname$(lstep,:,:)
-  ; aocn = owgt*aocn*aice
-   aocn = owgt*aocn
-  if(ofldname .eq. "mean_prec_rate" .or. ofldname .eq. "mean_fprec_rate")then   ; make levels easier
-     aocn@units = "mm/hr"
+  ; ice import
+   fice = addfile(rtsrc+iceimp+".nc","r")
+   aice = fice->$ifldname$(lstep,:,:)
+   aice = iwgt*aice
+  if(ifldname .eq. "mean_prec_rate" .or. ifldname .eq. "mean_fprec_rate")then   ; make levels easier
+     aice@units = "mm/hr"
   end if
-  if(ofldname .eq. "mean_evap_rate" )
-     aocn@units = "W/m2"
-  end if
-   aocn@lat2d=ocnlat
-   aocn@lon2d=ocnlon
+   aice@lat2d=icelat
+   aice@lon2d=icelon
 
   ; field exported by datm
    fexp = addfile(rtsrc+atmexp+".nc","r")
@@ -161,23 +149,17 @@ begin
   wkstype@wkWidth=800
   wkstype@wkHeight=800
   wks = gsn_open_wks(wkstype,wkstitle)              ; send graphics to PNG file
-  plot = new(2,graphic)
+  plot = new(4,graphic)
 
   res            = True                          ; plot mods desired
-  ;res@gsnPolar   = "NH"                          ; specify the hemisphere
-  ;res@mpMinLatF  = 45                            ; minimum lat to plot
-  ;res@mpMinLatF  = 85                            ; minimum lat to plot
-  ;res@mpMinLatF  = 66                            ; minimum lat to plot
   res@mpFillOn   = False
   res@cnFillMode = "MeshFill"
 
   res@gsnDraw = False
   res@gsnFrame = False
-  ;res@gsnMaximize=True
 
   res@cnFillDrawOrder    = "PreDraw"             ; draw contours first
   res@cnFillOn           = True                  ; color fill
-  ;res@cnLevelSpacingF   = 3.                    ; interval spacing
   res@cnLinesOn          = False                 ; no contour lines
   res@cnLineLabelsOn     = False
   res@lbLabelBarOn      = False                 ; turn off individual cb's
@@ -192,16 +174,65 @@ begin
   res@gsnCenterStringOrthogonalPosF = .15
 
 ;************************************************
+; the subplot call
+;************************************************
+function subplot(ii,name,pltvar,pltlevs,palette,hemi,lat0,lon0)
+begin
+   res@cnLevelSelectionMode = "ManualLevels"        ; set the contour levels with the following 3 resources
+   res@cnMinLevelValF       = pltlevs(0)            ; set the minimum contour level
+   res@cnMaxLevelValF       = pltlevs(1)            ; set the maximum contour level
+   res@cnLevelSpacingF      = pltlevs(2)            ; set the interval between contours
+   res@cnFillPalette        = palette
 
-   if(owgt .ne. 1.0)then
-    res@gsnCenterString = "ocn_import: "+ofldname+" (weighted by "+owgt+")"
-   else
-    res@gsnCenterString = "ocn_import: "+ofldname
+    res@gsnPolar   =  hemi                         ; specify the hemisphere
+    res@mpCenterLonF = lon0
+   if(hemi .eq. "NH")then
+    res@mpMinLatF    = lat0                       ; minimum lat to plot
    end if
-  plot(0) = gsn_csm_contour_map(wks,aocn,res)    ; create the plot
+   if(hemi .eq. "SH")then
+    res@mpMaxLatF    = lat0                           ; minimum lat to plot
+   end if
 
-   res@gsnCenterString = "DATM export"
-  plot(1) = gsn_csm_contour_map(wks,aexp,res)    ; create the plot
+  res@gsnCenterStringFontHeightF      = 0.020
+  res@gsnCenterString                 = name
+  res@gsnCenterStringOrthogonalPosF   = 0.12
+
+   splot = gsn_csm_contour_map_polar(wks,pltvar,res)    ; create the plot
+   delete(res@mpMinLatF)
+   delete(res@mpMaxLatF)
+  return(splot)
+end
+
+; ***************************************************
+;
+; ***************************************************
+
+    hemi = "NH"
+  minlat =  66.0
+  midlon = -45.0
+ 
+   if(iwgt .ne. 1.0)then
+    pltlab = "ice_import: "+ifldname+" (weighted by "+iwgt+")"
+   else
+    pltlab = "ice_import: "+ifldname
+   end if
+    ii = 0
+   plot(ii) = subplot(ii,pltlab,aice,levs,cmap,hemi,minlat,midlon)
+
+   pltlab = "DATM export"
+    ii = 1
+   plot(ii) = subplot(ii,pltlab,aexp,levs,cmap,hemi,minlat,midlon)
+
+
+  pltlab = ""
+    hemi = "SH"
+  maxlat = -50.0
+  midlon =   0.0
+  ii = 2
+  plot(ii) = subplot(ii,pltlab,aice,levs,cmap,hemi,maxlat,midlon)
+  ii = 3
+  plot(ii) = subplot(ii,pltlab,aexp,levs,cmap,hemi,maxlat,midlon)
+
 
 ;************************************************
   resP                     = True                ; modify the panel plot
@@ -217,7 +248,7 @@ begin
   resP@gsnPanelYWhiteSpacePercent = 5
   resP@gsnPanelXWhiteSpacePercent = 5
 
-  gsn_panel(wks,plot,(/2,1/),resP)               ; now draw as one plot
+  gsn_panel(wks,plot,(/2,2/),resP)               ; now draw as one plot
 
   frame(wks)
 
