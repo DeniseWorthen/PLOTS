@@ -17,7 +17,9 @@ begin
   RT4 = "/scratch1/NCEPDEV/stmp4/Denise.Worthen/"
 
   rtname = "DATM"
-  rtsrc= RT2+rtname+"/rtgen.117935/tmp/cpld_datm_mom6_cice_cold/"
+  ;runname="cfsr_rev"
+  runname="rtgen.58249"
+  rtsrc= RT2+rtname+"/"+runname+"/tmp/cpld_datm_mom6_cice5_cold_cfsr/"
 
   ;fname="Shtfl"
   ;aname="mean_sensi_heat_flx"
@@ -25,19 +27,19 @@ begin
   ;levs = (/-100.0,100.0,10.0/)
   ;wgt=1.0
 
-  fname="Vbdsf"
-  aname="mean_down_sw_vis_dir_flx"
-  oname="mean_net_sw_vis_dir_flx"
-  iname="mean_down_sw_vis_dir_flx"
-  levs = (/0.0,200.0,20.0/)
-  wgt=1.0
+  ;fname="Vbdsf"
+  ;aname="mean_down_sw_vis_dir_flx"
+  ;oname="mean_net_sw_vis_dir_flx"
+  ;iname="mean_down_sw_vis_dir_flx"
+  ;levs = (/0.0,300.0,10.0/)
+  ;wgt=1.0
 
-  ;fname="Snwrate"
-  ;aname="mean_fprec_rate"
-  ;oname="mean_fprec_rate"
-  ;iname="mean_fprec_rate"
-  ;levs = (/0.0,2.0,0.2/)
-  ;wgt=1.0e5
+  fname="Snwrate"
+  aname="mean_fprec_rate"
+  oname="mean_fprec_rate"
+  iname="mean_fprec_rate"
+  levs = (/0.0,0.5,0.05/)
+  wgt=1.0e5
 
   ;fname="mean_prec_rate"
   ;aname="mean_prec_rate"
@@ -47,7 +49,7 @@ begin
   ;wgt=1.0e4
 
   lstep = 1-1
-  timestamp = "2011-10-01T00:15:00"
+  timestamp = "2011-10-01T00:30:00"
 
     atmexp="field_atm_exporta_"+timestamp
   medfld_i="field_ice_import_"+timestamp
@@ -82,16 +84,16 @@ begin
   ; field exported by atm
   faexp = addfile(rtsrc+atmexp+".nc","r")
    aexp = faexp->$fname$(lstep,:,:)
-   ;aexp = wgt*aexp*0.5
-   aexp = wgt*aexp
+   aexp = wgt*aexp*0.94
+   ;aexp = wgt*aexp
    aexp@lat2d=atmlat
    aexp@lon2d=atmlon
 
   ;med field from atm
   ffatm =addfile(rtsrc+medfld_a+".nc","r")
   medfatm=ffatm->$aname$(lstep,:,:)
-  ;medfatm=wgt*medfatm*0.5
-  medfatm=wgt*medfatm
+  medfatm=wgt*medfatm*0.94
+  ;medfatm=wgt*medfatm
   medfatm@lat2d=atmlat
   medfatm@lon2d=atmlon
 
@@ -114,9 +116,9 @@ begin
 ;************************************************
   wkstype="X11"
   ;wkstype="png"
-  wkstype@wkWidth=1200
-  wkstype@wkHeight=1200
-  wks = gsn_open_wks(wkstype,"test")              ; send graphics to PNG file
+  wkstype@wkWidth=800
+  wkstype@wkHeight=800
+  wks = gsn_open_wks(wkstype,runname)              ; send graphics to PNG file
   plot = new(4,graphic)
 
   res            = True                          ; plot mods desired
@@ -148,6 +150,7 @@ begin
   res@cnFillPalette        = "NCV_jet"              ; choose colormap
 
   res@tiMainFontHeightF    = 0.015
+  res@gsnCenterStringFontHeightF      = 0.020
 ;************************************************
 ;---Resources for the polyline
   pres                  = True           ; polyline mods desired
@@ -157,16 +160,16 @@ begin
   ;pres@tfPolyDrawOrder = "postDraw"
 ;************************************************
 
-  res@tiMainString = medfld_i+" "+iname
+   res@gsnCenterString = medfld_i+" "+iname
   plot(0) = gsn_csm_contour_map(wks,med2ice,res)    ; create the plot
 
-  res@tiMainString = medfld_o+" "+oname
+   res@gsnCenterString = medfld_o+" "+oname
   plot(1) = gsn_csm_contour_map(wks,med2ocn,res)    ; create the plot
 
-  res@tiMainString = medfld_a+" "+aname
+   res@gsnCenterString = medfld_a+" "+aname
   plot(2) = gsn_csm_contour_map(wks,medfatm,res)    ; create the plot
 
-  res@tiMainString = atmexp+" "+fname
+   res@gsnCenterString = atmexp+" "+fname
   plot(3) = gsn_csm_contour_map(wks,aexp,res)    ; create the plot
 
 ;************************************************
@@ -174,6 +177,9 @@ begin
                                                  ; new resource added in NCL V6.4.0
   ;resP@gsnPanelLabelBar    = True                ; add common colorbar
   resP@lbLabelFontHeightF  = 0.007               ; make labels smaller
+
+  resP@gsnPanelMainFontHeightF = 0.020           ; new resource added in NCL V6.4.0
+  resP@gsnPanelMainString = runname
 
   resP@gsnPanelYWhiteSpacePercent = 5
   resP@gsnPanelXWhiteSpacePercent = 5
