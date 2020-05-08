@@ -87,6 +87,7 @@ begin
        date = year+month+day+hour
   
     atmexp="DATM_OUTPUT/"+runname+"/field_atm_exporta_"+timestamp
+  ;  atmexp="DATM_OUTPUT/"+runname+"_clockori/field_atm_exporta_"+timestamp
    forcing="DATM_INPUT/"+runname+"."+date
 
   ; atm grid coords in mediator
@@ -101,7 +102,7 @@ begin
 ;************************************************
 
   ; pick a field to plot
-  fldtoplot = 5
+  fldtoplot = 6
        levs = plotlevs(fldtoplot,:)
     fldname = forcflds(fldtoplot)
    dfldname = datmflds(fldtoplot)

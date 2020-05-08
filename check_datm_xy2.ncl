@@ -12,24 +12,50 @@ begin
   RT3 = "/scratch2/NCEPDEV/stmp3/Denise.Worthen/"
   RT4 = "/scratch1/NCEPDEV/stmp4/Denise.Worthen/"
 
-  runname = "cfsr"
-  rtsrc= "/scratch2/NCEPDEV/climate/Denise.Worthen/WORK/DATM_SA/DATM/"
-  
-  datmflds = (/"mean_down_sw_flx",     \
-               "mean_down_lw_flx",     \
-               "mean_sensi_heat_flx",  \
-               "mean_laten_heat_flx"   \
-              /)
-  nflds = dimsizes(datmflds)
+  ; latent head evap J/kg
+  lhvap = 2.501e6
 
-  forcflds = (/"DSWRF",         \
-               "DLWRF",         \
-               "shtfl_ave",     \
-               "lhtfl_ave"      \
+  runname = "cfsr"
+  rtsrc= "/scratch1/NCEPDEV/stmp2/Denise.Worthen/DATM/fixclock/tmp/cpld_datm_mom6_cice5_2d_"+runname+"/"
+ 
+  ocnflds = (/"mean_zonal_moment_flx",      \
+              "mean_merid_moment_flx",      \
+              "mean_net_sw_vis_dir_flx",    \
+              "mean_sensi_heat_flx",        \
+              "mean_evap_rate",             \
+              "mean_prec_rate",             \
+              "mean_fprec_rate"             \
               /)
+
+  ; ocn has sign changes relative to atm export
+  ocnwgts = (/-1.0, \
+              -1.0, \
+               1.0, \
+              -1.0, \
+              -1.0*lhvap, \
+              3600.0, \
+              3600.0/)
+
+
+  forcflds = (/"dusfc",         \
+               "dvsfc",         \
+               "vbdsf_ave",     \
+               "shtfl_ave",     \
+               "lhtfl_ave",     \
+               "precp",         \
+               "fprecp"         \
+              /)
+
+  forcwgts = (/1.0, \
+               1.0, \
+               1.0, \
+               1.0, \
+               1.0, \
+               3600.0, \
+               3600.0/)
 
 ;************************************************
-; time step
+; create an 'hour-minute' time axis
 ;************************************************
 
   syear="2011"
@@ -38,100 +64,131 @@ begin
    shour="00"
    stime=syear+smonth+sday+shour
     
+    eday="01"
+   ehour="23"
+   etime=syear+smonth+eday+ehour
+
   ; create a timeaxis
-  hourlist = fspan(0,49,49)
-  ;print(hourlist)
-     hours = hourlist(0:47)
+  hourlist = fspan(0,24,49)
+  ;   hours = hourlist(0:47)
+     hours = hourlist
+     mins = hours ; copy size
+     mins = 30
   ;print(dimsizes(hours))
   ; create arrays
   years = 0*tointeger(hours)+tointeger(syear)
    mons = 0*tointeger(hours)+tointeger(smonth)
    days = 0*tointeger(hours)+tointeger(sday)
-   mins = 0*tointeger(hours)
    secs = 0*tointeger(hours)
 
+  do ii = 0,dimsizes(hours)-1
+   ihr = hours(ii)
+   if(mod(ihr,1) .eq. 0)then
+     mins(ii) = 0
+   else
+    hours(ii) = hours(ii) - 0.5
+   end if
+  end do
+  ;do ii = 0,dimsizes(hours)-1
+  ; print(ii+"  "+hours(ii)+"  "+mins(ii))
+  ;end do
+
      units = "hours since "+syear+"-"+smonth+"-"+sday+" 00:00:00"
-  time = cd_inv_calendar(years,mons,days,tointeger(hours),mins,secs,units,0)
+  time = cd_inv_calendar(years,mons,days,tointeger(hours),tointeger(mins),secs,units,0)
   time!0 = "time"
   nsteps = dimsizes(time)
   print("nsteps = "+nsteps)
-  print(time)
 
-   datmlist=systemfunc("ls "+rtsrc+"DATM_OUTPUT/"+runname+"/field_atm_exporta_*.nc")
+;************************************************
+;
+;************************************************
+
+    ocnlist=systemfunc("ls "+rtsrc+"field_ocn_import_*.nc")
    forclist=systemfunc("ls "+rtsrc+"DATM_INPUT/"+runname+"."+syear+"*.nc")
-  ;print(datmlist)
-  print(forclist)
-  print(dimsizes(datmlist))
-   nhours = dimsizes(datmlist)
-  print(dimsizes(forclist))
+
+  ;print(ocnlist)
+  ;print(forclist)
+  ;print(dimsizes(ocnlist))
+   nhours = dimsizes(forclist)
+  ;print(dimsizes(forclist))
   ; forcing data is 6 hourly
     nfout = 6
   ; the number of forcing files
-  nfhours = dimsizes(datmlist)/nfout
-  print(nfhours)
+  nfhours = dimsizes(ocnlist)/(2*nfout)
+  ;print(nfhours)
 
-  datmfiles=addfiles(datmlist,"r")
-  forcfiles=addfiles(forclist(0:nfhours-1),"r")
-  print(forcfiles)
+   ocnfiles=addfiles(ocnlist,"r")
+  forcfiles=addfiles(forclist(0:nfhours),"r")
+  ;print(ocnlist)
+  ;print(forclist(0:nfhours))
 
-  ; atm grid coords
-  gmedx_a = addfile(rtsrc+"DATM_OUTPUT/"+runname+"/atmlonc.nc","r")
-  gmedy_a = addfile(rtsrc+"DATM_OUTPUT/"+runname+"/atmlatc.nc","r")
-  ; atm coords
-  atmlon=gmedx_a->atmlonc
-  atmlat=gmedy_a->atmlatc
-  atmlon@units = "degrees_east"
-  atmlat@units = "degrees_north"
-  ;printVarSummary(atmlon)
-  ;printVarSummary(atmlat)
+  ; ocn grid coords
+  gocnx = addfile(rtsrc+"array_med_ocn_grid_coord1.nc","r")
+  gocny = addfile(rtsrc+"array_med_ocn_grid_coord2.nc","r")
+  ; ocn coords
+  ocnlon=gocnx->lon_center
+  ocnlat=gocny->lat_center
+  ocnlon@units = "degrees_east"
+  ocnlat@units = "degrees_north"
 
 ;************************************************
 ;
 ;************************************************
 
   ; pick a field to plot
-  fldtoplot = 2
+  fldtoplot = 4
     fldname = forcflds(fldtoplot)
-   dfldname = datmflds(fldtoplot)
+   ofldname = ocnflds(fldtoplot)
    wkstitle = fldname
   ; special settings
-       wgt = 1.0
-  if(fldname .eq. "precp" .or. fldname .eq. "fprecp")then   ; make levels easier
-       wgt = 3600.0
-  end if
-
+  owgt =  ocnwgts(fldtoplot)
+  fwgt = forcwgts(fldtoplot)
+  print(fldname+" "+fwgt)
+  print(ofldname+" "+owgt)
+  
   ; pick lat/lon
   xlon = 170.0
   xlat =  20.0
-  ; nearest pt on the datm export
-  ij = getind_latlon2d(atmlat,atmlon,xlat,xlon)
+  ; nearest pt on ocn grid 
+  ij = getind_latlon2d(ocnlat,ocnlon,xlat,xlon)
   ;print(ij)
   ilat = ij(0,0)
   ilon = ij(0,1)
   print(ilat+" "+ilon)
 
+  ; ocn import
+  ocnpt = new((/nsteps/),float,default_fillvalue("float"))
+  ocnpt = tofloat(ocnfiles[:]->$ofldname$(0:nsteps-1,ilat,ilon))
+  ocnpt(nsteps-1) = default_fillvalue("float")
+  ;print(time+"   "+ocnpt)
+  ocnpt = ocnpt*owgt
+  ocnpt!0 = "time"
+  ocnpt&time = time
+  ; the first ocn import file (at 00:00:00) is empty
+  ocnpt(0) = default_fillvalue("float")
+  ;printVarSummary(ocnpt)
+
+  ; forcing
   fpt = forcfiles[:]->$fldname$(:,{xlat},{xlon})
   fpt@_FillValue = default_fillvalue(typeof(fpt))
-  ;fpt = fpt*wgt
-  dpt = tofloat(datmfiles[:]->$dfldname$(:,ilat,ilon))
-  ;copy_VarAtts(fpt,dpt)
-  ;dpt = dpt*wgt
-  ;printVarSummary(dpt)
- 
+  fpt = fpt*fwgt
+  ;print(dimsizes(fpt))
+
   ntot = 2
   data_all = new((/ntot,dimsizes(time)/),float)
   ;print(dimsizes(data_all))
+  ;print(time(0::2*nfout))
 
-  data_all(0,:) = dpt
-  data_all(1,0::6) = fpt(:)
+  data_all(0,:) = ocnpt
+  data_all(1,0::2*nfout) = fpt(:)
  
-  ;print(taxis+"   "+data_all(0,:)+"  "+data_all(1,:))
+  ;print(time(0::2*nfout)+"   "+data_all(0,::12))
+  print(time+"   "+data_all(0,:)+"  "+data_all(1,:))
 
  ;labelstring = var@long_name+" ("+var@units+")"
  ;print(labelstring) 
  colors = (/"red", "blue"/)
 
-;if(1 .eq. 0)then
 ;************************************************
 ;
 ;************************************************
@@ -165,7 +222,6 @@ begin
   ;drawNDCGrid(wks)
 
    plot = new(1  ,graphic)
-  oplot = new(1  ,graphic)
 
  npanels = 1
 
@@ -181,6 +237,9 @@ begin
 
  res@gsnDraw  = False
  res@gsnFrame = False
+ res@gsnPaperOrientation = "auto"
+ res@gsnMaximize = True
+ res@xyXStyle  = "Time"
 
 ; 	default Format = "0@*+^sg"
 ; if(varname .eq. "exmod" .or. varname .eq. "armod")then
@@ -207,9 +266,9 @@ begin
  ;end if
 
  ;restick = True
- ;restick@ttmFormat = "%D%C"
- ;restick@ttmValues = taxis
- ;time_axis_labels(taxis,res,restick)
+ ;restick@ttmFormat = "%H%M"
+ ;restick@ttmValues = time
+ ;time_axis_labels(time,res,restick)
 
 ;***********************************************
 ; legend resources
@@ -265,21 +324,19 @@ begin
   ; mmin = min(data_all(:,:))
   ; res@trYMinF = mmin
   ; res@trYMaxF = mmax
+
+ res@xyMarkLineModes   = "Markers"                ; choose which have markers
+ res@xyMarkers         =  16                      ; choose type of marker  
+ res@xyMarkerColor     = "red"                    ; Marker color
+ res@xyMarkerSizeF     = 0.01                     ; Marker size (default 0.01)
+ plot(0) = gsn_csm_xy (wks,time,data_all( 1,:),res) ; create plot
+
  res@xyMarkLineModes   = "MarkLines"                ; choose which have markers
  res@xyMarkers         =  16                      ; choose type of marker  
  res@xyMarkerColor     = "blue"                    ; Marker color
  res@xyMarkerSizeF     = 0.01                     ; Marker size (default 0.01)
-
-    plot(0) = gsn_csm_xy (wks,time,data_all( 0,:),res) ; create plot
-
- ores                   = True                     ; plot mods desired
- ores@xyMarkLineModes   = "Markers"                ; choose which have markers
- ores@xyMarkers         =  16                      ; choose type of marker  
- ores@xyMarkerColor     = "red"                    ; Marker color
- ores@xyMarkerSizeF     = 0.01                     ; Marker size (default 0.01)
-
-   oplot(0) = gsn_csm_xy (wks,time,data_all( 1,:),ores) ; create plot
-  overlay(plot,oplot)
+ oplot = gsn_csm_xy (wks,time,data_all( 0,:),res) ; create plot
+ overlay(plot,oplot)
 
   xx = 0.60
   yy = 0.15
@@ -295,7 +352,6 @@ begin
   resP@gsnPanelCenter      = False
 
   gsn_panel(wks,plot,(/1,1/),resP)           ; now draw as one plot
-  ;frame(wks)
 
 ;************************************************
 ;

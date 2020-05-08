@@ -23,7 +23,7 @@ begin
       runname = "cfsr"
   ;forcingname = "GEFS"
   ;    runname = "gefs"
-  rtsrc= "/scratch1/NCEPDEV/stmp2/Denise.Worthen/DATM/rtgen.53684/tmp/cpld_datm_mom6_cice5_2d_"+runname+"/"
+  rtsrc= "/scratch1/NCEPDEV/stmp2/Denise.Worthen/DATM/fixclock/tmp/cpld_datm_mom6_cice5_2d_"+runname+"/"
   
   datmflds = (/"mean_zonal_moment_flx_atm", \
                "mean_merid_moment_flx_atm", \
@@ -116,18 +116,18 @@ begin
 ;************************************************
 
   ; pick a field to plot
-  fldtoplot = 6
+  fldtoplot = 5
        levs = plotlevs(fldtoplot,:)
    ofldname =  ocnflds(fldtoplot)
    dfldname = datmflds(fldtoplot)
    wkstitle = runname+"_"+dfldname+"_"+date
 
   ; ice fraction for masking
-   fice = addfile(rtsrc+iceexp+".nc","r")
-   aice = fice->ice_fraction(lstep,:,:)
-   aice = where(aice .gt. 0.10, default_fillvalue(typeof(aice)), 1.0)
-   aice@lat2d=ocnlat
-   aice@lon2d=ocnlon
+   ;fice = addfile(rtsrc+iceexp+".nc","r")
+   ;aice = fice->ice_fraction(lstep,:,:)
+   ;aice = where(aice .gt. 0.10, default_fillvalue(typeof(aice)), 1.0)
+   ;aice@lat2d=ocnlat
+   ;aice@lon2d=ocnlon
   ; special settings
   awgt = datmwgts(fldtoplot)
   owgt =  ocnwgts(fldtoplot)
