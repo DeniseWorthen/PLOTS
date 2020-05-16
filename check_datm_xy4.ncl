@@ -16,7 +16,7 @@ begin
   lhvap = 2.501e6
 
   runname = "cfsr"
-  rtsrc= "/scratch1/NCEPDEV/stmp2/Denise.Worthen/DATM_fix/clockfix/tmp/cpld_datm_mom6_cice5_2d_"+runname+"/"
+  rtsrc= "/scratch1/NCEPDEV/stmp2/Denise.Worthen/DATM/fixclock/tmp/cpld_datm_mom6_cice5_2d_"+runname+"/"
   ;rtsrc= "/scratch1/NCEPDEV/stmp2/Denise.Worthen/DATM/nofix/tmp/cpld_datm_mom6_cice5_2d_"+runname+"/"
  
   atmflds = (/"mean_zonal_moment_flx_atm",      \
@@ -81,7 +81,7 @@ begin
   nsteps = dimsizes(time)
   ;print("nsteps = "+nsteps)
   print(time)
-  print(time(0::24))
+  ;print(time(0::24))
 
  forclist=systemfunc("ls "+rtsrc+"DATM_INPUT/"+runname+"."+syear+"*.nc")
 ;************************************************
@@ -237,10 +237,10 @@ begin
 ; Make the plot
 ;************************************************
 
-;lbeg = 10-1
-;lend = 56-1
-lbeg = 0
-lend = nsteps-1
+lbeg = 10-1
+lend = 56-1
+;lbeg = 0
+;lend = nsteps-1
 do ii = 0,nflds-1
  miny = min(data_all(ii,:,lbeg:lend))
  maxy = max(data_all(ii,:,lbeg:lend))
