@@ -13,11 +13,11 @@
   RT2 = "/glade/scratch/worthen/MStone/"
 
  idate = "2012010100"
- plotlabs = (/"NEMS", "CMEPS"/)
-      rts = (/"nems_long/",\
-              "cmeps_long/"/)
-    csets = (/"",\
-              ""/)
+ plotlabs = (/"NEMS mediator", "CMEPS"/)
+      rts = (/"nems_long",\
+              "cmeps_long"/)
+    csets = (/"/",\
+              "/"/)
 
   ;hemi = "NH"
   ;hemi = "SH"
@@ -84,7 +84,7 @@
      ; cmon = "02"
      ; cday = "04"
      chour = "21"
-   cdate = cyear+"-"+cmon+"-"+cday+"-"+chour
+   cdate = cyear+cmon+"01"
 
    ocnfiles = addfiles(RT2+rts+csets+"ocn_"+cyear+"_"+cmon+"_"+cday+"_"+chour+".nc","r")
    ListSetType(ocnfiles,"cat")
@@ -107,11 +107,10 @@
   ; plot levels
   plotlevs = new((/nflds,3/), float)
   plotlevs( 0,:) = (/  -1.0,  1.0, 0.10/)   ; sst
-  ;plotlevs( 0,:) = (/  -0.2,  0.2, 0.02/)   ; sst
-  plotlevs( 1,:) = (/  -0.1,  0.1, 0.01/)   ; sss
+  plotlevs( 1,:) = (/  -0.2,  0.2, 0.02/)   ; sss
   plotlevs( 2,:) = (/  -0.2,  0.2, 0.02/)   ; ssh
   plotlevs( 3,:) = (/  -0.2,  0.2, 0.02/)   ; speed
-  plotlevs( 4,:) = (/ -20.0, 20.0, 2.0/)   ; mld
+  plotlevs( 4,:) = (/ -30.0, 30.0, 2.0/)   ; mld
   plotlevs( 5,:) = (/-120.0,120.0,10.0/) ; latent
   plotlevs( 6,:) = (/-120.0,120.0,10.0/) ; sensible
   plotlevs( 7,:) = (/-240.0,240.0,20.0/) ; SW
@@ -119,6 +118,8 @@
   plotlevs( 9,:) = (/  -2.0,  2.0, 0.2/) ; lprec*3600 mm/hr
   
   cmap="BlueWhiteOrangeRed"
+
+  flds = (/0,1,2,4/)
 
 ;************************************************
 ;  Ocn lats/lons and mask
@@ -132,44 +133,20 @@
     ocnlats = ocnfiles[0]->$olatname$
       oland = ocnfiles[0]->$olandname$
 
-;************************************************
-;
-;************************************************
-
-  ; pick a field to plot
-  fldtoplot =2
-       levs = plotlevs(fldtoplot,:)
-    fldname = ocnflds(fldtoplot)
-   ;wkstitle = rts(0)+"-"+rts(1)
-   ;wkstitle = rts(0)+"-"+rts(2)
-   wkstitle = fldname+"_"+cdate
-
-  ; special settings
-       owgt = 1.0
-  if(fldname .eq. "lprec")then   ; make levels easier
-       owgt = 3600.0
-  end if
-
-  ; Hera Nems-cmeps; first copy metadata
-  odiff0 = ocnfiles[0]->$fldname$(0,:,:)
-  odiff0 = ocnfiles[0]->$fldname$(0,:,:) - ocnfiles[1]->$fldname$(0,:,:)
-  odiff0 = odiff0*owgt
- pltlab0 = plotlabs(0)+" - "+plotlabs(1)
-
-  if(fldname .eq. "lprec")then   ; make levels easier
-   odiff0@units = "mm/d"
-  end if
+    pltlab0 = plotlabs(0)+"-"+plotlabs(1)
+   wkstitle = rts(0)+"-"+rts(1)+"_"+cday
+   print(wkstitle)
 ;************************************************
 ; define the map
 ;************************************************
 
-  wkstype="X11"
-  ;wkstype="png"
+  ;wkstype="X11"
+  wkstype="png"
   wkstype@wkWidth=800
   wkstype@wkHeight=800
   wks   = gsn_open_wks (wkstype,wkstitle)              ; send graphics to X11 window
 
-  plot = new(1,graphic)
+  plot = new(dimsizes(flds),graphic)
 
   res                      = True        ; plot mods desired
   res@gsnDraw              = False       ; do not draw until the end
@@ -179,7 +156,7 @@
   res@cnFillMode = "RasterFill"
   res@mpFillOn   = False
   res@mpOutlineOn   = False
-  res@lbLabelBarOn  = False                 ; turn off individual colorbars
+  res@lbLabelBarOn  = True                 ; turn off individual colorbars
 
   res@cnFillOn           = True
   res@cnLinesOn          = False                 ; no contour lines
@@ -212,17 +189,13 @@
 ;************************************************
 ; the subplot call
 ;************************************************
-function subplot(ii,name,pltvar,pltlevs,palette,hemi)
+function subplot(ii,pltvar,pltlevs,palette,hemi)
 begin
    res@cnLevelSelectionMode = "ManualLevels"        ; set the contour levels with the following 3 resources
    res@cnMinLevelValF       = pltlevs(0)            ; set the minimum contour level
    res@cnMaxLevelValF       = pltlevs(1)            ; set the maximum contour level
    res@cnLevelSpacingF      = pltlevs(2)            ; set the interval between contours
    res@cnFillPalette        = palette
-
-  res@gsnCenterStringFontHeightF      = 0.020
-  res@gsnCenterString                 = name
-  res@gsnCenterStringOrthogonalPosF   = 0.12
 
   if(hemi .eq. "none" .or. hemi .eq. "global")then
    splot = gsn_csm_contour_map(wks,pltvar,res)    ; create the plot
@@ -236,8 +209,28 @@ end
 ;
 ; ***************************************************
 
-  ii = 0
-  plot(ii) = subplot(ii,pltlab0,odiff0,levs,cmap,hemi)
+  do kk = 0,dimsizes(flds)-1
+  fldtoplot = flds(kk)
+       levs = plotlevs(fldtoplot,:)
+    fldname = ocnflds(fldtoplot)
+
+  ; special settings
+       owgt = 1.0
+  if(fldname .eq. "lprec")then   ; make levels easier
+       owgt = 3600.0
+  end if
+
+  ; Hera Nems-cmeps; first copy metadata
+  odiff0 = ocnfiles[0]->$fldname$(0,:,:)
+  odiff0 = ocnfiles[0]->$fldname$(0,:,:) - ocnfiles[1]->$fldname$(0,:,:)
+  odiff0 = odiff0*owgt
+
+  if(fldname .eq. "lprec")then   ; make levels easier
+   odiff0@units = "mm/d"
+  end if
+
+  plot(kk) = subplot(kk,odiff0,levs,cmap,hemi)
+  end do
 
 ; ***************************************************
 ; panel resources
@@ -246,17 +239,21 @@ end
   resP                       = True                 ; modify the panel plot
   resP@gsnMaximize           = True                 ; maximize in frame
   resP@gsnFrame              = False                ; don't advance frame yet
-  resP@gsnPanelLabelBar      = True                 ; turn on a common labelbar for the entire panel plot
+  resP@gsnPanelLabelBar      = False                 ; turn on a common labelbar for the entire panel plot
 
-  resP@gsnPanelMainFontHeightF = 0.020           ; new resource added in NCL V6.4.0
-  resP@gsnPanelMainString = cdate
+  resP@gsnPanelMainFontHeightF = 0.015           ; new resource added in NCL V6.4.0
+  resP@gsnPanelMainString = cday+"-d integration from "+cdate+": "+pltlab0
+
+ ; resP@gsnCenterStringFontHeightF      = 0.020
+ ; resP@gsnCenterString                 = pltlab0
+ ; resP@gsnCenterStringOrthogonalPosF   = 0.12
 
 ;************************************************
 ; make the panel
 ;************************************************
 
-  gsn_panel(wks,plot,(/2,1/),resP)
-  ;gsn_panel(wks,plot,(/1,1/),resP)
+  ;gsn_panel(wks,plot,(/dimsizes(flds),1/),resP)
+  gsn_panel(wks,plot,(/2,2/),resP)
 
   frame(wks)
 

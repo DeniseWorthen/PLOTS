@@ -9,13 +9,15 @@
 ;************************************************
 
   ; hera
-  RT1 = "/scratch2/NCEPDEV/stmp1/Denise.Worthen/"
-  RT2 = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/"
-  RT3 = "/scratch2/NCEPDEV/stmp3/Denise.Worthen/"
-  RT4 = "/scratch1/NCEPDEV/stmp4/Denise.Worthen/"
+  ;RT1 = "/scratch2/NCEPDEV/stmp1/Denise.Worthen/"
+  ;RT2 = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/"
+  ;RT3 = "/scratch2/NCEPDEV/stmp3/Denise.Worthen/"
+  ;RT4 = "/scratch1/NCEPDEV/stmp4/Denise.Worthen/"
+  ; cheyenne
+  RT2 = "/glade/scratch/worthen/MStone/"
 
-    hemi = "NH"
- ;   hemi = "SH"
+ ;   hemi = "NH"
+    hemi = "SH"
  if(hemi .eq. "NH")then
   minlat =  66.0
   midlon = -45.0       
@@ -35,16 +37,18 @@
 
      lstep = 1-1
      cyear = "2012"
-      cmon = "10"
+      cmon = "01"
       cday = "03"
       csec = "00000"
      cdate = cyear+"-"+cmon+"-"+cday+"-"+csec
 
-      rts = (/"S2S_tod","S2S_names"/)
+     ; rts = (/"cmeps_long_ipd","nems_long_ipd"/)
+      rts = (/"cmeps_long","nems_long"/)
      ;cset = "/2012010100_2d/tmp/cpld_fv3_384_mom6_cice_2d_bmark/history/"
-     cset = "/2012100100_2d/tmp/cpld_fv3_384_mom6_cice_2d_bmark/history/"
+     ;cset = "/2012100100_2d/tmp/cpld_fv3_384_mom6_cice_2d_bmark/history/"
+     cset = "/history/"
 
-     files = addfiles(RT2+rts+cset+"iceh_inst."+cyear+"-"+cmon+"-"+cday+"-00000.nc","r")
+     files = addfiles(RT2+rts+cset+"iceh_06h."+cyear+"-"+cmon+"-"+cday+"-"+csec+".nc","r")
 
      print(rts(1)+" - "+rts(0))
      plottitle=rts(1)+" - "+rts(0)
@@ -162,12 +166,14 @@ end
  
          pltlevs = new((/3/),float)
     labelstrings = new((/2/),string)
-    colormap = "BlueDarkRed18"
+    ;colormap = "BlueDarkRed18"
+    ;colormap = "BlueWhiteOrangeRed"
     ;colormap = "amwg256"
+    colormap = "cmp_flux"
 
         ii = 0
      vname = "aice_h"
-   pltlevs = (/-.1,.1,.01/)
+   pltlevs = (/-0.5,0.5,.05/)
   res@gsnCenterString  = vname
 
   ivar = files[1]->$vname$(lstep,:,:)-files[0]->$vname$(lstep,:,:)
@@ -177,12 +183,12 @@ end
    dum(ii) = gsn_add_polyline(wks,plot(ii),(/lon1, lon2/) , (/lat1, lat2/) ,pres)
 
         ii = 1
-     vname = "hi_h"
-   pltlevs = (/-2.0,2.0,.2/)
+     vname = "Tsfc_h"
+  pltlevs = (/-2.0,2.0,0.2/)
   res@gsnCenterString  = vname
 
   ivar = files[1]->$vname$(lstep,:,:)-files[0]->$vname$(lstep,:,:)
-  ivar = ivar*100.0   ; in cm
+  ;ivar = ivar*100.0   ; in cm
   ivar@lon2d = files[0]->$tlonname$*rfactor
   ivar@lat2d = files[0]->$tlatname$*rfactor
   plot(ii) = subplot(ii,vname,ivar(:,:),pltlevs,colormap)

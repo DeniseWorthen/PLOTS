@@ -8,16 +8,14 @@
 ;************************************************
 ; read in netCDF file
 ;************************************************
-
-  RT2 = "/scratch1/NCEPDEV/stmp2/Jessica.Meixner/"
+  ; cheyenne
+  RT2 = "/glade/scratch/worthen/MStone/"
 
  idate = "2012010100"
- plotlabs = (/"IPD", "CCPP"/)
-      rts = (/"scrub/rtgen.235135/tmp",\
-              "scrub/rtgen.36490/tmp"/)
-    csets = (/"/cpld_fv3_384_mom6_cice_5d_"+idate+"/",\
-              "/cpld_fv3_ccpp_384_mom6_cice_5d_"+idate+"/"/)
-
+ plotlabs = (/"NEMS mediator", "CMEPS"/)
+      rts = (/"nems_long","cmeps_long"/)
+    csets = (/"/",\
+              "/"/)
 
 ;************************************************
 ;
@@ -27,7 +25,9 @@
      cyear = "2012"
       cmon = "01"
       cday = "11"
+    cdaym1 = "10"
      chour = "00000"
+     cdate = cyear+cmon+"01"
 
    icefiles = addfiles(RT2+rts+csets+"history/iceh_06h."+cyear+"-"+cmon+"-"+cday+"-"+chour+".nc","r")
    ListSetType(icefiles,"cat")
@@ -52,6 +52,7 @@
   plotlevs( 0,:) = (/  -0.2,  0.2, 0.02/)   ; ai
   plotlevs( 1,:) = (/  -0.2,  0.2, 0.02/)   ; hi
   plotlevs( 2,:) = (/ -20.0, 20.0, 2.00/)   ; tsfc
+  ;plotlevs( 2,:) = (/ -2.0, 2.0, 0.20/)   ; tsfc
   plotlevs( 3,:) = (/  -1.0,  1.0, 0.10/)   ; snow fall
   plotlevs( 4,:) = (/-120.0,120.0,10.00/)   ; lwup
   plotlevs( 5,:) = (/ -40.0, 40.0, 2.00/)  ; latent
@@ -79,10 +80,9 @@
 ;************************************************
 
   ; pick a field to plot
-  ;fldtoplot =3
+  fldtoplot =2
        levs = plotlevs(fldtoplot,:)
     fldname = iceflds(fldtoplot)
-   wkstitle = fldname
 
   ; special settings
       iwgt = 1.0
@@ -101,11 +101,12 @@
   if(fldname .eq. "fsalt_h")then   ; make levels easier
    idiff0@units = "g/m2/s"
   end if
+   wkstitle = fldname+"_"+cday
 ;************************************************
 ; define the map
 ;************************************************
 
-  ;wkstype="X11"
+  wkstype="X11"
   wkstype="png"
   wkstype@wkWidth=800
   wkstype@wkHeight=800
@@ -137,7 +138,7 @@
 ;************************************************
 ; the subplot call
 ;************************************************
-function subplot(ii,name,pltvar,pltlevs,palette,hemi,lat0,lon0)
+function subplot(ii,pltvar,pltlevs,palette,hemi,lat0,lon0)
 begin
    res@cnLevelSelectionMode = "ManualLevels"        ; set the contour levels with the following 3 resources
    res@cnMinLevelValF       = pltlevs(0)            ; set the minimum contour level
@@ -154,9 +155,9 @@ begin
     res@mpMaxLatF    = lat0                           ; minimum lat to plot
    end if
 
-  res@gsnCenterStringFontHeightF      = 0.020
-  res@gsnCenterString                 = name
-  res@gsnCenterStringOrthogonalPosF   = 0.12
+  ;res@gsnCenterStringFontHeightF      = 0.020
+  ;res@gsnCenterString                 = name
+  ;res@gsnCenterStringOrthogonalPosF   = 0.12
 
    splot = gsn_csm_contour_map_polar(wks,pltvar,res)    ; create the plot
    delete(res@mpMinLatF)
@@ -172,13 +173,13 @@ end
   minlat =  66.0
   midlon = -45.0
   ii = 0
-  plot(ii) = subplot(ii,pltlab0,idiff0,levs,cmap,hemi,minlat,midlon)
+  plot(ii) = subplot(ii,idiff0,levs,cmap,hemi,minlat,midlon)
 
     hemi = "SH"
   maxlat = -50.0
   midlon =   0.0
   ii = 1
-  plot(ii) = subplot(ii,pltlab0,idiff0,levs,cmap,hemi,maxlat,midlon)
+  plot(ii) = subplot(ii,idiff0,levs,cmap,hemi,maxlat,midlon)
 
 ; ***************************************************
 ; panel resources
@@ -192,13 +193,13 @@ end
   resP@gsnPanelYWhiteSpacePercent = 5
 
   resP@gsnPanelMainFontHeightF = 0.020           ; new resource added in NCL V6.4.0
-  resP@gsnPanelMainString = "10d integration from "+cyear+cmon+"01"
+  resP@gsnPanelMainString = cdaym1+"-d integration from "+cdate+": "+pltlab0
 
 ;************************************************
 ; make the panel
 ;************************************************
 
-  gsn_panel(wks,plot,(/2,2/),resP)
+  gsn_panel(wks,plot,(/2,1/),resP)
 
   frame(wks)
 

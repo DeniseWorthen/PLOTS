@@ -7,8 +7,8 @@
 ;************************************************
 begin
 
-  hemi="NH"
-  ;hemi="SH"
+  ;hemi="NH"
+  hemi="SH"
 
   model = "m6c5"
   minlat = 66.0
@@ -21,10 +21,7 @@ begin
   ;minlon =  140.0
   ;maxlon =  270.0
 
-  RT1 = "/scratch2/NCEPDEV/stmp1/Denise.Worthen/"
-  RT2 = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/"
-  RT3 = "/scratch2/NCEPDEV/stmp3/Denise.Worthen/"
-  RT4 = "/scratch1/NCEPDEV/stmp4/Denise.Worthen/"
+  RT4 = "/glade/scratch/worthen/MStone/"
 
 ;************************************************
 ; read in netCDF file
@@ -33,9 +30,9 @@ begin
    idate = "2012010100"
    cyear = "2012"
     cmon = "01"
-    cday = "03"
+    cday = "23"
    cdate = cyear+"-"+cmon+"-"+cday
-   rtsrc = RT4+"NEMS_mvert/"+idate+"_2d/tmp/cpld_fv3_384_mom6_cice_2d_bmark/"
+   rtsrc = RT4+"cmeps_long_ipd/"
 
    ; use one file for grid
    ;gf =addfile(rtsrc+"iceic"+idate+"00.01."+idate+"00.nc","r")
@@ -55,16 +52,16 @@ begin
   print("cdate = "+cdate)
 
   ; ice field
-  ;varname="aice_h"
+  varname="aice_h"
   ;levs=(/0.97,1.0,0.001/)
   ;levs=(/0.87,0.95,0.0010/)
   ;levs=(/0.50,1.00,0.010/)
-  ;levs=(/0.0, 1.0, 0.02/)
+  levs=(/0.0, 1.0, 0.02/)
   ;varname="hi_h"
   ;levs=(/0.0,3.0,0.1/)
   ;levs=(/0.0,2.0,0.1/)
-  varname="Tsfc_h"
-  levs=(/-40.0,5.0,1.0/)
+  ;varname="Tsfc_h"
+  ;levs=(/-40.0,5.0,1.0/)
   ;varname="hi_h"
   ;levs=(/0.0,4.0,0.2/)
   ;varname="sst_h"
@@ -171,14 +168,14 @@ begin
   
   ;res@cnFillOn          = False                  ; color fill
 
-  res@cnLevelSelectionMode = "ManualLevels"     ; set the contour levels with the following 3 resources
-  res@cnMinLevelValF  = levs(0)                      ; set the minimum contour level
-  res@cnMaxLevelValF  = levs(1)                      ; set the maximum contour level
-  res@cnLevelSpacingF = levs(2)                      ; set the interval between contours
+  ;res@cnLevelSelectionMode = "ManualLevels"     ; set the contour levels with the following 3 resources
+  ;res@cnMinLevelValF  = levs(0)                      ; set the minimum contour level
+  ;res@cnMaxLevelValF  = levs(1)                      ; set the maximum contour level
+  ;res@cnLevelSpacingF = levs(2)                      ; set the interval between contours
 
-  ; res@cnLevelSelectionMode        = "ExplicitLevels"
-  ; res@cnLevels                    = (/     0.15,0.50,0.7,0.8,0.85,0.9,0.950/)
-  ; res@lbLabelStrings              = (/0.00,0.15,0.50,0.7,0.8,0.85,0.9,0.950/)+""
+   res@cnLevelSelectionMode        = "ExplicitLevels"
+   res@cnLevels                    = (/     0.15,0.50,0.7,0.8,0.85,0.9,0.950/)
+   res@lbLabelStrings              = (/0.00,0.15,0.50,0.7,0.8,0.85,0.9,0.950/)+""
 
   ;res@cnFillPalette        = "MPL_rainbow"              ; choose colormap
   ;res@cnFillPalette        = "BlWhRe"              ; choose colormap
