@@ -24,8 +24,7 @@
      lstep = 1-1
      cyear = "2012"
       cmon = "01"
-      cday = "11"
-    cdaym1 = "10"
+      cday = "06"
      chour = "00000"
      cdate = cyear+cmon+"01"
 
@@ -80,7 +79,7 @@
 ;************************************************
 
   ; pick a field to plot
-  fldtoplot =0
+  fldtoplot =1
        levs = plotlevs(fldtoplot,:)
     fldname = iceflds(fldtoplot)
 
@@ -106,8 +105,8 @@
 ; define the map
 ;************************************************
 
-  ;wkstype="X11"
-  wkstype="png"
+  wkstype="X11"
+  ;wkstype="png"
   wkstype@wkWidth=800
   wkstype@wkHeight=800
   wks   = gsn_open_wks (wkstype,wkstitle)              ; send graphics to X11 window
@@ -145,7 +144,6 @@ begin
    res@cnMaxLevelValF       = pltlevs(1)            ; set the maximum contour level
    res@cnLevelSpacingF      = pltlevs(2)            ; set the interval between contours
    res@cnFillPalette        = palette
-   res@gsnStringFontHeightF = 0.020
 
     res@gsnPolar   =  hemi                         ; specify the hemisphere
     res@mpCenterLonF = lon0
@@ -194,7 +192,7 @@ end
   resP@gsnPanelYWhiteSpacePercent = 5
 
   resP@gsnPanelMainFontHeightF = 0.020           ; new resource added in NCL V6.4.0
-  resP@gsnPanelMainString = cdaym1+"-d integration from "+cdate+": "+pltlab0
+  resP@gsnPanelMainString = "10-d integration from "+cdate+": "+pltlab0
 
 ;************************************************
 ; make the panel

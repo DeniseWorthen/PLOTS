@@ -196,6 +196,7 @@ begin
    res@cnMaxLevelValF       = pltlevs(1)            ; set the maximum contour level
    res@cnLevelSpacingF      = pltlevs(2)            ; set the interval between contours
    res@cnFillPalette        = palette
+   res@gsnStringFontHeightF = 0.020
 
   if(hemi .eq. "none" .or. hemi .eq. "global")then
    splot = gsn_csm_contour_map(wks,pltvar,res)    ; create the plot

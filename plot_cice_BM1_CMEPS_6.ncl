@@ -9,17 +9,18 @@
 ;************************************************
 begin
 
-  ;batch = "no"
-  batch = "yes"
+  batch = "no"
+ ; batch = "yes"
 
  if(batch .eq. "no")then
  ; hemi = "NH"
   hemi = "SH"
 
-   cdate = "20121001"
+ ;  cdate = "20121001"
  ;  cdate = "20120701"
  ;   cdate = "20120401"
  ;   cdate = "20120101"
+    cdate = "2012-01"
    varname = "aice"
  ;  varname = "hi"
  end if
@@ -28,7 +29,6 @@ begin
   rfactor = 1.0
   ;lstep = 35 - 1
   ;lstep = 30 - 1
-  lstep = 23 - 1
 
  if(hemi .eq. "NH")then
   minlat =  66.0
@@ -39,31 +39,41 @@ begin
  end if
 
   if(varname .eq. "aice")then
-   fancylevs = "yes"
-   ;fancylevs = "no"
+   ;fancylevs = "yes"
+   fancylevs = "no"
     vartitle = "Ice Concentration"
   else
    fancylevs = "no"
    vartitle = "Ice Thickness"
   end if
 
-  ;RT1 = "/scratch3/NCEPDEV/stmp1/Denise.Worthen/"
-  ;RT2 = "/scratch3/NCEPDEV/stmp2/Denise.Worthen/"
-  ;RT3 = "/scratch4/NCEPDEV/stmp3/Denise.Worthen/"
-  ;RT4 = "/scratch4/NCEPDEV/stmp4/Denise.Worthen/"
-
-; hera
-  RT3 = "/scratch2/NCEPDEV/stmp3/Denise.Worthen/"
+; cheyenne
+  RT3 = "/glade/scratch/worthen/MStone/"
 
 ;************************************************
 ; read in netCDF file
 ;************************************************
 
-         rts =  (/"BM1_ice/",  "CMEPS_v042/"/)
-       files = addfiles(RT3+rts +"dm_"+varname+"_h."+cdate+".nc","r")
-     rtnames = (/"NEMS-BM1",  "CMEPS-BM1 (v0.5)"/)
-     npanels = dimsizes(rts)
+;         rts =  (/"nems_long_ipd/",  "cmeps_long_ipd/"/)
+         rts =  (/"nems_long/",  "cmeps_long/"/)
+    ;   files = addfiles(RT3+rts +"dm_"+varname+"_h."+cdate+".nc","r")
 
+   nemslist = systemfunc("ls "+RT3+rts(0)+"history/iceh_06*-00000.nc")
+  cmepslist = systemfunc("ls "+RT3+rts(1)+"history/iceh_06*-00000.nc")
+
+       files0 = addfiles((/nemslist/),"r")
+       files1 = addfiles((/cmepslist/),"r")
+     rtnames = (/"NEMS mediator",  "CMEPS mediator"/)
+     npanels = dimsizes(rts)
+      ntimes = dimsizes(files0)
+       lstep = 23 ; day 25
+     ;  lstep = 40 
+    ;print(files1)
+
+    ;files = NewList("fifo")
+    ;ListPush(files,files0)
+    ;ListPush(files,files1)
+    ;print(ntimes)
 ;************************************************
 ; add a poly line showing the polar seem along
 ; great circle path from (lon1,lat1) to (lon2,lat2)
@@ -85,6 +95,7 @@ begin
   else
    wkstype="png"
   end if
+   ;wkstype="png"
   wkstype@wkWidth=800
   wkstype@wkHeight=800
   wks   = gsn_open_wks (wkstype,wkstitle)              ; send graphics to X11 window
@@ -181,14 +192,16 @@ end
       pltlevs(:) = freturn[0]
       colormap   = freturn[1]
 
-         times = files[0]->time
-     timeUnits = files[0]->time@units
-  timeCalendar = files[0]->time@calendar
+         times = files0[:]->time
+     timeUnits = files0[:]->time@units
+  timeCalendar = files0[:]->time@calendar
+  ;printVarSummary(times)
 
      ii = 0
-        icevar = files[ii]->$vname$(lstep,:,:)
-  icevar@lon2d = files[ii]->$tlonname$*rfactor
-  icevar@lat2d = files[ii]->$tlatname$*rfactor
+        icevar = files0[:]->$vname$(lstep,:,:)
+  ;printVarSummary(icevar)
+  icevar@lon2d = files0[0]->$tlonname$*rfactor
+  icevar@lat2d = files0[0]->$tlatname$*rfactor
   labelstrings(ii) = icevar@long_name+" ("+icevar@units+")  "+"["+varname+"]"
   icevar@long_name = " "
   icevar@units= " "
@@ -197,9 +210,9 @@ end
    dum(ii) = gsn_add_polyline(wks,plot(ii),(/lon1, lon2/) , (/lat1, lat2/) ,pres)
 
      ii = 1
-        icevar = files[ii]->$vname$(lstep,:,:)
-  icevar@lon2d = files[ii]->$tlonname$*rfactor
-  icevar@lat2d = files[ii]->$tlatname$*rfactor
+        icevar = files1[:]->$vname$(lstep,:,:)
+  icevar@lon2d = files1[0]->$tlonname$*rfactor
+  icevar@lat2d = files1[0]->$tlatname$*rfactor
   labelstrings(ii) = icevar@long_name+" ("+icevar@units+")  "+"["+varname+"]"
   icevar@long_name = " "
   icevar@units= " "
@@ -231,14 +244,14 @@ end
 ;
 ;************************************************
 
-  if(batch .eq. "yes")then
+  ;if(batch .eq. "yes")then
    imcmd = "convert -trim "+wkstitle+".png "+wkstitle+".jpg"
    ;print(imcmd)
    system(imcmd)
    imcmd = "convert -bordercolor white -border 0x10 "+wkstitle+".jpg "+wkstitle+".jpg"
    ;print(imcmd)
    system(imcmd)
-  end if
+  ;end if
 
 exit
 end
