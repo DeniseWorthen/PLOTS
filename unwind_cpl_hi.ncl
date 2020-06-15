@@ -2,14 +2,14 @@ begin
   ;--- parameters ---
  
    time = "00450"
-  dirsrc = ""
+  dirsrc = "fracF/"
   ifile = "ufs.s2s.c384_t025.jan.jul02.cold.cpl.hi.2012-01-01-"
-  print(ifile)
 
     res = 384
   ntile = 6
 
   fname = dirsrc+ifile+time+".nc"
+  print(fname)
   ff = addfile(fname,"r")
 
   ;--- read coordinate variables ---
@@ -33,7 +33,7 @@ begin
   ; pre-define the output file
   do i = 0, ntile-1
 
-    ofile = "cpl.hi-"+time+".tile"+sprinti("%d", i+1)+".nc"
+    ofile = dirsrc+"ufs.cpl.hi-"+time+".tile"+sprinti("%d", i+1)+".nc"
     print(ofile)
     system("rm -f "+ofile)
     fout = addfile(ofile, "c")
@@ -84,7 +84,7 @@ begin
      end do
 
      do i = 0, ntile-1
-      ofile = "cpl.hi-"+time+".tile"+sprinti("%d", i+1)+".nc"
+      ofile = dirsrc+"ufs.cpl.hi-"+time+".tile"+sprinti("%d", i+1)+".nc"
       fout = addfile(ofile, "w")
       fout->$vname$ = (/ var3d(i,:,:) /)
      end do

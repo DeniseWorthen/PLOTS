@@ -12,9 +12,8 @@
 
   ; cheyenne
   RT1 = "/glade/scratch/worthen/"
- plotlabs = (/"NEMS mediator", "CMEPS"/)
-      ;rts = (/"nemsfracColdRuns","cmepsfracColdRuns"/)
-      rts = (/"nemsfracColdRuns",""/)
+ plotlabs = (/"CMEPS"/)
+      rts = (/"fracF/", "fracT/"/)
 
   hemi = "NH"
  ; hemi = "SH"
@@ -44,17 +43,17 @@
   cyear = "2012"
    cmon = "01"
    cday = "01"
-   time = "00:07:30"
+   time = "00450"
   cdate = cyear+"-"+cmon+"-"+cday
-  ; for grid info
-  model = "phyf000."
-  state = "import"
+; state here is relative to the mediator
+; export => sent by mediator
+; import => received by mediator
+  state = "export"
 
-  ; difference fields have been made "FracF - FracT"
-  atmfiles=addfiles(RT1+rts+"/fv3_cap_"+state+"_"+cdate+"T"+time+"_"+tile+".nc","r")
-  ListSetType(atmfiles,"cat")
-  gf = addfile(RT1+rts(0)+"/fracT/phyf000."+tile+".nc","r")
-  ;print(atmfiles)
+  ; difference to be made "FracF - FracT"
+  atmfile=addfiles(RT1+rts+"diff."+time+"."+tile+".nc","r")
+  ; grid info can't come from the difference file
+       gf=addfile(RT1+rts+"fracT/ufs.cpl.hi-"+time+"."+tile+".nc","r")
 
   tilecorners = tilegrid(gf->$tlonname$,gf->$tlatname$,tile)
   if(hemi .eq. "none")then
@@ -76,20 +75,20 @@
    end if
   end if
 
-  plottitle="FV3 "+state+" difference: FracF - FracT at "+time+" on "+tile
+  plottitle="Mediator "+state+" difference: FracF - FracT at "+time+" on "+tile
 
 ;************************************************
-;  fv3 cap export fields
+;  atmImp fields (these are exported from FV3)
 ;************************************************
 
-  fv3exportflds = (/"inst_temp_height_lowest",        \
-                    "inst_pres_height_lowest",        \
-                    "inst_spec_humid_height_lowest",  \
-                    "mean_down_lw_flx",               \
-                    "mean_laten_heat_flx",            \
-                    "mean_sensi_heat_flx",            \
-                    "mean_merid_moment_flx_atm",      \
-                    "mean_zonal_moment_flx_atm"       \
+  fv3exportflds = (/"atmImp_Sa_tbot",        \
+                    "atmImp_Sa_pbot",        \
+                    "atmImp_Sa_shum",        \
+                    "atmImp_Faxa_lwdn",      \
+                    "atmImp_Faxa_lat",       \
+                    "atmImp_Faxa_sen",       \
+                    "atmImp_Faxa_tauy",      \
+                    "atmImp_Faxa_taux"       \
               /)
 
   expwgts = (/1.0, \
@@ -101,30 +100,31 @@
               1.0e3, \
               1.0e3/)
   nexpflds = dimsizes(fv3exportflds)
+  ;print(nexpflds)
 
   ; plot levels
   exp_plotlevs = new((/nexpflds,3/), float)
-  exp_plotlevs( 0,:) = (/  -2.0,  2.0, 0.20/)   ; tlowest
-  exp_plotlevs( 1,:) = (/ -10.0, 10.0, 0.50/)   ; plowest
+  exp_plotlevs( 0,:) = (/  -1.0,  1.0, 0.10/)   ; tlowest
+  exp_plotlevs( 1,:) = (/  -0.1,  0.1, 0.01/)   ; plowest
   exp_plotlevs( 2,:) = (/  -1.0, 1.0,  0.1/)    ; qlowest *1e4
-  exp_plotlevs( 3,:) = (/ -20.0, 20.0, 1.0/)    ; lw down
+  exp_plotlevs( 3,:) = (/ -10.0, 10.0, 1.0/)    ; lw down
   exp_plotlevs( 4,:) = (/ -20.0, 20.0, 1.0/)    ; latent 
   exp_plotlevs( 5,:) = (/ -10.0, 10.0, 0.5/)    ; sensi 
   exp_plotlevs( 6,:) = (/  -1.0,  1.0, 0.10/)   ; merid flx *1e3
   exp_plotlevs( 7,:) = (/  -1.0,  1.0, 0.10/)   ; zonal flx *1e3
 
 ;************************************************
-;  fv3 cap import fields
+;  atmExp fields (these are imported by FV3)
 ;************************************************
 
-  fv3importflds = (/"ice_fraction",        \
-                    "mean_laten_heat_flx_atm_into_ice",        \
-                    "mean_sensi_heat_flx_atm_into_ice",  \
-                    "mean_up_lw_flx_ice",               \
-                    "sea_ice_surface_temperature",            \
-                    "sea_surface_temperature",            \
-                    "stress_on_air_ice_merid",      \
-                    "stress_on_air_ice_zonal"       \
+  fv3importflds = (/"atmExp_Si_ifrac",       \
+                    "atmExp_Faii_lat",       \
+                    "atmExp_Faii_sen",       \
+                    "atmExp_Faii_lwup",      \
+                    "atmExp_Si_t",           \
+                    "atmExp_So_t",           \
+                    "atmExp_Faii_tauy",      \
+                    "atmExp_Faii_taux"       \
               /)
 
   nimpflds = dimsizes(fv3importflds)
@@ -138,6 +138,7 @@
               1.0e3, \  ; merid flx *1e3
               1.0e3/)   ; zonal flx *1e3
   nimpflds = dimsizes(fv3importflds)
+  ;print(nimpflds)
 
   ; plot levels
   imp_plotlevs = new((/nimpflds,3/), float)
@@ -156,20 +157,26 @@
   ;flds = (/2/)
   ;flds = (/0,2/)
   ;flds = (/6,7/)
-  flds = (/3/)
+  ;flds = (/3/)
 
 ;************************************************
-;
+; state here is relative to the mediator
+; the mediator import state = atm export
+; the mediator export state = atm import
 ;************************************************
  
-   if(state .eq. "export")then
+   if(state .eq. "import")then
      fv3flds = fv3exportflds
      atmwgts = expwgts
     plotlevs = exp_plotlevs
+        flds = ispan(0,nimpflds-1,1)
+        ; flds = (/1/)
    else
      fv3flds = fv3importflds
      atmwgts = impwgts
     plotlevs = imp_plotlevs
+        ;flds = ispan(0,nexpflds-1,1)
+         flds = (/5/)
    end if 
 
 ;************************************************
@@ -184,7 +191,7 @@
   wks   = gsn_open_wks (wkstype,wkstitle)
 
   ;drawNDCGrid(wks)
-  plot = new(2*dimsizes(flds),graphic)
+  plot = new(dimsizes(flds),graphic)
 
   res                      = True        ; plot mods desired
   res@gsnDraw              = False       ; do not draw until the end
@@ -219,7 +226,7 @@
   end if
 
   ;res@gsnPolarLabelFontHeightF   = 0.020           ; change font height of labels
-  res@gsnCenterStringFontHeightF = 0.020
+  res@gsnCenterStringFontHeightF = 0.030
   res@lbLabelFontHeightF         = 0.020     
 
   ;res@cnMissingValPerimOn     = False            ; turn on the missing value perimeter
@@ -234,8 +241,8 @@
   resP                       = True                 ; modify the panel plot
   resP@gsnMaximize           = True                 ; maximize in frame
   resP@gsnFrame              = False                ; don't advance frame yet
-  resP@gsnPanelYWhiteSpacePercent = 10
-  resP@gsnPanelYWhiteSpacePercent = 10
+  resP@gsnPanelYWhiteSpacePercent = 5
+  resP@gsnPanelYWhiteSpacePercent = 5
   resP@gsnPanelLabelBar      = False                 ; turn on a common labelbar for the entire panel plot
 
   resP@gsnPanelMainFontHeightF = 0.015           ; new resource added in NCL V6.4.0
@@ -277,7 +284,7 @@ end
     fldname = fv3flds(fldtoplot)
 
   do ii = 0,dimsizes(rts)-1
-   afld = atmfiles[ii]->$fldname$(:,:)
+   afld = atmfile->$fldname$(:,:)
    afld = afld*awgt
    afld@lon2d = gf->$tlonname$
    afld@lat2d = gf->$tlatname$
@@ -295,11 +302,11 @@ end
 
 ;************************************************
 ; make the panel
-;
 ;************************************************
 
-  gsn_panel(wks,plot,(/1,2/),resP)
-  ;gsn_panel(wks,plot,(/3,2/),resP)
+  ;gsn_panel(wks,plot,(/1,1/),resP)
+  ;gsn_panel(wks,plot,(/1,2/),resP)
+  gsn_panel(wks,plot,(/3,3/),resP)
 
 ;************************************************
 ; Draw text on plot using NDC coordinates.
