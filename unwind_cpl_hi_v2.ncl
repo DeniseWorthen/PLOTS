@@ -6,12 +6,18 @@
 ; Ufuk Turuncoglu turuncu@ucar.edu
 ;**********************************************************
 begin
-     RT = "/glade/scratch/worthen/tmp/"
+     RT = "/glade/scratch/worthen/"
     res = 384
   ntile = 6
-   dirs = (/"fracT/", "fracF/"/)
-  ; dirs = (/"fracF/"/)
-  times = (/"00450", "00900", "01800"/)
+  ; dirs = (/"fracT/", "fracF/"/)
+  ; dirs = (/"chkmap_nstod/cmeps_cold2/"/)
+  ; dirs = (/"restTestsFracF/hour2/","restTestsFracF/restr/"/)
+  ; dirs = (/"nolag/"/)
+   dirs = (/"initTests/test_cold2/"/)
+  ; dirs = (/"MStone/cmeps_coldrun/"/)
+  times = (/"00450", "00900"/)
+  ;times = (/"01800", "03600"/)
+  ;times = (/"03600"/)
   ndirs = dimsizes(dirs)
     nts = dimsizes(times)
 
@@ -19,7 +25,8 @@ do nd = 0,ndirs-1
  do nt = 0,nts-1
     time = times(nt)
   dirsrc = RT+dirs(nd)
-   ifile = "ufs.s2s.c384_t025.jan.jul02.cold.cpl.hi.2012-01-01-"
+  ; ifile = "ufs.s2s.c384_t025.jan.jul02.cold.cpl.hi.2012-01-01-"
+   ifile = "ufs.s2s.c384_t025.jan.jul02.cpl.hi.2012-01-01-"
 
   fname = dirsrc+ifile+time+".nc"
   print("input file "+fname)
