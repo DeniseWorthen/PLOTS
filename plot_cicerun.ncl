@@ -12,6 +12,7 @@ begin
 
   model = "m6c5"
   minlat = 66.0
+  ;minlat = 88.0
   ;minlat = 76.0
   ;minlat = 88.0
   ;minlat = 80.0
@@ -21,25 +22,25 @@ begin
   ;minlon =  140.0
   ;maxlon =  270.0
 
-  RT1 = "/scratch2/NCEPDEV/stmp1/Denise.Worthen/"
-  RT2 = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/"
-  RT3 = "/scratch2/NCEPDEV/stmp3/Denise.Worthen/"
-  RT4 = "/scratch1/NCEPDEV/stmp4/Denise.Worthen/"
+  ; orion
+  RT1 = "/work/noaa/stmp/dworthen/stmp/dworthen/S2S_RT/"
 
 ;************************************************
 ; read in netCDF file
 ;************************************************
 
-   idate = "2012010100"
-   cyear = "2012"
-    cmon = "01"
-    cday = "03"
-   cdate = cyear+"-"+cmon+"-"+cday
-   rtsrc = RT4+"NEMS_mvert/"+idate+"_2d/tmp/cpld_fv3_384_mom6_cice_2d_bmark/"
+ cyear = "2013"
+  cmon = "08"
+  imon = "07"
+  cday = "05"
+ chour = "00000"
+ idate = cyear+cmon+"0100"
+ cdate = cyear+cmon+cday
 
+  ; rtsrc = "cice6_35d/cpld_fv3_ccpp_384_mom6_cice_cmeps_35d_"+cyear+imon+"0100/"
+   rtsrc = "rt_428139/cpld_fv3_ccpp_384_mom6_cice_cmeps_35d_"+cyear+imon+"0100/"
    ; use one file for grid
-   ;gf =addfile(rtsrc+"iceic"+idate+"00.01."+idate+"00.nc","r")
-   gf =addfile(rtsrc+"history/iceh_ic."+cyear+"-"+cmon+"-01-00000.nc","r")
+   gf =addfile(RT1+rtsrc+"history/iceh_ic."+cyear+"-"+imon+"-01-00000.nc","r")
    ;print(gf)
    tlatname="TLAT"
    tlonname="TLON"
@@ -60,11 +61,11 @@ begin
   ;levs=(/0.87,0.95,0.0010/)
   ;levs=(/0.50,1.00,0.010/)
   ;levs=(/0.0, 1.0, 0.02/)
-  ;varname="hi_h"
-  ;levs=(/0.0,3.0,0.1/)
-  ;levs=(/0.0,2.0,0.1/)
-  varname="Tsfc_h"
-  levs=(/-40.0,5.0,1.0/)
+  varname="hi_h"
+  levs=(/0.0,3.0,0.1/)
+  ;levs=(/1.6,2.2,0.01/)
+  ;varname="Tsfc_h"
+  ;levs=(/-40.0,5.0,1.0/)
   ;varname="hi_h"
   ;levs=(/0.0,4.0,0.2/)
   ;varname="sst_h"
@@ -92,7 +93,7 @@ begin
   ;varname="hs_h"
   ;levs=(/0.0,0.42,0.02/)
 
-    icef = addfile(rtsrc+"history/iceh_06h."+cdate+"-00000.nc","r")
+    icef = addfile(RT1+rtsrc+"history/iceh_06h."+cyear+"-"+cmon+"-"+cday+"-00000.nc","r")
   icevar = icef->$varname$(lstep,:,:)
   ;icevar = icevar/100.0
   icevar@lon2d=gf->$tlonname$*rfactor

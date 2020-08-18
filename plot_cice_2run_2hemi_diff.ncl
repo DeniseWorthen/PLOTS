@@ -11,8 +11,8 @@
   ; orion
   RT1 = "/work/noaa/stmp/dworthen/stmp/dworthen/S2S_RT/"
 
-    hemi = "NH"
- ;   hemi = "SH"
+ ;   hemi = "NH"
+    hemi = "SH"
  if(hemi .eq. "NH")then
   minlat =  66.0
   midlon = -45.0       
@@ -31,8 +31,8 @@
 ;************************************************
 
      lstep = 1-1
-     cyear = "2013"
-      cmon = "07"
+     cyear = "2012"
+      cmon = "10"
       cday = "03"
       csec = "00000"
      cdate = cyear+"-"+cmon+"-"+cday+"-"+csec
@@ -49,6 +49,37 @@
          times = files[0]->time
      timeUnits = files[0]->time@units
   timeCalendar = files[0]->time@calendar
+
+  ; ice fields
+  iceflds = (/"aice_h",   \
+              "hi_h",     \
+              "Tsfc_h",   \
+              "snow_h",   \
+              "flwup_h",  \
+              "flat_h",   \
+              "fsens_h",  \
+              "fswdn_h",  \
+              "flwdn_h",  \
+              "fresh_h",  \
+              "fhocn_h"   \
+              /)
+  nflds = dimsizes(iceflds)
+
+  ; plot levels
+  plotlevs = new((/nflds,3/), float)
+  plotlevs( 0,:) = (/  -0.2,  0.2, 0.02/)   ; ai
+  plotlevs( 1,:) = (/  -0.2,  0.2, 0.02/)   ; hi
+  plotlevs( 2,:) = (/ -20.0, 20.0, 2.00/)   ; tsfc
+  plotlevs( 3,:) = (/  -1.0,  1.0, 0.10/)   ; snow fall
+  plotlevs( 4,:) = (/-120.0,120.0,10.00/)   ; lwup
+  plotlevs( 5,:) = (/ -40.0, 40.0, 2.00/)  ; latent
+  plotlevs( 6,:) = (/ -40.0, 40.0, 2.00/)  ; sensible
+  plotlevs( 7,:) = (/-240.0,240.0,20.00/)  ; SW
+  plotlevs( 8,:) = (/-100.0,100.0,10.00/)  ; LW
+  plotlevs( 9,:) = (/  -4.0,  4.0, 0.20/)  ; fresh
+  plotlevs(10,:) = (/ -10.0,  10.0, 0.50/)  ; fhocn
+
+  cmap="BlueWhiteOrangeRed"
 
 ;************************************************
 ; add a poly line showing the polar seem along
@@ -123,7 +154,7 @@
 ;************************************************
 ; the subplot call
 ;************************************************
-function subplot(ii,name,pltvar,pltlevs,palette)
+function subplot(ii,name,pltvar,pltlevs,palette,hemi,lat0,lon0)
 begin
    res@cnLevelSelectionMode = "ManualLevels"        ; set the contour levels with the following 3 resources
    res@cnMinLevelValF       = pltlevs(0)            ; set the minimum contour level
@@ -131,12 +162,22 @@ begin
    res@cnLevelSpacingF      = pltlevs(2)            ; set the interval between contours
    res@cnFillPalette        = palette
 
-  ;print(pltlevs)
-  ;print(palette)
+    res@gsnPolar   =  hemi                         ; specify the hemisphere
+    res@mpCenterLonF = lon0
+   if(hemi .eq. "NH")then
+    res@mpMinLatF    = lat0                       ; minimum lat to plot
+   end if
+   if(hemi .eq. "SH")then
+    res@mpMaxLatF    = lat0                           ; minimum lat to plot
+   end if
 
-  splot = gsn_csm_contour_map_polar(wks,pltvar,res)    ; create the plot
-  ;delete(res@cnLevels)
-  ;delete(res@lbLabelStrings)
+  res@gsnCenterStringFontHeightF      = 0.020
+  res@gsnCenterString                 = name
+  res@gsnCenterStringOrthogonalPosF   = 0.12
+
+   splot = gsn_csm_contour_map_polar(wks,pltvar,res)    ; create the plot
+   delete(res@mpMinLatF)
+   delete(res@mpMaxLatF)
   return(splot)
 end
 ; ***************************************************
@@ -150,7 +191,7 @@ end
   resP@gsnPanelYWhiteSpacePercent = 10
   resP@gsnPanelLabelBar      = False                 ; turn on a common labelbar for the entire panel plot
 
-  ;resP@gsnPanelMainFontHeightF = 0.020           ; new resource added in NCL V6.4.0
+  resP@gsnPanelMainFontHeightF = 0.012           ; new resource added in NCL V6.4.0
   ;resP@gsnPanelMainString = plottitle+": "+cd_string(times(lstep),"%Y%N%D")+"@ "+csec+" secs "
   resP@gsnPanelMainString = plottitle+": "+cd_string(times(lstep),"%Y%N%D")
 
@@ -158,16 +199,14 @@ end
 ;
 ;************************************************
  
-         pltlevs = new((/3/),float)
-    labelstrings = new((/2/),string)
-   ; colormap = "BlueDarkRed18"
-   ; colormap = "amwg256"
-   ; colormap = "amwg_blueyellowred"
-   colormap = "BlueWhiteOrangeRed"
+  ; pick a field to plot
+  fldtoplot = 0
+       levs = plotlevs(fldtoplot,:)
+    fldname = iceflds(fldtoplot)
+   wkstitle = "test"
 
         ii = 0
      vname = "aice_h"
-   pltlevs = (/-.1,.1,.01/)
   res@gsnCenterString  = vname
 
   ivar = files[1]->$vname$(lstep,:,:)-files[0]->$vname$(lstep,:,:)
@@ -178,7 +217,7 @@ end
 
         ii = 1
      vname = "hi_h"
-   pltlevs = (/-0.2,0.2,.02/)
+   pltlevs = (/-0.2,0.2,.01/)
   res@gsnCenterString  = vname
 
   ivar = files[1]->$vname$(lstep,:,:)-files[0]->$vname$(lstep,:,:)

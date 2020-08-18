@@ -8,17 +8,14 @@
 
   load "levscmapCICE.ncl"
 
-  ; hera
-  RT1 = "/scratch2/NCEPDEV/stmp1/Denise.Worthen/"
-  RT2 = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/"
-  RT3 = "/scratch2/NCEPDEV/stmp3/Denise.Worthen/"
-  RT4 = "/scratch1/NCEPDEV/stmp4/Denise.Worthen/"
+  ; orion
+  RT1 = "/work/noaa/stmp/dworthen/stmp/dworthen/S2S_RT/"
 
   fancylevs = "yes"
-       hemi = "NH"
-  ;    hemi = "SH"
-  ;varnames = (/"aice", "hi"/)
-  varnames = (/"aice", "Tsfc"/)
+  ;fancylevs = "no"
+  ;     hemi = "NH"
+      hemi = "SH"
+  varnames = (/"aice", "hi"/)
   ;varnames = (/"hs", "hi"/)
   ; varnames = (/"hs", "albsni"/)
   ; varnames = (/"meltt", "meltb"/)
@@ -42,54 +39,42 @@
    ulonname="ULON"
 
   cyear = "2012"
-   cmon = "07"
-   cday = "21"
-  ;idate = cyear+cmon+iday+"00"
-  ;cdate = cyear+cmon+cday+".01."+idate
+   cmon = "01"
+   imon = "01"
+   cday = "30"
   cdate = cyear+"-"+cmon+"-"+cday+"-00000"
-  idate = cyear+"-"+cmon+"-"+"01-00000"
+  idate = cyear+imon+"0100"
   lstep = 1-1
 
 ;************************************************
 ; read in netCDF file
 ;************************************************
 
-   ;rtname1 = "BM2-NEMS-update"
-   ; rtsrc1 = RT4+"NEMS_update/2012070100_20d/"
-   ;  cset1 = "tmp/cpld_fv3_384_mom6_cice_warm_bm2_nems/"
+   rtname1 = "EMC-CICE5"
+    rtsrc1 = RT1+"cice5_35d/"
+     cset1 = "cpld_fv3_ccpp_384_mom6_cice_cmeps_35d_"+idate+"/history/"
 
-   ;rtname2 = "BM2-CMEPS-update"
-   ; rtsrc2 = RT4+"CMEPS_update/2012070100_20d/"
-   ;  cset2 = "tmp/cpld_fv3_384_mom6_cice_warm_bm2/"
+   rtname2 = "CICE6"
+    rtsrc2 = RT1+"cice6_35d/"
+     cset2 = "cpld_fv3_ccpp_384_mom6_cice_cmeps_35d_"+idate+"/history/"
 
-   rtname1 = "BM2-CMEPS-update; ktherm=1"
-    rtsrc1 = RT3+"CMEPS_update/2012070100_20d/"
-     cset1 = "tmp/cpld_fv3_384_mom6_cice_warm_bm2/"
-
-   rtname2 = "BM2-CMEPS-update; mushy"
-    rtsrc2 = RT3+"CMEPS_update/2012070100_20d_mushy"
-     cset2 = "tmp/cpld_fv3_384_mom6_cice_warm_bm2/"
-
-   ; use one file for grid
-   ;     gf = addfile(rtsrc2+"iceh_ic."+cyear+iday+".nc","r")
-   ;print(gf)
-        gf = addfile(rtsrc1+cset1+"history/iceh_ic."+idate+".nc","r")
+        ;gf = addfile(rtsrc1+cset1+"iceh_ic."+idate+".nc","r")
 
        dir1 = rtsrc1+cset1
        dir2 = rtsrc2+cset2
        dirs = (/dir1,dir2/)
 
      fnames = new((/2/),string)
-  ;fnames(0) = dirs(0)+"ice2013080100.01.2013070100.nc"
-  fnames(0) = dirs(0)+"history/iceh_06h."+cdate+".nc"
-  fnames(1) = dirs(1)+"history/iceh_06h."+cdate+".nc"
+  fnames(0) = dirs(0)+"iceh_06h."+cdate+".nc"
+  fnames(1) = dirs(1)+"iceh_06h."+cdate+".nc"
   print(fnames(0))
   print(fnames(1))
 
   filelist = addfiles(fnames,"r")
   ;print(filelist)
   ;wkstitle = "cice2run"
-  wkstitle = varnames(0)+"_"+varnames(1)
+  ;wkstitle = varnames(0)+"_"+varnames(1)
+  wkstitle = hemi+"_"+cdate
 
 ;************************************************
 ; add a poly line showing the polar seem along
@@ -105,8 +90,8 @@
 ; define the map
 ;************************************************
 
-  wkstype="X11"
-  ;wkstype="png"
+  ;wkstype="X11"
+  wkstype="png"
   wkstype@wkWidth=800
   wkstype@wkHeight=800
   wks   = gsn_open_wks (wkstype,wkstitle)
@@ -174,17 +159,19 @@ begin
    res@cnLevelSelectionMode        = "ExplicitLevels"
    res@cnLevels                    = (/     0.15,0.50,0.7,0.8,0.85,0.9,0.950/)
    res@lbLabelStrings              = (/0.00,0.15,0.50,0.7,0.8,0.85,0.9,0.950/)+""
-  ;else if(name .eq. "hi_h" .or. name .eq. "hi")then
-  ; res@cnLevelSelectionMode        = "ExplicitLevels"
-  ; res@cnLevels                    = (/     0.15,0.50,1.0,1.5,2.0,2.5,3.0,3.5,4.0/)
-  ; res@lbLabelStrings              = (/0.00,0.15,0.50,1.0,1.5,2.0,2.5,3.0,3.5,4.0/)+""
+  else if(name .eq. "hi_h" .or. name .eq. "hi")then
+   res@cnLevelSelectionMode        = "ExplicitLevels"
+   ;res@cnLevels                    = (/     0.15,0.50,1.0,1.5,2.0,2.5,3.0,3.5,4.0/)
+   ;res@lbLabelStrings              = (/0.00,0.15,0.50,1.0,1.5,2.0,2.5,3.0,3.5,4.0/)+""
+   res@cnLevels                    = (/     0.20,0.40,0.60,0.80,1.0,1.5,2.0,2.5,3.0/)
+   res@lbLabelStrings              = (/0.00,0.20,0.40,0.60,0.80,1.5,2.0,2.5,3.0/)+""
   else
    res@cnLevelSelectionMode = "ManualLevels"        ; set the contour levels with the following 3 resources
    res@cnMinLevelValF       = pltlevs(0)            ; set the minimum contour level
    res@cnMaxLevelValF       = pltlevs(1)            ; set the maximum contour level
    res@cnLevelSpacingF      = pltlevs(2)            ; set the interval between contours
    ;res@lbLabelAlignment     = "InteriorEdges"
-  ;end if
+  end if
   end if
  else
    res@cnLevelSelectionMode = "ManualLevels"        ; set the contour levels with the following 3 resources
@@ -225,8 +212,8 @@ end
 
          vname = vname+"_h"
         icevar = filelist[fnum]->$vname$(0,:,:)
-  icevar@lon2d = gf->$tlonname$*rfactor
-  icevar@lat2d = gf->$tlatname$*rfactor
+  icevar@lon2d = filelist[fnum]->$tlonname$*rfactor
+  icevar@lat2d = filelist[fnum]->$tlatname$*rfactor
   labelstrings(vnum) = icevar@long_name+" ("+icevar@units+")  "+"["+vname+"]"
   icevar@long_name = " "
   icevar@units= " "
@@ -240,8 +227,6 @@ end
     fnum = 1
 
         icevar = filelist[fnum]->$vname$(0,:,:)
-  icevar@lon2d = gf->$tlonname$*rfactor
-  icevar@lat2d = gf->$tlatname$*rfactor
   icevar@long_name = " "
   icevar@units= " "
   plotleft(ii) = subplot(ii,vname,icevar(:,:),pltlevs,colormap)
@@ -268,8 +253,8 @@ end
 
          vname = vname+"_h"
         icevar = filelist[fnum]->$vname$(0,:,:)
-  icevar@lon2d = gf->$tlonname$*rfactor
-  icevar@lat2d = gf->$tlatname$*rfactor
+  icevar@lon2d = filelist[fnum]->$tlonname$*rfactor
+  icevar@lat2d = filelist[fnum]->$tlatname$*rfactor
   labelstrings(vnum) = icevar@long_name+" ("+icevar@units+")  "+"["+vname+"]"
   icevar@long_name=" "
   icevar@units=" "
@@ -324,5 +309,14 @@ end
   gsn_text_ndc(wks,labelstrings(0),0.25,0.03,txres) 
   gsn_text_ndc(wks,labelstrings(1),0.75,0.03,txres) 
  frame(wks)
+
+;************************************************
+;
+;************************************************
+
+  if(wkstype .eq. "png")then
+   imcmd = "convert -trim "+wkstitle+".png "+wkstitle+".jpg"
+   system(imcmd)
+  end if
 exit
 end
