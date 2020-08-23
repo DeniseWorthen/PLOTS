@@ -17,8 +17,8 @@
   RT1 = "/work/noaa/stmp/dworthen/stmp/dworthen/COLDSTART2/"
 
  ; Timeseries
- plotlabs = (/"original", "fixed_coldstart", "ocean_lag"/)
-      rts = (/   "cold2",       "cold2_fix",  "nocold"/)
+ plotlabs = (/"2-step cold start (current)", "2-step cold start (fixed)", "1-step cold start"/)
+      rts = (/            "cold2",                 "cold2_fix",            "nocold"/)
  cplfiles = addfiles(RT1+rts+".nc","r")
  ListSetType(cplfiles, "join")
  
@@ -86,10 +86,15 @@
 ; define the plot
 ;************************************************
 
-  wkstype="X11"
-  ;wkstype="png"
-  wkstype@wkWidth=800
-  wkstype@wkHeight=800
+  ;wkstype="X11"
+  wkstype="png"
+  if(wkstype .eq. "png")then
+   wkstype@wkWidth=2500
+   wkstype@wkHeight=2500
+  else
+   wkstype@wkWidth=800
+   wkstype@wkHeight=800
+  end if
   wks   = gsn_open_wks (wkstype,wkstitle)              ; send graphics to X11 window
 
   plot = new(npts+1,graphic)
