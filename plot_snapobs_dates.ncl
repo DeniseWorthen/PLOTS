@@ -9,8 +9,8 @@
  ;batch = "yes"
  batch = "no"
 
- ; hemi="NH"
-  hemi="SH"
+  hemi="NH"
+ ; hemi="SH"
 
 begin
 ;************************************************
@@ -34,8 +34,8 @@ begin
   ;             /)
 
   ; 0918 is last date avail for 0815 initialized run
-  ;Dates2Plt = (/"0915"/)
-  Dates2Plt = (/"0204","0505","0804","1104"/)
+  Dates2Plt = (/"0801", "0904"/)
+  ;Dates2Plt = (/"0204","0505","0804","1104"/)
   ;Dates2Plt = (/"20160904", "20160905" \
   ;             ,"20160906", "20160907" \
   ;             ,"20160908", "20160909" \
@@ -44,7 +44,7 @@ begin
 
   ndates = dimsizes(Dates2Plt)
 
-  Years2Plt = (/"2012"/)
+  Years2Plt = (/"2013"/)
   ;Years2Plt = (/"2012", "2013", "2014" \
   ;             ,"2015", "2016", "2017"/)
 
@@ -55,7 +55,7 @@ begin
 ; read in netCDF file
 ;************************************************
 
-   rtsrc="/scratch3/NCEPDEV/marine/save/Denise.Worthen/IceData/"
+   rtsrc="/scratch2/NCEPDEV/climate/Denise.Worthen/IceData/"
    if(hemi .eq. "NH")then
       dirsrc="north/"+Years2Plt+"/seaice_conc_daily_nh_f17_"
     else
@@ -64,11 +64,16 @@ begin
      icelonname="longitude"
      icelatname="latitude"
 
-    ; aicename="seaice_conc_cdr"
-     aicename="goddard_bt_seaice_conc"
-    ; aicename="goddard_nt_seaice_conc"
-    ; aicename="goddard_merged_seaice_conc"
-  
+    varnames = (/"seaice_conc_cdr", \
+                 "goddard_bt_seaice_conc", \
+                 "goddard_nt_seaice_conc", \
+                 "goddard_merged_seaice_conc"/)
+
+    plotlabs = (/"NOAA/NSIDC Climate Data Record", \
+                 "Bootstrap algorithm with Goddard QC", \
+                 "NASA Team algorithm with Goddard QC", \
+                 "Goddard Edited Climate Data Record"/)
+
 ;************************************************
 ; a list of the files
 ;************************************************
@@ -81,10 +86,14 @@ begin
 ;************************************************
 ; load an ice field
 ;************************************************
-   varname = aicename
-  colormap = "WhBlGrYeRe"
-  ;colormap = "MPL_rainbow"
-  ;levs = (/0.0, 1.0, 0.02/)
+
+   fldtoplot = 0
+   varname = varnames(fldtoplot)
+   plotlab = plotlabs(fldtoplot)
+
+  ;colormap = "WhBlGrYeRe"
+  colormap = "amwg256"
+  levs = (/0.1, 0.9, 0.1/)
 
   icevar=icedmfiles[:]->$varname$(:,:,:)
    icevar@lon2d=icedmfiles[0]->$icelonname$
@@ -116,26 +125,25 @@ begin
 ; define the map
 ;************************************************
 
-  if(batch .eq. "no")then
-   wkstype="X11"
-  else
+   ;wkstype="X11"
+   ;wkstype@wkWidth=800
+   ;wkstype@wkHeight=800
    wkstype="png"
-  end if
-   ;wkstype="png"
-  wkstype@wkWidth=800
-  wkstype@wkHeight=800
-  wks   = gsn_open_wks (wkstype,wkstitle)
+   wkstype@wkWidth=2500
+   wkstype@wkHeight=2500
+
+   wks   = gsn_open_wks (wkstype,wkstitle)
 
   ; panel number
   npanels = ndates
  ; for panels
- if(batch .eq. "yes")then
+ ;if(batch .eq. "yes")then
     ncols = ndates
     nrows = 1
- else
-    ncols = 2
-    nrows = 2
- end if
+ ;else
+ ;   ncols = 2
+ ;   nrows = 2
+ ;end if
      plot = new(npanels,graphic)
 
   res                      = True        ; plot mods desired
@@ -150,7 +158,6 @@ begin
   res@cnLinesOn          = False                 ; no contour lines
   res@cnLineLabelsOn     = False                 ; no contour lines
   res@lbLabelBarOn       = False                 ; turn off individual colorbars
-  res@lbLabelFontHeightF = 0.010
 
   res@gsnPolar   =  hemi                         ; specify the hemisphere
   if(hemi .eq. "NH")then
@@ -162,14 +169,14 @@ begin
    res@mpCenterLonF = 0.0
   end if
 
-  ;res@cnLevelSelectionMode = "ManualLevels"     ; set the contour levels with the following 3 resources
-  ;res@cnMinLevelValF  = levs(0)                      ; set the minimum contour level
-  ;res@cnMaxLevelValF  = levs(1)                      ; set the maximum contour level
-  ;res@cnLevelSpacingF = levs(2)                      ; set the interval between contours
+  res@cnLevelSelectionMode = "ManualLevels"     ; set the contour levels with the following 3 resources
+  res@cnMinLevelValF  = levs(0)                      ; set the minimum contour level
+  res@cnMaxLevelValF  = levs(1)                      ; set the maximum contour level
+  res@cnLevelSpacingF = levs(2)                      ; set the interval between contours
 
-   res@cnLevelSelectionMode        = "ExplicitLevels"
-   res@cnLevels                    = (/     0.15,0.50,0.7,0.8,0.85,0.9,0.950/)
-   res@lbLabelStrings              = (/0.00,0.15,0.50,0.7,0.8,0.85,0.9,0.950/)+""
+   ;res@cnLevelSelectionMode        = "ExplicitLevels"
+   ;res@cnLevels                    = (/     0.15,0.50,0.7,0.8,0.85,0.9,0.950/)
+   ;res@lbLabelStrings              = (/0.00,0.15,0.50,0.7,0.8,0.85,0.9,0.950/)+""
 
   res@cnMissingValPerimOn     = False            ; turn on the missing value perimeter
   ;res@cnMissingValPerimColor  = "black"           ; outline the perimeter red
@@ -179,11 +186,6 @@ begin
   res@cnFillPalette   = colormap             ; choose colormap
 
   res@gsnPolarLabelFontHeightF = .020        ; change font height of labels
-
-  res@tiMainFontHeightF    = 0.01
-  res@gsnStringFontHeightF = 0.025
-  ;res@gsnCenterStringOrthogonalPosF = .15          ; raise the CenterString slightly
-  res@gsnCenterStringFontHeightF = 0.040
 
 ;************************************************
 ; Resources for the polyline
@@ -216,8 +218,9 @@ begin
   resP@gsnPanelLabelBar    = True                ; add common colorbar
   resP@lbLabelFontHeightF  = 0.010               ; make labels smaller
 
-  resP@txFontHeightF = .01
-  ;resP@txString = labelstring
+  resP@gsnPanelMainFontHeightF = 0.015           ; new resource added in NCL V6.4.0
+  resP@gsnPanelMainString = plotlab
+
   resP@gsnPanelYWhiteSpacePercent = 5
   resP@gsnPanelXWhiteSpacePercent = 5
 
@@ -227,7 +230,7 @@ begin
 ;
 ;************************************************
 
-  if(batch .eq. "yes")then
+  if(wkstype .eq. "png")then
    imcmd = "convert -trim "+wkstitle+".png "+wkstitle+".jpg"
    ;print(imcmd)
    system(imcmd)

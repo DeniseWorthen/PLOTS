@@ -88,8 +88,8 @@
 
   filelist = addfiles(fnames,"r")
   ;print(filelist)
-  ;wkstitle = "cice2run"
-  wkstitle = varnames(0)+"_"+varnames(1)
+  wkstitle = "cice2run"
+ ; wkstitle = varnames(0)+"_"+varnames(1)
 
 ;************************************************
 ; add a poly line showing the polar seem along
@@ -105,8 +105,8 @@
 ; define the map
 ;************************************************
 
-  wkstype="X11"
-  ;wkstype="png"
+  ;wkstype="X11"
+  wkstype="png"
   wkstype@wkWidth=800
   wkstype@wkHeight=800
   wks   = gsn_open_wks (wkstype,wkstitle)

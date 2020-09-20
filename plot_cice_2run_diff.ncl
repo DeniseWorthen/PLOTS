@@ -34,20 +34,20 @@
 ;************************************************
 
      lstep = 1-1
-     cyear = "2012"
-      cmon = "10"
-      cday = "03"
+     cyear = "2013"
+      cmon = "04"
+      cday = "06"
       csec = "00000"
      cdate = cyear+"-"+cmon+"-"+cday+"-"+csec
 
-      rts = (/"S2S_tod","S2S_names"/)
-     ;cset = "/2012010100_2d/tmp/cpld_fv3_384_mom6_cice_2d_bmark/history/"
-     cset = "/2012100100_2d/tmp/cpld_fv3_384_mom6_cice_2d_bmark/history/"
+  runname = (/"cice5", "cice5_updated"/)
+      rts = (/"S2S_RT/rt_275334","S2S_RT/rt_9721"/)
+     cset = "/cpld_fv3_ccpp_384_mom6_cice_cmeps_1d_bmark_rt/"
 
-     files = addfiles(RT2+rts+cset+"iceh_inst."+cyear+"-"+cmon+"-"+cday+"-00000.nc","r")
+     files = addfiles(RT2+rts+cset+"history/iceh_06h."+cyear+"-"+cmon+"-"+cday+"-00000.nc","r")
 
      print(rts(1)+" - "+rts(0))
-     plottitle=rts(1)+" - "+rts(0)
+     plottitle=runname(1)+" - "+runname(0)
 
          times = files[0]->time
      timeUnits = files[0]->time@units
@@ -67,11 +67,12 @@
 ; define the map
 ;************************************************
 
-  wkstype="X11"
-  ;wkstype="png"
+  wkstitle="ice_diff"
+  ;wkstype="X11"
+  wkstype="png"
   wkstype@wkWidth=800
   wkstype@wkHeight=800
-  wks   = gsn_open_wks (wkstype,"ice_inst_diff")
+  wks   = gsn_open_wks (wkstype,wkstitle)
 
   ;drawNDCGrid(wks)
   plot = new(2,graphic)
@@ -166,8 +167,11 @@ end
     ;colormap = "amwg256"
 
         ii = 0
-     vname = "aice_h"
-   pltlevs = (/-.1,.1,.01/)
+     vname = "congel_h"
+  ;   vname = "aice_h"
+   pltlevs = (/-.5,.5,.05/)
+  ;   vname = "sst_h"
+  ; pltlevs = (/-.2,.2,.02/)
   res@gsnCenterString  = vname
 
   ivar = files[1]->$vname$(lstep,:,:)-files[0]->$vname$(lstep,:,:)
@@ -179,10 +183,28 @@ end
         ii = 1
      vname = "hi_h"
    pltlevs = (/-2.0,2.0,.2/)
-  res@gsnCenterString  = vname
+ ;    vname = "fhocn_h"
+ ;  pltlevs = (/-10.0,10.0,1.0/)
+ ;    vname = "meltb_h"
+ ;  pltlevs = (/-1.0,1.0,0.1/)
+     vname = "sss_h"
+   pltlevs = (/-0.5,0.5,0.05/)
 
-  ivar = files[1]->$vname$(lstep,:,:)-files[0]->$vname$(lstep,:,:)
-  ivar = ivar*100.0   ; in cm
+  ;ivar = files[1]->$vname$(lstep,:,:)-files[0]->$vname$(lstep,:,:)
+  ;ivar = ivar*100.0   ; in cm
+  ; error in assuming constant Tf
+   mfrz = -0.054
+  ivar0 = files[0]->$vname$(lstep,:,:)
+  ivar0 = ivar0*0.0 + 34.0*mfrz
+  ivar1 = files[1]->$vname$(lstep,:,:)
+  ivar1 = ivar1*mfrz
+  ivar = ivar1
+  ivar = ivar1 - ivar0
+  ivar@units = " "
+  ivar@long_name = " "
+  res@gsnCenterString  = "Tfreeze"
+  ;ivar = files[1]->$vname$(lstep,:,:)-files[0]->$vname$(lstep,:,:)
+
   ivar@lon2d = files[0]->$tlonname$*rfactor
   ivar@lat2d = files[0]->$tlatname$*rfactor
   plot(ii) = subplot(ii,vname,ivar(:,:),pltlevs,colormap)
@@ -195,5 +217,10 @@ end
   gsn_panel(wks,plot,(/1,2/),resP)
 
   frame(wks)
+
+  if(wkstype .eq. "png")then
+   imcmd = "convert -trim "+wkstitle+".png "+wkstitle+".jpg"
+   system(imcmd)
+  end if
 exit
 end

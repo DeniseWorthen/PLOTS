@@ -16,7 +16,8 @@ begin
   lhvap = 2.501e6
 
   runname = "cfsr"
-  rtsrc= "/scratch1/NCEPDEV/stmp2/Denise.Worthen/DATM/fixclock/tmp/cpld_datm_mom6_cice5_2d_"+runname+"/"
+  rtsrc = RT2+"DATM/rtgen.276629/tmp/cpld_datm_mom6_cice5_2d_cfsr/"
+  ;rtsrc= "/scratch1/NCEPDEV/stmp2/Denise.Worthen/DATM/fixclock/tmp/cpld_datm_mom6_cice5_2d_"+runname+"/"
   ;rtsrc= "/scratch1/NCEPDEV/stmp2/Denise.Worthen/DATM/nofix/tmp/cpld_datm_mom6_cice5_2d_"+runname+"/"
  
   atmflds = (/"mean_zonal_moment_flx_atm",      \
@@ -121,10 +122,14 @@ begin
   ; nearest pt on atm grid 
   ij = getind_latlon2d(atmlat,atmlon,xlat,xlon)
   ;print(ij)
-  ilat = ij(0,0)
-  ilon = ij(0,1)
+  ;ilat = ij(0,0)
+  ;ilon = ij(0,1)
+  ilat = 600
+  ilon = 1000
   print(ilat+" "+ilon)
   print(atmlat(ilat,ilon)+"  "+atmlon(ilat,ilon))
+  pltlab = "Values at : "+sprintf("%5.2f",atmlat(ilat,ilon))+"N, "+sprintf("%5.2f",atmlon(ilat,ilon))+"E"
+
 ;************************************************
 ;
 ;************************************************
@@ -157,7 +162,8 @@ begin
   ;printVarSummary(atmpt)
 
   ; forcing
-  fpt = forcfiles[:]->$fldname$(:,{xlat},{xlon})
+  ;fpt = forcfiles[:]->$fldname$(:,{xlat},{xlon})
+  fpt = forcfiles[:]->$fldname$(:,ilat,ilon)
   fpt@_FillValue = default_fillvalue(typeof(fpt))
   fpt = fpt*fwgt
   labstr = fpt@long_name
@@ -177,7 +183,8 @@ begin
 ;
 ;************************************************
 
-  wkstype="X11"
+  ;wkstype="X11"
+  wkstype="png"
   wkstitle=runname
   wkstype@wkWidth=800
   wkstype@wkHeight=800
@@ -237,10 +244,10 @@ begin
 ; Make the plot
 ;************************************************
 
-lbeg = 10-1
-lend = 56-1
-;lbeg = 0
-;lend = nsteps-1
+;lbeg = 10-1
+;lend = 56-1
+lbeg = 0
+lend = nsteps-1
 do ii = 0,nflds-1
  miny = min(data_all(ii,:,lbeg:lend))
  maxy = max(data_all(ii,:,lbeg:lend))
@@ -271,9 +278,12 @@ end do
 
   resP                     = True                ; modify the panel plot
                                                  ; new resource added in NCL V6.4.0
-  resP@gsnPanelYWhiteSpacePercent = 5
+  resP@gsnPanelYWhiteSpacePercent = 10
   resP@gsnPanelXWhiteSpacePercent = 5
-  resP@gsnPanelCenter      = False
+  ;resP@gsnPanelCenter      = False
+
+  resP@gsnPanelMainFontHeightF = 0.015           ; new resource added in NCL V6.4.0
+  resP@gsnPanelMainString = pltlab
 
   gsn_panel(wks,plot,(/3,2/),resP)           ; now draw as one plot
 

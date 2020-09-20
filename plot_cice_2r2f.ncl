@@ -17,14 +17,15 @@
 
 ;************************************************
 
-  ;     hemi = "NH"
-      hemi = "SH"
+       hemi = "NH"
+  ;    hemi = "SH"
   ;varnames = (/"aice", "hi"/)
-  varnames = (/"aice_h", "Tsfc_h"/)
+  ;varnames = (/"aice_h", "Tsfc_h"/)
   ;varnames = (/"aice", "flwup"/)
   ;varnames = (/"hs", "hi"/)
   ; varnames = (/"hs", "albsni"/)
   ; varnames = (/"meltt", "meltb"/)
+  varnames = (/"sst_h", "sss_h"/)
     outname = "ice"+hemi
       nvars = dimsizes(varnames)
   ; array contour levels for variables
@@ -50,19 +51,20 @@
 ;************************************************
 
      lstep = 1-1
-     cyear = "2012"
-      cmon = "01"
-      cday = "10"
+     cyear = "2013"
+      cmon = "04"
+      cday = "06"
       csec = "00000"
      ; csec = "00450"
      ; csec = "00900"
      cdate = cyear+"-"+cmon+"-"+cday+"-"+csec
 
-      rts = (/"S2S_nems/2012010100_12d","S2S_cmeps/2012010100_11d_fail/"/)
-    csets = (/"/tmp/cpld_fv3_384_mom6_cice_2d_bmark/history/", \
-              "/tmp/cpld_fv3_384_mom6_cice_2d_cmeps_bmark/history/"/)
-     
-     files = addfiles(RT4+rts+csets+"iceh_06h."+cdate+".nc","r")
+  runname = (/"cice5", "cice5_updated"/)
+      rts = (/"S2S_RT/rt_275334","S2S_RT/rt_9721"/)
+    csets = (/"/cpld_fv3_ccpp_384_mom6_cice_cmeps_1d_bmark_rt/", \
+              "/cpld_fv3_ccpp_384_mom6_cice_cmeps_1d_bmark_rt/"/)
+
+     files = addfiles(RT2+rts+csets+"history/iceh_06h."+cdate+".nc","r")
      ;ListSetType(files,"join")
 
      ;plottitle=rts(1)+" - "+rts(0)
@@ -236,7 +238,7 @@ end
   ;       vname = vname+"_h"
   ; override
   ;pltlevs = (/-2,0,.2/)
-  pltlevs = (/-30,0,1./)
+  pltlevs = (/-1.8,0,0.2/)
   colormap = "MPL_rainbow"
   ;   vname = "flwup"
   ;colormap = "MPL_rainbow"
@@ -249,6 +251,9 @@ end
     fnum = 0
 
         icevar = files[fnum]->$vname$(0,:,:)
+  ; make tf
+        icevar = icevar*(-0.054)
+    
         ;icevar = where(files[fnum]->aice(0,:,:) .lt. minice, icevar@_FillValue, icevar)
   ;icevar = tcomp(ii,:,:)
   icevar@lon2d = files[fnum]->$tlonname$*rfactor
@@ -266,6 +271,8 @@ end
      ii = 1
 
         icevar = files[fnum]->$vname$(0,:,:)
+  ; make tf
+        icevar = icevar*(-0.054)
         ;icevar = where(files[fnum]->aice(0,:,:) .lt. minice, icevar@_FillValue, icevar)
   ;icevar = tcomp(ii,:,:)
   icevar@long_name = " "

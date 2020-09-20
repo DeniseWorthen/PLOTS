@@ -18,8 +18,8 @@
   ;RT3 = "/scratch4/NCEPDEV/stmp3/Denise.Worthen/"
   ;RT4 = "/scratch4/NCEPDEV/stmp4/Denise.Worthen/"
 
-   hemi = "NH"
- ; hemi = "SH"
+ ;  hemi = "NH"
+  hemi = "SH"
  ; hemi = "none"
 
   rad2deg=180.d0/acos(-1.0d0)
@@ -42,7 +42,7 @@
  end if
 
   ;model = "phyf000:07:30."
-  model = "phyf000:15:00."
+  model = "phyf006."
   tlonname = "grid_xt"
   tlatname = "grid_yt"
   rfactor=rad2deg
@@ -51,11 +51,10 @@
   ;tlatname = "lat"
   ;rfactor=1.0
 
-  rtsrc = "NEMS_Shan_fix/2012070100_1d_inst/tmp/cpld_fv3_384_mom6_cice_warm_bm2_nems/"
-  ;rtsrc = "NEMS_upfv3_fix3/2012070100_1d_inst/tmp/cpld_fv3_384_mom6_cice_warm_bm2_nems/"
-  afile = addfile(RT1+rtsrc+model+tile+".nc","r")
+  rtsrc = "S2S_RT/nems_ww3/cpld_fv3_ccpp_384_mom6_cice_ww3_1d_bmark_rt/"
+  afile = addfile(RT2+rtsrc+model+tile+".nc","r")
 
-  tilecorners = tilegrid(afile->$tlonname$*rad2deg,afile->$tlatname$*rad2deg,tile)
+  tilecorners = tilegrid(afile->$tlonname$,afile->$tlatname$,tile)
   if(hemi .eq. "none")then
    minlon = tilecorners[0]
    minlat = tilecorners[1]
@@ -95,8 +94,8 @@
   avar = (afile->$aname$(lstep,:,:)) - 273.15
   avar = where(afile->land(lstep,:,:) .eq. 1.0, avar@_FillValue, avar)
   ;avar = where(afile->icec(lstep,:,:) .lt. icemin, avar@_FillValue, avar)
-  avar@lon2d = afile->$tlonname$*rad2deg
-  avar@lat2d = afile->$tlatname$*rad2deg
+  avar@lon2d = afile->$tlonname$
+  avar@lat2d = afile->$tlatname$
 
   plottitle=rtsrc+model+tile+".nc  "+aname
 

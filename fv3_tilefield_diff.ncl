@@ -9,13 +9,12 @@
 
   ; hera
   RT1 = "/scratch2/NCEPDEV/stmp1/Denise.Worthen/"
-  RT2 = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/scrub/"
+  RT2 = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/S2S_RT/"
   RT3 = "/scratch2/NCEPDEV/stmp3/Denise.Worthen/"
   RT4 = "/scratch1/NCEPDEV/stmp4/Denise.Worthen/"
 
-
   hemi = "NH"
- ; hemi = "SH"
+ ;hemi = "SH"
  ; hemi = "none"
 
  rad2deg=180.d0/acos(-1.0d0)
@@ -30,7 +29,7 @@
 
   lstep=0
   if(hemi .eq. "none")then
-    tile = "tile5"
+    tile = "tile1"
   else
    if(hemi .eq. "NH")then
     tile = "tile3"
@@ -40,19 +39,23 @@
   end if
  end if
 
-  model = "phyf006."
+  model = "phyf240."
 
   ;vname = "icec"
-  ;vname = "tmpsfc"
+  vname = "tmpsfc"
   ;vname = "tisfc"
   ;vname = "dlwrf"
   ;vname = "ulwrf"
-  vname = "land"
+  ;vname = "land"
 
-    rts = (/"S2S_SM","S2S_nems"/)
-  csets = (/"/rtgen.158125/tmp/cpld_fv3_384_mom6_cice_2d_bmark/", \
-            "/2012010100_12d/tmp/cpld_fv3_384_mom6_cice_2d_bmark/"/)
-  files = addfiles(RT4+rts+csets+model+tile+".nc","r")
+ idate = "2013040100"
+ plotlabs = (/"NEMS mediator", "CMEPS"/)
+      rts = (/"nems_ww3",\
+              "cmeps_ww3"/)
+    csets = (/"/cpld_fv3_ccpp_384_mom6_cice_ww3_1d_bmark_rt/",\
+              "/cpld_fv3_ccpp_384_mom6_cice_cmeps_ww3_1d_bmark_rt/"/)
+
+  files = addfiles(RT2+rts+csets+model+tile+".nc","r")
 
   tilecorners = tilegrid(files[0]->$tilelonname$,files[0]->$tilelatname$,tile)
   if(hemi .eq. "none")then
@@ -104,7 +107,8 @@
   avar@lon2d = files[0]->grid_xt
   avar@lat2d = files[0]->grid_yt
   ;levs=(/0.0,2.0,1.0/)
-  levs=(/-3.0,3.0,1.0/)
+  ;levs=(/-3.0,3.0,1.0/)
+  levs=(/-10.0,10.0,1.0/)
   ;levs=(/-1.0,1.0,0.1/)
   ;levs=(/-0.1,0.1,0.01/)
   colormap = "BlueDarkRed18"

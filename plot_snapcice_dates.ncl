@@ -10,63 +10,63 @@
  batch = "no"
 
   hemi="NH"
-  ;hemi="SH"
+ ; hemi="SH"
 
 begin
 ;************************************************
 ;
 ;************************************************
 
-  ; 0918 is last date avail for 0815 initialized run
-  ;Year = "2012"
-  ;Years2Plt = (/"2013"/)
-  ;Years2Plt = (/"2012", "2013", "2014" \
-  ;             ,"2015", "2016", "2017"/)
-
-  ;IDate = "20120701"
-  ;Dates2Plt = (/"20120701.01."+IDate+"00.subset.nc"\
-  ;             ,"20120715.01."+IDate+"00.subset.nc"\
-  ;             ,"20120804.01."+IDate+"00.subset.nc"/)
-  ;Dates2Plt = (/Date+"12.01."+Year+"081500"\
-  ;             ,Date+"12.01."+Year+"090100"\
-  ;             ,Date+"12.01."+Year+"091500"/)
-  ;Dates2Plt = (/Years2Plt+Date+"12.01."+Years2Plt+"081500"\
-  ;             ,Years2Plt+Date+"12.01."+Years2Plt+"090100"/)
-  ;Dates2Plt = (/Years2Plt+Date+"12.01."+Years2Plt+"081500"/)
-  ;Dates2Plt = (/Years2Plt+Date+"12.01."+Years2Plt+"090100"/)
-
   Years2Plt = (/"2013"/)
   IDate = "20130801"
   Dates2Plt = (/"2013080106","2013090500"/)
 
-  ;ndates = dimsizes(Years2Plt)*dimsizes(Dates2Plt)
-  ;ndates = 12
   print(Dates2Plt)
   ndates = dimsizes(Dates2Plt)
-
-  ;IDates = str_get_cols(Dates2Plt, 14, 21)
-  ;print("gfs."+IDates)
-  ;datelabs = str_get_cols(Dates2Plt, 0, 7)
 
 ;************************************************
 ; read in netCDF file
 ;************************************************
 
-   ;rtsrc="/scratch2/NCEPDEV/climate/Lydia.B.Stefanova/Models/ufs_b31/SeaIce/"
    rtsrc="/scratch1/NCEPDEV/stmp2/Denise.Worthen/"
 
+    varnames = (/"aice_h"/)
+    plotlabs = (/"P5 with CICE6, no waves, default Tf formulation"/)
    icelatname = "TLAT"
    icelonname = "TLON"
-     aicename = "aice_h"
 
 ;************************************************
 ; a list of the files
 ;************************************************
 
-   icefilelist = rtsrc+"ice"+Dates2Plt+".01.2013080100.nc"
+  icefilelist = rtsrc+"ice"+Dates2Plt+".01.2013080100.nc"
   print(icefilelist)
   icedmfiles=addfiles(icefilelist,"r")
-  ;ListSetType(icedmfiles,"join")
+  ListSetType(icedmfiles,"cat")
+
+;************************************************
+; load an ice field
+;************************************************
+
+   fldtoplot = 0
+   varname = varnames(fldtoplot)
+   plotlab = plotlabs(fldtoplot)
+
+  ;colormap = "WhBlGrYeRe"
+  colormap = "amwg256"
+  levs = (/0.1, 0.9, 0.1/)
+
+  icevar=icedmfiles[:]->$varname$(:,:,:)
+   icevar@lon2d=icedmfiles[0]->$icelonname$
+   icevar@lat2d=icedmfiles[0]->$icelatname$
+   labelstring = icevar@long_name+" ("+icevar@units+")  "+"["+varname+"]"
+  ;printVarSummary(icevar)
+  ; reset to blank
+  icevar@units=""
+  icevar@long_name=""
+
+  plottitle=rtsrc+varname
+  wkstitle=varname
 
 ;************************************************
 ; add a poly line showing the polar seem along
@@ -79,57 +79,28 @@ begin
    lat2=  60.00
 
 ;************************************************
-; load an ice field
-;************************************************
-
-   varname = aicename
-  ;colormap = "WhBlGrYeRe"
-  ;colormap = "MPL_rainbow"
-  colormap = "amwg"
-      levs = (/0.0,1.0,0.1/)
-  icevar=icedmfiles[:]->$varname$(:,:,:,:)
-  ;printVarSummary(icevar)
-  icevar@lon2d=icedmfiles[0]->$icelonname$
-  icevar@lat2d=icedmfiles[0]->$icelatname$
-  ;labelstring = icevar@long_name+" ("+icevar@units+")  "+"["+varname+"]"
-  ;labelstring = Year+"0916"
-  ;printVarSummary(icevar)
-  ; reset to blank
-  icevar@units=""
-  icevar@long_name=""
-
-  ;mask = where(icevar(0,0,:,:) .eq. icevar@_FillValue, 0.0, 1.0)
-
-  plottitle=rtsrc+varname
-  wkstitle=varname
-
-;************************************************
 ; define the map
 ;************************************************
 
-  if(batch .eq. "no")then
-   wkstype="X11"
-  else
+   ;wkstype="X11"
+   ;wkstype@wkWidth=800
+   ;wkstype@wkHeight=800
    wkstype="png"
-  end if
-   ;wkstype="png"
-  wkstype@wkWidth=1200
-  wkstype@wkHeight=1200
-  wks   = gsn_open_wks (wkstype,wkstitle)
+   wkstype@wkWidth=2500
+   wkstype@wkHeight=2500
+
+   wks   = gsn_open_wks (wkstype,wkstitle)
 
   ; panel number
   npanels = ndates
  ; for panels
- if(batch .eq. "yes")then
+ ;if(batch .eq. "yes")then
     ncols = ndates
     nrows = 1
- else
-    ncols = 2
-    nrows = 2
-    ;ncols = 1
-    ;nrows = ndates
-    ;nrows = 1+npanels/ncols
- end if
+ ;else
+ ;   ncols = 2
+ ;   nrows = 2
+ ;end if
      plot = new(npanels,graphic)
       dum = new(npanels,graphic)
 
@@ -145,12 +116,10 @@ begin
   res@cnLinesOn          = False                 ; no contour lines
   res@cnLineLabelsOn     = False                 ; no contour lines
   res@lbLabelBarOn       = False                 ; turn off individual colorbars
-  res@lbLabelFontHeightF = 0.010
 
   res@gsnPolar   =  hemi                         ; specify the hemisphere
   if(hemi .eq. "NH")then
    res@mpMinLatF    =  66                          ; minimum lat to plot
-  ; res@mpMinLatF    =  80                          ; minimum lat to plot
    res@mpCenterLonF = -45
   end if
   if(hemi .eq. "SH")then
@@ -158,15 +127,14 @@ begin
    res@mpCenterLonF = 0.0
   end if
 
-   ;res@cnLevelSelectionMode        = "ExplicitLevels"
-   ;res@cnLevels                    = (/     0.15,0.50,0.7,0.8,0.85,0.9,0.950/)
-   ;res@lbLabelStrings              = (/0.00,0.15,0.50,0.7,0.8,0.85,0.9,0.950/)+""
+  res@cnLevelSelectionMode = "ManualLevels"     ; set the contour levels with the following 3 resources
+  res@cnMinLevelValF  = levs(0)                      ; set the minimum contour level
+  res@cnMaxLevelValF  = levs(1)                      ; set the maximum contour level
+  res@cnLevelSpacingF = levs(2)                      ; set the interval between contours
 
-   res@cnLevelSelectionMode = "ManualLevels"        ; set the contour levels with the following 3 resources
-   res@cnMinLevelValF       = levs(0)            ; set the minimum contour level
-   res@cnMaxLevelValF       = levs(1)            ; set the maximum contour level
-   res@cnLevelSpacingF      = levs(2)            ; set the interval between contours
-   ;res@cnFillPalette        = palette
+  ; res@cnLevelSelectionMode        = "ExplicitLevels"
+  ; res@cnLevels                    = (/     0.15,0.50,0.7,0.8,0.85,0.9,0.950/)
+  ; res@lbLabelStrings              = (/0.00,0.15,0.50,0.7,0.8,0.85,0.9,0.950/)+""
 
   res@cnMissingValPerimOn     = False            ; turn on the missing value perimeter
   ;res@cnMissingValPerimColor  = "black"           ; outline the perimeter red
@@ -176,11 +144,6 @@ begin
   res@cnFillPalette   = colormap             ; choose colormap
 
   res@gsnPolarLabelFontHeightF = .020        ; change font height of labels
-
-  res@tiMainFontHeightF    = 0.01
-  res@gsnStringFontHeightF = 0.025
-  ;res@gsnCenterStringOrthogonalPosF = .15          ; raise the CenterString slightly
-  res@gsnCenterStringFontHeightF = 0.040
 
 ;************************************************
 ; Resources for the polyline
@@ -198,10 +161,10 @@ begin
 ;************************************************
 
   do ii = 0,ndates-1
-   res@gsnCenterString = datelabs(ii)
-   ;res@gsnCenterString = Years2Plt(ii)+IDate+" (initialized "+IDates(ii)+")"
+    ;res@gsnCenterString = Years2Plt(ii)+Dates2Plt(0)
+    res@gsnCenterString = Dates2Plt(ii)
 
-   plot(ii) = gsn_csm_contour_map_polar(wks,icevar(ii,0,:,:),res)    ; create the plot
+   plot(ii) = gsn_csm_contour_map_polar(wks,icevar(ii,:,:),res)    ; create the plot
     dum(ii) = gsn_add_polyline(wks,plot(ii),(/lon1, lon2/) , (/lat1, lat2/) ,pres)
   end do
 
@@ -212,10 +175,11 @@ begin
   resP                     = True                ; modify the panel plot
                                                  ; new resource added in NCL V6.4.0
   resP@gsnPanelLabelBar    = True                ; add common colorbar
-  resP@lbLabelFontHeightF  = 0.020               ; make labels smaller
+  resP@lbLabelFontHeightF  = 0.010               ; make labels smaller
 
-  resP@txFontHeightF = .025
-  ;resP@txString = labelstring
+  resP@gsnPanelMainFontHeightF = 0.015           ; new resource added in NCL V6.4.0
+  resP@gsnPanelMainString = plotlab
+
   resP@gsnPanelYWhiteSpacePercent = 5
   resP@gsnPanelXWhiteSpacePercent = 5
 
@@ -225,7 +189,7 @@ begin
 ;
 ;************************************************
 
-  if(batch .eq. "yes")then
+  if(wkstype .eq. "png")then
    imcmd = "convert -trim "+wkstitle+".png "+wkstitle+".jpg"
    ;print(imcmd)
    system(imcmd)

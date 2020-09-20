@@ -16,14 +16,14 @@
 
      lstep = 1-1
      cyear = "2012"
-      ;cmon = "07"
-      cday = "06"
+      cmon = "01"
+      cday = "03"
      chour = "00000"
      idate = cyear+cmon+"0100"
 
- plotlabs = (/"develop", "feature/punyswrad"/)
-      rts = (/"S2S_tod/2012_5d/tmp",\
-              "S2S_upcice5/2012_5d/tmp"/)
+ plotlabs = (/"feature/punyswrad","rhoa"/)
+      rts = (/"S2S_upcice5/2012_5d/tmp",\
+              "S2S_upcice5/rtgen.194255/tmp"/)
     csets = (/"/cpld_fv3_ccpp_384_mom6_cice_5d_"+idate+"/",\
               "/cpld_fv3_ccpp_384_mom6_cice_5d_"+idate+"/"/)
 
@@ -83,7 +83,7 @@
 ;************************************************
 
   ; pick a field to plot
-  ;fldtoplot =0
+  fldtoplot =0
        levs = plotlevs(fldtoplot,:)
     fldname = iceflds(fldtoplot)+"_h"
  icfldname = iceflds(fldtoplot)
@@ -123,8 +123,8 @@
 ; define the map
 ;************************************************
 
-  ;wkstype="X11"
-  wkstype="png"
+  wkstype="X11"
+  ;wkstype="png"
   wkstype@wkWidth=800
   wkstype@wkHeight=800
   wks   = gsn_open_wks (wkstype,wkstitle)              ; send graphics to X11 window

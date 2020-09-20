@@ -4,153 +4,192 @@
 ; load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl" 
 
   load "$NCARG_ROOT/lib/ncarg/nclscripts/contrib/cd_string.ncl"
-;************************************************
-begin
+  load "tilegrid.ncl"
+
 ;************************************************
 ; read in netCDF file
 ;************************************************
 
-  ;rtsrc="/scratch3/NCEPDEV/stmp2/Denise.Worthen/frzmlt_2d_july/tmp/cpld_fv3_384_mom6_cice_2d_atm_flux/"
-  ;ocnfile="MOM6_OUTPUT/ocean_geometry.nc"
-  rtsrc="/scratch3/NCEPDEV/stmp1/Denise.Worthen/CplFrq/slowfast1_2d_2013070100/tmp/cpld_fv3_384_mom6_cice_2d_atm_flux/"
-  ocnfile="ocn_2013_07_01_03.nc"
+  ; hera
+  RT1 = "/scratch2/NCEPDEV/stmp1/Denise.Worthen/"
+  RT2 = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/"
+  RT3 = "/scratch2/NCEPDEV/stmp3/Denise.Worthen/"
+  RT4 = "/scratch1/NCEPDEV/stmp4/Denise.Worthen/"
 
-  ;rtsrc = "$WORK/EMC_CICE/tools/"
-  ;ocnfile="grid_cice_NEMS_mx025.nc"
+ cyear = "2016"
+  cmon = "10"
+  cday = "04"
+ chour = "21"
+;  cday = "07"
+; chour = "21"
+ cdate = cyear+"_"+cmon+"_"+cday+"_"+chour
 
-  rad2deg = 180.d0/acos(-1.d0)
+ ;plotlabs = (/"MOM6 TS clim file", "MOM6 1/4->1/2 restart file"/)
+ ;     rts = (/"mx050_5d_tsinit/", "mx050_5d_dainit/"/)
+ ;plotlabs = (/"MOM6 1/4->1/2 restart file","MOM6 1/4->1/2 restart file, ALE init"/)
+ ;     rts = (/"mx050_5d_dainit/","mx050_5d_dainit_ale/"/)
+
+ plotlabs = (/"MOM6 TS clim file", \
+              "MOM6 1/4->1/2 restart file", \
+              "MOM6 1/4->1/2 restart file, 3 its"/)
+
+      rts = (/"mx050_5d_tsinit/", \
+              "mx050_5d_dainit/",  \
+              "mx050_5d_dainit_3/"/)
+
+     cset = "cpld_c192_mx050_2d/"
+ print(cset)
+
+ nruns = dimsizes(rts)
 
 ;************************************************
 ;
 ;************************************************
 
-  ocnsrc=addfile(rtsrc+ocnfile,"r")
-  sinrot=ocnsrc->sinrot
-  cosrot=ocnsrc->cosrot
+    flds = (/"SSH",  \
+           "speed"/)
 
-  ;varname = "ulon"
-  ;lonname = "ulon"
-  ;latname = "ulat"
+  nflds = dimsizes(flds)
+  ; plot levels
+  plotlevs = new((/nflds,3/), float)
+  plotlevs(0,:) = (/-1.0, 1.0, 0.10/)
+  ;plotlevs(0,:) = (/-1.6, 1.6, 0.20/)
+  plotlevs(1,:) = (/ 0.0, 2.0, 0.20/)
 
-  ;varname = "geolonb"
-  ;lonname = "geolonb"
-  ;latname = "geolatb"
+  ;default
+  cmap="amwg256"
 
-  ;varname = "geolon_v"
-  ;lonname = "geolon_v"
-  ;latname = "geolat_v"
-
-  varname = "sinrot"
-  lonname = "geolon"
-  latname = "geolat"
-
-  ;varname = "SSH"
-  ;lonname = "geolon"
-  ;latname = "geolat"
-
-  lstep=1-1
-  ;tvar=ocnsrc->$varname$(lstep,:,:)
-  tvar=ocnsrc->$varname$(:,:)
-  tvar = asin(tvar)
-  tvar@lon2d=ocnsrc->$lonname$
-  tvar@lat2d=ocnsrc->$latname$
-  ;tvar=ocnsrc->$varname$(:,:)*rad2deg
-  ;tvar@lon2d=ocnsrc->$lonname$*rad2deg
-  ;tvar@lat2d=ocnsrc->$latname$*rad2deg
-
-  plottitle=rtsrc+ocnfile+"  "+varname
-
-  ;levs = (/-300.0,60.0,10.0/)
-  ;levs = (/87.0,90.0,0.10/)
-  ;levs = (/-1.68,-1.58,0.005/)
-  ;levs = (/-0.5,0.5,.05/)
-  levs = (/-1.6,1.6,.1/)
-
-  tvar@long_name=" "
-  tvar@units=" "
 ;************************************************
-; add a poly line showing the polar seem along
-; great circle path from (lon1,lat1) to (lon2,lat2)
+;
 ;************************************************
 
-  lon1=  60.00
-  lon2=-120.00
-  lat1 = 60.00
-  lat2 = 60.00
+  ocnfiles = addfiles(RT2+"S2S_RT/"+rts+cset+"ocn_"+cdate+".nc","r")
+
+   latname = "geolat"
+   lonname = "geolon"
+      lons = ocnfiles[0]->$lonname$(:,:)
+      lats = ocnfiles[0]->$latname$(:,:)
+
+   wkstitle = "ocn_init_"+cdate
 
 ;************************************************
 ; define the map
 ;************************************************
+
   wkstype="X11"
   ;wkstype="png"
-  wkstype@wkWidth=800
-  wkstype@wkHeight=800
-  wks   = gsn_open_wks (wkstype,"polar")              ; send graphics to X11 window
+  if(wkstype .eq. "png")then
+   wkstype@wkWidth=2500
+   wkstype@wkHeight=2500
+  else
+   wkstype@wkWidth=800
+   wkstype@wkHeight=800
+  end if
+  wks   = gsn_open_wks (wkstype,wkstitle)              ; send graphics to X11 window
 
-  plot = new(2,graphic)
-   dum = new(2,graphic)
+  plot = new(nruns,graphic)
 
   res                      = True        ; plot mods desired
   res@gsnDraw              = False       ; do not draw until the end
   res@gsnFrame             = False       ; do not automatically advance 'frame'
 
-  res@mpFillOn   = True
-  ;res@cnFillMode           = "MeshFill"
-  res@cnFillMode           = "RasterFill"
-  res@cnFillDrawOrder      = "PreDraw"             ; draw contours first
+  ;res@cnFillMode = "MeshFill"
+  res@cnFillMode = "RasterFill"
+  ;res@mpFillOn   = False
+  ;res@mpOutlineOn   = False
+  ;res@mpCenterLonF  = 180.0
+  res@vpWidthF          = 0.70
+  res@vpHeightF         = 0.40
 
-  res@cnFillOn           = True                  ; color fill
-  res@cnLinesOn          = False                 ; no contour lines
-  res@lbLabelBarOn       = True                 ; turn off individual colorbars
-  res@lbLabelFontHeightF = 0.015
+  res@gsnStringFontHeightF = 0.01
 
-  res@gsnStringFontHeightF = 0.05
+  res@cnMissingValPerimOn     = False            ; turn on the missing value perimeter
+  ;res@cnMissingValPerimColor  = "black"           ; outline the perimeter red
+  res@cnMissingValFillPattern = 0               ; choose fill pattern 0 (solid fill)
+  res@cnMissingValFillColor   = "gray"          ; color fill missing areas blue
 
-  res@gsnPolar   = "NH"                          ; specify the hemisphere
-  ;res@mpMinLatF    =  66                          ; minimum lat to plot
-  ;res@mpMinLatF    =  75                          ; minimum lat to plot
-  res@mpMinLatF    =  88                         ; minimum lat to plot
-  res@mpCenterLonF = -45
+  res@cnFillDrawOrder   = "PreDraw"             ; draw contours first
+  res@cnFillOn          = True                  ; color fill
+  res@cnLinesOn         = False                 ; no contour lines
+  res@cnLineLabelsOn    = False
+  res@cnInfoLabelOn     = False
+  res@lbLabelBarOn      = False
 
-  res@cnLevelSelectionMode = "ManualLevels"     ; set the contour levels with the following 3 resources
-  res@cnMinLevelValF  = levs(0)                      ; set the minimum contour level
-  res@cnMaxLevelValF  = levs(1)                      ; set the maximum contour level
-  res@cnLevelSpacingF = levs(2)                      ; set the interval between contours
-
-  res@cnFillPalette   =  "WhBlReWh"                      ; choose colormap
-  ;res@cnFillPalette = "BlueWhiteOrangeRed"
-  ;res@cnFillPalette = "amwg"
-  ;res@cnFillPalette = "t2m_29lev"
+  ;res@tiMainFontHeightF = .010
+  ;res@tiMainString = fldname+"  ocn"+cdate
 
 ;************************************************
-; Resources for the polyline
+; the subplot call
 ;************************************************
 
-  res@mpGreatCircleLinesOn = True
-  pres                  = True           ; polyline mods desired
-  pres@gsLineThicknessF = 4.0            ; line thickness
-  pres@gsLineColor      = "black"         ; color of lines
-  pres@gsLineDashPattern =  1            ; dashes
-  ;pres@tfPolyDrawOrder = "postDraw"
+function subplot(ii,name,pltvar,pltlevs,palette)
+begin
+   res@cnLevelSelectionMode = "ManualLevels"        ; set the contour levels with the following 3 resources
+   res@cnMinLevelValF       = pltlevs(0)            ; set the minimum contour level
+   res@cnMaxLevelValF       = pltlevs(1)            ; set the maximum contour level
+   res@cnLevelSpacingF      = pltlevs(2)            ; set the interval between contours
+   res@cnFillPalette        = palette
 
+   res@gsnCenterStringFontHeightF      = 0.015
+   res@gsnCenterString                 = name
+
+   splot = gsn_csm_contour(wks,pltvar,res)    ; create the plot
+
+  return(splot)
+end
 ;************************************************
 ;
 ;************************************************
 
+  ; pick a field to plot
+  fldtoplot = 0
+       levs = plotlevs(fldtoplot,:)
+    fldname = flds(fldtoplot)
+  plottitle = plotlabs(1)+"-"+plotlabs(0)+" "+fldname
+
+  
   ii = 0
-   plot(ii) = gsn_csm_contour_map_polar(wks,tvar,res)    ; create the plot
-    dum(ii) = gsn_add_polyline(wks,plot(ii),(/lon1, lon2/) , (/lat1, lat2/) ,pres)
+      fvar = ocnfiles[0]->$fldname$(0,:,:) 
+  plot(ii) = subplot(ii,plotlabs(ii),fvar,levs,cmap)
+
+  ii = 1
+       fvar = ocnfiles[1]->$fldname$(0,:,:)
+  plot(ii) = subplot(ii,plotlabs(ii),fvar,levs,cmap)
+
+  ii = 2
+       fvar = ocnfiles[2]->$fldname$(0,:,:)
+  plot(ii) = subplot(ii,plotlabs(ii),fvar,levs,cmap)
+
+; ***************************************************
+; panel resources
+; **************************************************
+
+  resP                       = True                 ; modify the panel plot
+  resP@gsnMaximize           = True                 ; maximize in frame
+  resP@gsnFrame              = False                ; don't advance frame yet
+  resP@gsnPanelLabelBar      = True                 ; turn on a common labelbar for the entire panel plot
+  resP@gsnPanelXWhiteSpacePercent = 5
+  resP@gsnPanelYWhiteSpacePercent = 5
+
+  ;resP@gsnPanelMainFontHeightF = 0.020           ; new resource added in NCL V6.4.0
+  resP@gsnPanelMainString = fldname+"  ocn_"+cdate
+
+;************************************************
+; make the panel
+;************************************************
+
+  gsn_panel(wks,plot,(/nruns,1/),resP)
+
+  frame(wks)
 
 ;************************************************
 ;
 ;************************************************
 
-  resP                     = True                ; modify the panel plot
+  if(wkstype .eq. "png")then
+   imcmd = "convert -trim "+wkstitle+".png "+wkstitle+".jpg"
+   system(imcmd)
+  end if
 
-  resP@gsnPanelMainString  = plottitle
-  resP@gsnPanelMainFontHeightF = 0.012            ; new resource added in NCL V6.4.0
-
-  ;gsn_panel(wks,plot,(/1,2/),resP)               ; now draw as one plot
-  gsn_panel(wks,plot,(/1,1/),resP)               ; now draw as one plot
-
+exit
 end

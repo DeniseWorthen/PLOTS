@@ -9,24 +9,28 @@
 ; read in netCDF file
 ;************************************************
 
-  RT2 = "/scratch1/NCEPDEV/stmp2/Jessica.Meixner/"
+  RT1 = "/scratch2/NCEPDEV/stmp1/Denise.Worthen/"
+  RT2 = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/S2S_RT/"
+  RT3 = "/scratch2/NCEPDEV/stmp3/Denise.Worthen/"
+  RT4 = "/scratch1/NCEPDEV/stmp4/Denise.Worthen/"
 
- idate = "2012010100"
- plotlabs = (/"IPD", "CCPP"/)
-      rts = (/"scrub/rtgen.235135/tmp",\
-              "scrub/rtgen.36490/tmp"/)
-    csets = (/"/cpld_fv3_384_mom6_cice_5d_"+idate+"/",\
-              "/cpld_fv3_ccpp_384_mom6_cice_5d_"+idate+"/"/)
+ idate = "2013040100"
 
+ idate = "2013040100"
+ plotlabs = (/"NEMS mediator", "CMEPS"/)
+      rts = (/"nems_ww3",\
+              "cmeps_ww3"/)
+    csets = (/"/cpld_fv3_ccpp_384_mom6_cice_ww3_1d_bmark_rt/",\
+              "/cpld_fv3_ccpp_384_mom6_cice_cmeps_ww3_1d_bmark_rt/"/)
 
 ;************************************************
 ;
 ;************************************************
 
      lstep = 1-1
-     cyear = "2012"
-      cmon = "01"
-      cday = "11"
+     cyear = "2013"
+      cmon = "04"
+      cday = "05"
      chour = "00000"
 
    icefiles = addfiles(RT2+rts+csets+"history/iceh_06h."+cyear+"-"+cmon+"-"+cday+"-"+chour+".nc","r")
@@ -51,7 +55,8 @@
   plotlevs = new((/nflds,3/), float)
   plotlevs( 0,:) = (/  -0.2,  0.2, 0.02/)   ; ai
   plotlevs( 1,:) = (/  -0.2,  0.2, 0.02/)   ; hi
-  plotlevs( 2,:) = (/ -20.0, 20.0, 2.00/)   ; tsfc
+  ;plotlevs( 2,:) = (/ -20.0, 20.0, 2.00/)   ; tsfc
+  plotlevs( 2,:) = (/ -2.0, 2.0, 0.20/)   ; tsfc
   plotlevs( 3,:) = (/  -1.0,  1.0, 0.10/)   ; snow fall
   plotlevs( 4,:) = (/-120.0,120.0,10.00/)   ; lwup
   plotlevs( 5,:) = (/ -40.0, 40.0, 2.00/)  ; latent
@@ -79,7 +84,7 @@
 ;************************************************
 
   ; pick a field to plot
-  ;fldtoplot =3
+  fldtoplot =2
        levs = plotlevs(fldtoplot,:)
     fldname = iceflds(fldtoplot)
    wkstitle = fldname
@@ -90,7 +95,7 @@
        iwgt = 1.0e-2
   end if
 
-  ; Hera Nems-cmeps; first copy metadata
+  ; variable diffs
   idiff0 = icefiles[0]->$fldname$(0,:,:)
   idiff0 = icefiles[0]->$fldname$(0,:,:) - icefiles[1]->$fldname$(0,:,:)
   idiff0 = idiff0*iwgt
@@ -105,8 +110,8 @@
 ; define the map
 ;************************************************
 
-  ;wkstype="X11"
-  wkstype="png"
+  wkstype="X11"
+  ;wkstype="png"
   wkstype@wkWidth=800
   wkstype@wkHeight=800
   wks   = gsn_open_wks (wkstype,wkstitle)              ; send graphics to X11 window
@@ -157,6 +162,7 @@ begin
   res@gsnCenterStringFontHeightF      = 0.020
   res@gsnCenterString                 = name
   res@gsnCenterStringOrthogonalPosF   = 0.12
+  res@gsnStringFontHeightF = 0.020
 
    splot = gsn_csm_contour_map_polar(wks,pltvar,res)    ; create the plot
    delete(res@mpMinLatF)
@@ -192,7 +198,7 @@ end
   resP@gsnPanelYWhiteSpacePercent = 5
 
   resP@gsnPanelMainFontHeightF = 0.020           ; new resource added in NCL V6.4.0
-  resP@gsnPanelMainString = "10d integration from "+cyear+cmon+"01"
+  resP@gsnPanelMainString = "5d integration from "+cyear+cmon+"01"
 
 ;************************************************
 ; make the panel
