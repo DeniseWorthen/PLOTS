@@ -6,22 +6,26 @@
 ; Ufuk Turuncoglu turuncu@ucar.edu
 ;**********************************************************
 begin
-     RT = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/S2S_RT/rt_270199/"
+     RT = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/S2S_RT/rt_208631/"
 
    date = "2016-10-03-"
   ntile = 6
  
- ;   res = 96
- ;  cres = ""
- ;    dt = 900
-
-    res = 192
-   cres = "_c192"
+    res = 96
+   cres = ""
      dt = 900
+
+ ;   res = 192
+ ;  cres = "_c192"
+ ;    dt = 900
 
  ;   res = 384
  ;  cres = "_c384"
  ;    dt = 450
+
+ ;   res = 96
+ ;  cres = "_mx025"
+ ;    dt = 900
 
   ; 12h + 1dt
   times = (/86400/2 + dt/)
