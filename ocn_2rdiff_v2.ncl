@@ -15,12 +15,12 @@
   RT3 = "/scratch2/NCEPDEV/stmp3/Denise.Worthen/"
   RT4 = "/scratch1/NCEPDEV/stmp4/Denise.Worthen/"
 
- idate = "2013040100"
+ idate = "2011010100"
  plotlabs = (/"NEMS mediator", "CMEPS"/)
-      rts = (/"nems_ww3",\
-              "cmeps_ww3"/)
-    csets = (/"/cpld_fv3_ccpp_384_mom6_cice_ww3_1d_bmark_rt/",\
-              "/cpld_fv3_ccpp_384_mom6_cice_cmeps_ww3_1d_bmark_rt/"/)
+      rts = (/"datm_nems_20d",\
+              "datm_cmeps_20d"/)
+    csets = (/"/cpld_datm_mom6_cice5_2d_cfsr/",\
+              "/cpld_datm_mom6_cice5_cmeps_2d_cfsr/"/)
 
   ;hemi = "NH"
   ;hemi = "SH"
@@ -81,11 +81,9 @@
 ;************************************************
 
      lstep = 1-1
-     cyear = "2013"
-      cmon = "04"
-      cday = "10"
-     ; cmon = "02"
-     ; cday = "04"
+     cyear = "2011"
+      cmon = "10"
+      cday = "20"
      chour = "21"
    cdate = cyear+cmon+"01"
 
@@ -109,20 +107,30 @@
 
   ; plot levels
   plotlevs = new((/nflds,3/), float)
-  plotlevs( 0,:) = (/  -1.0,  1.0, 0.10/)   ; sst
-  plotlevs( 1,:) = (/  -0.2,  0.2, 0.02/)   ; sss
-  plotlevs( 2,:) = (/  -0.2,  0.2, 0.02/)   ; ssh
-  plotlevs( 3,:) = (/  -0.2,  0.2, 0.02/)   ; speed
-  plotlevs( 4,:) = (/ -30.0, 30.0, 2.0/)   ; mld
-  plotlevs( 5,:) = (/-120.0,120.0,10.0/) ; latent
-  plotlevs( 6,:) = (/-120.0,120.0,10.0/) ; sensible
+  ;plotlevs( 0,:) = (/  -1.0,  1.0, 0.10/)   ; sst
+  plotlevs( 0,:) = (/  -0.1,   0.1, 0.010/)   ; sst
+  ;plotlevs( 1,:) = (/  -0.2,  0.2, 0.02/)   ; sss
+  plotlevs( 1,:) = (/ -0.02,  0.02, 0.002/)   ; sss
+  ;plotlevs( 2,:) = (/  -0.2,  0.2, 0.02/)   ; ssh
+  plotlevs( 2,:) = (/  -0.01,  0.01, 0.001/)   ; ssh
+  ;plotlevs( 3,:) = (/  -0.2,  0.2, 0.02/)   ; speed
+  plotlevs( 3,:) = (/  -0.1,  0.1, 0.01/)   ; speed
+  ;plotlevs( 4,:) = (/ -30.0, 30.0, 2.0/)   ; mld
+  plotlevs( 4,:) = (/ -2.0, 2.0, 0.20/)   ; mld
+  ;plotlevs( 5,:) = (/-120.0,120.0,10.0/) ; latent
+  plotlevs( 5,:) = (/-10.0,10.0,1.0/) ; latent
+  ;plotlevs( 6,:) = (/-120.0,120.0,10.0/) ; sensible
+  plotlevs( 6,:) = (/-5.0,5.0,0.5/) ; sensible
   plotlevs( 7,:) = (/-240.0,240.0,20.0/) ; SW
-  plotlevs( 8,:) = (/-100.0,100.0,10.0/) ; LW
-  plotlevs( 9,:) = (/  -2.0,  2.0, 0.2/) ; lprec*3600 mm/hr
+  ;plotlevs( 8,:) = (/-100.0,100.0,10.0/) ; LW
+  plotlevs( 8,:) = (/-1.0,1.0,0.1/) ; LW
+  ;plotlevs( 9,:) = (/  -2.0,  2.0, 0.2/) ; lprec*3600 mm/hr
+  plotlevs( 9,:) = (/  -0.01,  0.01, 0.001/) ; lprec*3600 mm/hr
   
   cmap="BlueWhiteOrangeRed"
 
   flds = (/0,1,2,4/)
+  ;flds = (/5,6,8,9/)
 
 ;************************************************
 ;  Ocn lats/lons and mask
@@ -145,8 +153,13 @@
 
   ;wkstype="X11"
   wkstype="png"
-  wkstype@wkWidth=800
-  wkstype@wkHeight=800
+  if(wkstype .eq. "png")then
+   wkstype@wkWidth=2500
+   wkstype@wkHeight=2500
+  else
+   wkstype@wkWidth=800
+   wkstype@wkHeight=800
+  end if
   wks   = gsn_open_wks (wkstype,wkstitle)              ; send graphics to X11 window
 
   plot = new(dimsizes(flds),graphic)
@@ -246,7 +259,7 @@ end
   resP@gsnPanelLabelBar      = False                 ; turn on a common labelbar for the entire panel plot
 
   resP@gsnPanelMainFontHeightF = 0.015           ; new resource added in NCL V6.4.0
-  resP@gsnPanelMainString = cday+"-d integration from "+cdate+": "+pltlab0+"  + WW3"
+  resP@gsnPanelMainString = cday+"-d integration from "+cdate+": "+pltlab0
 
  ; resP@gsnCenterStringFontHeightF      = 0.020
  ; resP@gsnCenterString                 = pltlab0

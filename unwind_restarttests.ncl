@@ -1,12 +1,12 @@
 ;**********************************************************
 ; re-write CMEPS coupler history fields for Atm
-; imports, exports and masks to tiled files for 
+; imports, exports and masks to tiled files for
 ;
 ; adapted from code originally written by
 ; Ufuk Turuncoglu turuncu@ucar.edu
 ;**********************************************************
 begin
-     RT = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/S2S_RT/rt_208631/"
+     RT = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/rt_212486/"
 
    date = "2016-10-03-"
   ntile = 6
@@ -15,9 +15,9 @@ begin
    cres = ""
      dt = 900
 
- ;   res = 192
- ;  cres = "_c192"
- ;    dt = 900
+  ;  res = 192
+  ; cres = "_c192"
+  ;   dt = 900
 
  ;   res = 384
  ;  cres = "_c384"
@@ -28,10 +28,12 @@ begin
  ;    dt = 900
 
   ; 12h + 1dt
-  times = (/86400/2 + dt/)
-   dirs = (/"s2s_control"+cres+"/RESTART/", "s2s_restart"+cres+"/RESTART/"/)
+  times = (/86400/2 + dt, 86400/2 + 2*dt/)
+   dirs = (/"cpld_control_prod"+cres+"/RESTART/", "cpld_restart_prod"+cres+"/RESTART/"/)
+  ;times = (/"00900", "01800"/)
+  ; dirs = (/"cpld_control"+cres+"/RESTART/"/)
 
-   fsrc = "ufs.s2s.cpl.hi."
+   fsrc = "ufs.cpld.cpl.hi."
   ndirs = dimsizes(dirs)
     nts = dimsizes(times)
 
@@ -91,7 +93,7 @@ do nd = 0,ndirs-1
       vname .eq. "atmExp_lon")then
     valid(ii) = False
    end if
-  end do 
+  end do
   do ii = 0,nvars-1
    vname = vnames(ii)
    ;print(ii+" "+vnames(ii)+"  "+valid(ii))
@@ -138,7 +140,7 @@ do nd = 0,ndirs-1
 
     fout->grid_xt = (/ lon3d(i,:,:) /)
     fout->grid_yt = (/ lat3d(i,:,:) /)
-  end do 
+  end do
 
 ;**********************************************************
 ; add variables

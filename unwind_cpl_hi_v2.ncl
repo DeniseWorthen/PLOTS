@@ -6,19 +6,15 @@
 ; Ufuk Turuncoglu turuncu@ucar.edu
 ;**********************************************************
 begin
-     RT = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/S2S_RT/rt_174129/"
-    ; RT = "/scratch1/NCEPDEV/stmp2/Jun.Wang/S2S_RT/"
+     RT = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/S2S_RT/restart_tests/"
     res = 96
   ntile = 6
 
-   dirs = (/"cpld_fv3_ccpp_mom6_cice_cmeps_2d_atm_flux/"/)
-   ;dirs = (/"nocold_be4/cpld_fv3_ccpp_384_mom6_cice_cmeps_1d_bmark_rt/" \
-   ;        ,"nocold_aft/cpld_fv3_ccpp_384_mom6_cice_cmeps_1d_bmark_rt/" \
-   ;        ,"cold_be4/cpld_fv3_ccpp_384_mom6_cice_cmeps_1d_bmark_rt/" \
-   ;        ,"cold_aft/cpld_fv3_ccpp_384_mom6_cice_cmeps_1d_bmark_rt/" \
+   dirs = (/"hour2/RESTART/" \
+           ,"restr/RESTART/" /)
    ;        /)
   ;times = (/"2013-04-01-00450", "2013-04-01-00900"/)
-  times = (/"2016-10-03-00900", "2016-10-03-01800"/)
+  times = (/"2016-10-03-04500"/)
    ;fsrc = "ufs.s2s.cold.cpl.hi."
    ;fsrc = "ufs.s2s.cpl.r."
    fsrc = "ufs.s2s.cpl.hi."
