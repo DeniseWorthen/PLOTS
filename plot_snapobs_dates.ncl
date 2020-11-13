@@ -44,7 +44,7 @@ begin
 
   ndates = dimsizes(Dates2Plt)
 
-  Years2Plt = (/"2013"/)
+  Years2Plt = (/"2017"/)
   ;Years2Plt = (/"2012", "2013", "2014" \
   ;             ,"2015", "2016", "2017"/)
 
@@ -87,7 +87,7 @@ begin
 ; load an ice field
 ;************************************************
 
-   fldtoplot = 0
+   fldtoplot = 2
    varname = varnames(fldtoplot)
    plotlab = plotlabs(fldtoplot)
 
@@ -126,11 +126,11 @@ begin
 ;************************************************
 
    wkstype="X11"
-   ;wkstype@wkWidth=800
-   ;wkstype@wkHeight=800
+   wkstype@wkWidth=800
+   wkstype@wkHeight=800
    ;wkstype="png"
-   wkstype@wkWidth=2500
-   wkstype@wkHeight=2500
+   ;wkstype@wkWidth=2500
+   ;wkstype@wkHeight=2500
 
    wks   = gsn_open_wks (wkstype,wkstitle)
 
@@ -169,14 +169,14 @@ begin
    res@mpCenterLonF = 0.0
   end if
 
-  res@cnLevelSelectionMode = "ManualLevels"     ; set the contour levels with the following 3 resources
-  res@cnMinLevelValF  = levs(0)                      ; set the minimum contour level
-  res@cnMaxLevelValF  = levs(1)                      ; set the maximum contour level
-  res@cnLevelSpacingF = levs(2)                      ; set the interval between contours
+  ;res@cnLevelSelectionMode = "ManualLevels"     ; set the contour levels with the following 3 resources
+  ;res@cnMinLevelValF  = levs(0)                      ; set the minimum contour level
+  ;res@cnMaxLevelValF  = levs(1)                      ; set the maximum contour level
+  ;res@cnLevelSpacingF = levs(2)                      ; set the interval between contours
 
-   ;res@cnLevelSelectionMode        = "ExplicitLevels"
-   ;res@cnLevels                    = (/     0.15,0.50,0.7,0.8,0.85,0.9,0.950/)
-   ;res@lbLabelStrings              = (/0.00,0.15,0.50,0.7,0.8,0.85,0.9,0.950/)+""
+   res@cnLevelSelectionMode        = "ExplicitLevels"
+   res@cnLevels                    = (/     0.15,0.50,0.7,0.8,0.85,0.9,0.950/)
+   res@lbLabelStrings              = (/0.00,0.15,0.50,0.7,0.8,0.85,0.9,0.950/)+""
 
   res@cnMissingValPerimOn     = False            ; turn on the missing value perimeter
   ;res@cnMissingValPerimColor  = "black"           ; outline the perimeter red
