@@ -1,7 +1,7 @@
 ;************************************************
 ; These files are loaded by default in NCL V6.2.0 and newer
 ; load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_code.ncl"
-; load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl" 
+; load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl"
 
   load "$NCARG_ROOT/lib/ncarg/nclscripts/contrib/cd_string.ncl"
   load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/shea_util.ncl"
@@ -40,15 +40,15 @@ begin
 
    Year2Plt = "2012"
 
- ; Dates2Plt = (/"-10-04", "-10-14" \ 
+ ; Dates2Plt = (/"-10-04", "-10-14" \
  ;              ,"-10-24", "-11-07" \
  ;              /)
- ; Dates2Plt = (/"-07-02", "-07-04" \ 
+ ; Dates2Plt = (/"-07-02", "-07-04" \
  ;              ,"-07-06", "-07-08" \
  ;              /)
- ; Dates2Plt = (/"-07-01", "-07-18" \ 
+ ; Dates2Plt = (/"-07-01", "-07-18" \
  ;              /)
- ; Dates2Plt = (/"-07-18" \ 
+ ; Dates2Plt = (/"-07-18" \
  ;              /)
 
   ICDate=(/"-07-01"/)
@@ -211,7 +211,7 @@ begin
 
   ;if(model .eq. "hycice")then
    labelstring = icevar@long_name+" ("+icevar@units+")  "+"["+varname+"]"
-  ;else 
+  ;else
   ; labelstring = "["+varname+"]"
   ;end if
 
@@ -264,7 +264,7 @@ begin
  if(batch .eq. "yes")then
     ncols = ndates
     nrows = 1
- else 
+ else
     ;ncols = 4
     ;nrows = 1+npanels/ncols
     ncols = 2

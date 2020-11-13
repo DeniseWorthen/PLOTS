@@ -1,7 +1,7 @@
 ;************************************************
 ; These files are loaded by default in NCL V6.2.0 and newer
 ; load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_code.ncl"
-; load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl" 
+; load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl"
 
   load "$NCARG_ROOT/lib/ncarg/nclscripts/contrib/cd_string.ncl"
 
@@ -32,10 +32,10 @@ begin
 
  if(hemi .eq. "NH")then
   minlat =  66.0
-  midlon = -45.0       
+  midlon = -45.0
  else
   maxlat = -50.0
-  midlon =   0.0       
+  midlon =   0.0
  end if
 
    fancylevs = "yes"
@@ -188,7 +188,7 @@ begin
   return(splot)
 end
 ;************************************************
-; 
+;
 ;************************************************
 
          pltlevs = new((/3/),float)

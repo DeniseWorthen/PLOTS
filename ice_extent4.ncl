@@ -59,7 +59,7 @@ begin
 ; obs,cfsv2 and benchmark files all have same
 ; time axis beginning 1-jan-2011 thru 18-jan-2018
 ; to plot a single year comparison, need to find
-; both the k-index for the run (168 total) as well 
+; both the k-index for the run (168 total) as well
 ; as the l-index in the time series
 ;************************************************
     

@@ -1,7 +1,7 @@
 ;************************************************
 ; These files are loaded by default in NCL V6.2.0 and newer
 ; load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_code.ncl"
-; load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl" 
+; load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl"
 
   load "$NCARG_ROOT/lib/ncarg/nclscripts/contrib/cd_string.ncl"
 
@@ -25,9 +25,9 @@ begin
     minlat =  50.0
    if(ice_extent .eq. "yes")then
     plottitle = "Northern Hemisphere Ice Extent (ocean area with ice>15%)"
-   else 
+   else
     plottitle = "Total Ice Area North of 50N"
-   end if       
+   end if
   else
     maxlat = -50.0
    if(ice_extent .eq. "yes")then
@@ -87,9 +87,9 @@ begin
 
      colors = (/"red",  "blue", "green"/)
 
-   legendlabs(0) = rtname1 
-   legendlabs(1) = rtname2 
-   legendlabs(2) = rtname3 
+   legendlabs(0) = rtname1
+   legendlabs(1) = rtname2
+   legendlabs(2) = rtname3
  do ii = 0,nruns-1
   legendcols(ii) =  colors(ii)
   legendthik(ii) =  2.0
@@ -196,7 +196,7 @@ begin
 ;************************************************
 
      vname = varname+"_h"
-  ; these all contain 35 days 
+  ; these all contain 35 days
     bm1 =  bm1files[:]->$vname$
     cm1 =  cm1files[:]->$vname$
     bm2 =  bm2files[:]->$vname$
@@ -218,12 +218,12 @@ begin
   ;print(dimsizes(masklat3))
   
    if(ice_extent .eq. "yes")then
-   ; these are ice extents (all ice area>0.15) 
+   ; these are ice extents (all ice area>0.15)
      bm1 = where(bm1 .ge. 0.15,masklat3,bm1@_FillValue)
      cm1 = where(cm1 .ge. 0.15,masklat3,cm1@_FillValue)
      bm2 = where(bm2 .ge. 0.15,masklat3,bm2@_FillValue)
    else
-   ;these are ice areas (include aice_h in area sum) 
+   ;these are ice areas (include aice_h in area sum)
      bm1 = where(bm1 .ge. 0.15,bm1*masklat3,bm1@_FillValue)
      cm1 = where(cm1 .ge. 0.15,cm1*masklat3,cm1@_FillValue)
      bm2 = where(bm2 .ge. 0.15,bm2*masklat3,bm2@_FillValue)

@@ -1,7 +1,7 @@
 ;************************************************
 ; These files are loaded by default in NCL V6.2.0 and newer
 ; load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_code.ncl"
-; load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl" 
+; load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl"
 
   load "$NCARG_ROOT/lib/ncarg/nclscripts/contrib/cd_string.ncl"
 ;************************************************
@@ -20,8 +20,8 @@ begin
   ;Dates2Plt = (/"2015-06-15", "2015-06-30" \
   ;             ,"2015-07-15", "2015-07-30" \
   ;             ,"2015-08-15", "2015-08-30" \
-  ;             ,"2015-09-15", "2015-09-30" \ 
-  ;             ,"2015-10-15", "2015-10-30" \ 
+  ;             ,"2015-09-15", "2015-09-30" \
+  ;             ,"2015-10-15", "2015-10-30" \
   ;             /)
 
   ;Dates2Plt = (/"2015-06-10", "2015-06-12" \
@@ -112,7 +112,7 @@ begin
   ;printVarSummary(ivar)
   ;copy_VarCoords(ivar,icemasked)
  
-; Get the time axis 
+; Get the time axis
   ;times= icemmfiles[:]->time
   ;timeUnits = icemmfiles[:]->time@units
   ;timeCalendar = icemmfiles[:]->time@calendar
@@ -125,10 +125,10 @@ begin
 ; define the map
 ;************************************************
 
-   ;wkstype="X11"
+   wkstype="X11"
    ;wkstype@wkWidth=800
    ;wkstype@wkHeight=800
-   wkstype="png"
+   ;wkstype="png"
    wkstype@wkWidth=2500
    wkstype@wkHeight=2500
 
@@ -180,7 +180,7 @@ begin
 
   res@cnMissingValPerimOn     = False            ; turn on the missing value perimeter
   ;res@cnMissingValPerimColor  = "black"           ; outline the perimeter red
-  res@cnMissingValFillPattern = 0               ; choose fill pattern 0 (solid fill) 
+  res@cnMissingValFillPattern = 0               ; choose fill pattern 0 (solid fill)
   res@cnMissingValFillColor   = "gray"          ; color fill missing areas blue
 
   res@cnFillPalette   = colormap             ; choose colormap

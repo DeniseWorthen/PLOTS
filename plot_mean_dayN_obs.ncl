@@ -11,18 +11,31 @@
 
 ;************************************************
 
+      hemi = "NH"
+     ;hemi = "SH"
+  maxyears = (2018-2011)+1
+ 
   ; hera
   RT1 = "/scratch2/NCEPDEV/stmp1/Denise.Worthen/"
   RT2 = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/"
   RT3 = "/scratch2/NCEPDEV/stmp3/Denise.Worthen/"
   RT4 = "/scratch1/NCEPDEV/stmp4/Denise.Worthen/"
   LSF = "/scratch2/NCEPDEV/climate/Lydia.B.Stefanova/Models/"
+   CL = "/scratch2/NCEPDEV/climate/Denise.Worthen/IceData/"
 
-  ;bmname = "ufs_b31"
-  bmname = "ufs_p5"
-   bmsrc = LSF+bmname+"/SeaIce/"
+  ; set up to retrieve obs
+     icelonname="longitude"
+     icelatname="latitude"
+        ;obsname="goddard_nt_seaice_conc"
+        obsname="seaice_conc_cdr"
 
-   freturn = bmfilelist(bmsrc)
+  bmlabs = (/"UFS P3.1", "UFS P5"/)
+  bms = (/"ufs_b31", "ufs_p5"/)
+  bmsrc = LSF+bms+"/SeaIce/"
+  nruns = dimsizes(bms)
+
+  ; use first bm to set dates etc
+   freturn = bmfilelist(bmsrc(0))
     nvalid = freturn[0]
   datelist = new((/nvalid/),typeof(freturn[1]))
   timelist = new((/nvalid/),typeof(freturn[2]))
@@ -32,7 +45,8 @@
    ;print(datelist)
    ;print(timelist)
  
-  filelist = new((/nvalid/),typeof(datelist))
+  filelist = new((/nruns,nvalid/),typeof(datelist))
+   obslist = new((/maxyears/),typeof(datelist))
   ;grab integration day iday (in hours) from
   ;runs at month N
   format = "%Y%N%D%H"
@@ -41,67 +55,91 @@
      iii = 0
    do ii = 0,nvalid-1
     cmon = str_get_cols(datelist(ii),4,7)
+   cyear = str_get_cols(datelist(ii),0,3)
     if(cmon .eq. imon)then
      ;print(datelist(ii)+"  "+cmon)
      itime = timelist(ii)            ; copy attributes
      itime = itime + (iday-1)*24
-   
+
+     if(hemi .eq. "NH")then
+      obsrc="north/"+cyear+"/seaice_conc_daily_nh_f17_"
+     else
+      obsrc="south/"+cyear+"/seaice_conc_daily_sh_f17_"
+     end if
+
      idate = cd_string(itime,format) ; date of integration day
      idate = str_get_cols(idate,0,7) ; without the hours
-     ifile = bmsrc+datelist(ii)+"/ice"+idate+".01."+datelist(ii)+"00.subset.nc"
-     if(fileexists(ifile)) then
-       filelist(iii) = ifile
-                 iii = iii + 1
-       print(datelist(ii)+"   "+itime+"  "+idate+"  "+ifile)
+     ifile0 = bmsrc(0)+datelist(ii)+"/ice"+idate+".01."+datelist(ii)+"00.subset.nc"
+     ifile1 = bmsrc(1)+datelist(ii)+"/ice"+idate+".01."+datelist(ii)+"00.subset.nc"
+     ifile2 = CL+obsrc+idate+"_v03r01.nc"
+     ; assume all files exist in both runs
+     if(fileexists(ifile0)) then
+       filelist(0,iii) = ifile0
+       filelist(1,iii) = ifile1
+          obslist(iii) = ifile2
+                   iii = iii + 1
+       print(datelist(ii)+"   "+itime+"  "+idate+"  "+ifile0)
      end if
     end if
    end do
    nfiles = iii
-    hemi = "NH"
-  minlat = 66.0
+   print(obslist)
 
   ; these are in degrees
     rfactor = 1.0
    tlatname = "TLAT"
    tlonname = "TLON"
 
-    ;varname = "hi_h"
+   ; varname = "hi_h"
    ;levs = (/0.0,3.0,0.1/)
     varname = "aice_h"
    levs = (/0.0,1.0,0.1/)
 
-   plottitle = bmname+": mean "+varname+" after "+iday+" days, initial month "+imon+", all runs"
+   plottitle = "mean "+varname+" after "+iday+" days, initial date "+imon
 
 ;************************************************
 ; read in netCDF file
 ;************************************************
 
-    ; basic check
-    fvalid = isfilepresent(filelist(0))
-if(.not.fvalid)then
-  print("can't find first file ")
-  print("check file names or directories")
-else
     ; use as grid file to retrieve 2d latlon later
-      gf = addfile(filelist(0),"r")
+      gf = addfile(filelist(0,0),"r")
      var = gf->$tlatname$
     dims = dimsizes(var)
       ny = dims(0)
       nx = dims(1)
     delete(var)
     ;print(nx+"  "+ny)
-     var = new((/nfiles,ny,nx/),"float")
+     var = new((/nruns,nfiles,ny,nx/),"float")
 
+    do jj = 0,nruns-1
      do ii = 0,nfiles-1
-         f = addfile(filelist(ii),"r")
-       var(ii,:,:) = f->$varname$(0,:,:)
-      print("variable added from "+filelist(ii))
+                   f = addfile(filelist(jj,ii),"r")
+       var(jj,ii,:,:) = f->$varname$(0,:,:)
+      ;print("variable added from "+filelist(jj,ii))
+       delete(f)
      end do
-     ;printVarSummary(var)
+    end do
+    ;printVarSummary(var)
     
-           avar = dim_avg_n_Wrap(var,0)
+           avar = dim_avg_n(var,1)
      avar@lon2d = gf->$tlonname$
      avar@lat2d = gf->$tlatname$
+    ;printVarSummary(avar)
+
+;************************************************
+; retrieve obs
+;************************************************
+
+  iceobs=addfiles(obslist,"r")
+    ivar=iceobs[:]->$obsname$(:,:,:)
+   ;printVarSummary(ivar)
+   ivar@lon2d=iceobs[0]->$icelonname$
+   ivar@lat2d=iceobs[0]->$icelatname$
+
+   ovar=dim_avg_n(byte2flt(ivar),0)
+   ovar@lon2d=iceobs[0]->$icelonname$
+   ovar@lat2d=iceobs[0]->$icelatname$
+   ;copy_VarCoords(ivar,ovar)
 
 ;************************************************
 ; add a poly line showing the polar seem along
@@ -120,11 +158,11 @@ else
   ;wkstype="png"
   wkstype@wkWidth=800
   wkstype@wkHeight=800
-  wkstitle=bmname+"_"+varname+"_"+imon
+  wkstitle=varname+"_"+imon
   wks   = gsn_open_wks (wkstype,wkstitle)              ; send graphics to X11 window
 
-  ;gsn_define_colormap(wks,"MPL_Blues")
-  ;gsn_reverse_colormap(wks)
+  plot = new(nruns+1,graphic)
+   dum = new(nruns+1,graphic)
 
   res                      = True        ; plot mods desired
   res@gsnDraw              = False       ; do not draw until the end
@@ -139,7 +177,7 @@ else
 
   res@gsnPolar   =  hemi                         ; specify the hemisphere
   if(hemi .eq. "NH")then
-   res@mpMinLatF    =  minlat                          ; minimum lat to plot
+   res@mpMinLatF    =  66.0                          ; minimum lat to plot
    res@mpCenterLonF = -45
   end if
   if(hemi .eq. "SH")then
@@ -157,37 +195,43 @@ else
   res@cnFillOn          = True                  ; color fill
   res@cnLinesOn         = False                 ; no contour lines
   res@cnLineLabelsOn    = False
-  res@lbLabelBarOn      = True
-  
+  res@lbLabelBarOn       = False                 ; turn off individual colorbars
+
   ;res@cnFillOn          = False                  ; color fill
 
   if(varname .eq. "hi_h")then
-   ;res@cnLevelSelectionMode        = "ExplicitLevels"
-   ;res@cnLevels                    = (/     0.15,0.50,1.0,1.5,2.0,2.5,3.0,3.5,4.0/)
-   ;res@lbLabelStrings              = (/0.00,0.15,0.50,1.0,1.5,2.0,2.5,3.0,3.5,4.0/)+""
-   res@cnLevelSelectionMode = "ManualLevels"     ; set the contour levels with the following 3 resources
-   res@cnMinLevelValF  = levs(0)                      ; set the minimum contour level
-   res@cnMaxLevelValF  = levs(1)                      ; set the maximum contour level
-   res@cnLevelSpacingF = levs(2)                      ; set the interval between contours
+   res@cnLevelSelectionMode        = "ExplicitLevels"
+   res@cnLevels                    = (/     0.15,0.50,1.0,1.5,2.0,2.5,3.0/)
+   res@lbLabelStrings              = (/0.00,0.15,0.50,1.0,1.5,2.0,2.5,3.0/)+""
+   ;res@cnLevelSelectionMode = "ManualLevels"     ; set the contour levels with the following 3 resources
+   ;res@cnMinLevelValF  = levs(0)                      ; set the minimum contour level
+   ;res@cnMaxLevelValF  = levs(1)                      ; set the maximum contour level
+   ;res@cnLevelSpacingF = levs(2)                      ; set the interval between contours
   else
    res@cnLevelSelectionMode        = "ExplicitLevels"
    res@cnLevels                    = (/     0.15,0.50,0.7,0.8,0.85,0.9,0.950/)
    res@lbLabelStrings              = (/0.00,0.15,0.50,0.7,0.8,0.85,0.9,0.950/)+""
   end if
 
-  ;res@cnFillPalette        = "WhBlGrYeRe"              ; choose colormap
-  res@cnFillPalette        = "amwg256"              ; choose colormap
-  res@cnMissingValFillColor    = "gray70" ; set color for missing areas
+  ;res@cnFillPalette         = "WhBlGrYeRe"              ; choose colormap
+  res@cnFillPalette           = "amwg256"              ; choose colormap
+  res@cnMissingValFillColor   = "gray70" ; set color for missing areas
   res@cnMissingValPerimOn     = False            ; turn on the missing value perimeter
 
-  ;res@tiMainString = dirname+" "+cday
-  res@tiMainString = plottitle
-  res@tiMainFontHeightF = .01
+  res@gsnCenterStringFontHeightF = 0.020
+; ***************************************************
+; panel resources
+; **************************************************
 
-  ;res@gsnCenterStringOrthogonalPosF = .15	    ; raise the CenterString slightly
-  ;res@gsnStringFontHeightF = 0.01
-  ;res@gsnCenterString = plottitle
+  resP                       = True                 ; modify the panel plot
+  resP@gsnMaximize           = True                 ; maximize in frame
+  resP@gsnFrame              = False                ; don't advance frame yet
+  resP@gsnPanelYWhiteSpacePercent = 5
+  resP@gsnPanelYWhiteSpacePercent = 5
+  resP@gsnPanelLabelBar      = True                 ; turn on a common labelbar for the entire panel plot
 
+  resP@gsnPanelMainFontHeightF = 0.020           ; new resource added in NCL V6.4.0
+  resP@gsnPanelMainString = plottitle
 ;************************************************
 ; Resources for the polyline
 ;************************************************
@@ -195,20 +239,33 @@ else
   res@mpGreatCircleLinesOn = True
   pres                  = True           ; polyline mods desired
   pres@gsLineThicknessF = 2.0            ; line thickness
-  pres@gsLineColor      = "black"         ; color of lines
+  pres@gsLineColor      = "black"        ; color of lines
   pres@gsLineDashPattern =  1            ; dashes
-  ;pres@tfPolyDrawOrder = "postDraw"
 
 ;************************************************
 ;
 ;************************************************
 
-  plot = gsn_csm_contour_map_polar(wks,avar,res)    ; create the plot
-  ;plot = gsn_csm_contour_map(wks,icevar,res)    ; create the plot
-  dum= gsn_add_polyline(wks,plot,(/lon1, lon2/) , (/lat1, lat2/) ,pres)
-  ;pum= gsn_add_polymarker(wks,plot,center_xlon,center_xlat,mkres)
+  ii = 0
+  res@gsnCenterString = bmlabs(ii)
+  plot(ii) = gsn_csm_contour_map_polar(wks,avar(0,:,:),res)    ; create the plot
+   dum(ii) = gsn_add_polyline(wks,plot(ii),(/lon1, lon2/) , (/lat1, lat2/) ,pres)
 
-  draw(plot)
+  ii = 1
+  res@gsnCenterString = bmlabs(ii)
+  plot(ii) = gsn_csm_contour_map_polar(wks,avar(1,:,:),res)    ; create the plot
+   dum(ii) = gsn_add_polyline(wks,plot(ii),(/lon1, lon2/) , (/lat1, lat2/) ,pres)
+
+  ii = 2
+  res@gsnCenterString = obsname
+  plot(ii) = gsn_csm_contour_map_polar(wks,ovar(:,:),res)    ; create the plot
+
+;************************************************
+; make the panel
+;************************************************
+
+  gsn_panel(wks,plot,(/2,2/),resP)
+
   frame(wks)
 
 ;************************************************
@@ -224,6 +281,5 @@ else
    system(imcmd)
   end if
 
-end if
 exit
 end

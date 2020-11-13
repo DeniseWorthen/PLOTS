@@ -1,7 +1,7 @@
 ;************************************************
 ; These files are loaded by default in NCL V6.2.0 and newer
 ; load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_code.ncl"
-; load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl" 
+; load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl"
 
   load "$NCARG_ROOT/lib/ncarg/nclscripts/contrib/cd_string.ncl"
   load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/shea_util.ncl"
@@ -19,10 +19,10 @@
  ;   hemi = "SH"
  if(hemi .eq. "NH")then
   minlat =  66.0
-  midlon = -45.0       
+  midlon = -45.0
  else
   maxlat = -50.0
-  midlon =   0.0       
+  midlon =   0.0
  end if
 
   ; these are in degrees
@@ -34,22 +34,22 @@
 ; read in netCDF file
 ;************************************************
 
-      cyear = "2013"
+      cyear = "2017"
       cmons = (/"01", "04", "07", "10"/)
   Dates2Plt = (/"0204", "0505", "0804", "1104"/)
      idates = cyear+cmons+"01"
-     ;print(idates) 
+     ;print(idates)
      lstep = 1-1
       csec = "00000"
     ndates = dimsizes(Dates2Plt)
 
      ; Lydia's b31 sea ice files
      ; Wcoss stability RT ice file
-      rts = (/"ufs_b31/SeaIce","Icestab"/)
+      rts = (/"ufs_b31/SeaIce","ufs_p5/SeaIce"/)
 
      filelist0 = LSF+rts(0)+"/"+idates+"/ice"+cyear+Dates2Plt+".01."+idates+"00.subset.nc"
-     ;print(filelist0)
-     filelist1 = RT3+rts(1)+"/"+idates+"/ice"+cyear+Dates2Plt+".01."+idates+"00.subset.nc"
+     print(filelist0)
+     filelist1 = LSF+rts(1)+"/"+idates+"/ice"+cyear+Dates2Plt+".01."+idates+"00.subset.nc"
      ;print(filelist1)
      ;files = addfiles((/filelist0,filelist1/),"r")
      files0 = addfiles(filelist0,"r")
@@ -104,7 +104,7 @@
    res@mpCenterLonF = -45
   end if
   if(hemi .eq. "SH")then
-   res@mpMaxLatF    = maxlat  
+   res@mpMaxLatF    = maxlat
    res@mpCenterLonF = 0.0
   end if
 
@@ -113,11 +113,11 @@
 
   res@gsnPolarLabelFontHeightF   = 0.020           ; change font height of labels
   res@gsnCenterStringFontHeightF = 0.020
-  res@lbLabelFontHeightF         = 0.020     
+  res@lbLabelFontHeightF         = 0.020
 
   ;res@cnMissingValPerimOn     = False            ; turn on the missing value perimeter
   ;res@cnMissingValPerimColor  = "black"           ; outline the perimeter red
-  res@cnMissingValFillPattern = 0               ; choose fill pattern 0 (solid fill) 
+  res@cnMissingValFillPattern = 0               ; choose fill pattern 0 (solid fill)
   res@cnMissingValFillColor   = "gray"          ; color fill missing areas blue
 
 ;************************************************

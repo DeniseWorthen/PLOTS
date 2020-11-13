@@ -17,9 +17,9 @@ begin
                 ,(/2015,12, 15,0,0,0/) \
                 /)
 
- RegNames = (/"Chukchi Sea" \         ;1              
-             ,"Beaufort Sea" \        ;2    
-             ,"Baffin Bay" \          ;3       
+ RegNames = (/"Chukchi Sea" \         ;1
+             ,"Beaufort Sea" \        ;2
+             ,"Baffin Bay" \          ;3
              ,"East Siberian Sea" \   ;4
              ,"NW Passages" \         ;5
              ,"Central Arctic" \      ;6
@@ -90,7 +90,7 @@ begin
  ;printVarSummary(var)
  ;printVarSummary(time)
  labelstring = var@long_name+" ("+var@units+")"
- ;print(labelstring) 
+ ;print(labelstring)
   nregs = dimsizes(Regs2Plt)
   ndata = dimsizes(AllFiles)
  colors = (/"red", "green", "blue", "purple"/)
@@ -108,7 +108,7 @@ begin
    obs_all(:,ii,:) = ovar(:,:,Regs2Plt(ii))
   end do
  else
-  obs_all = mval  
+  obs_all = mval
  end if
 
  ;printVarSummary(data_all)

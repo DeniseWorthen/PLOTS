@@ -13,7 +13,7 @@ begin
  ;batch = "yes"
 
    ice_thick = False
-    ice_area = False
+    ice_area = True
  if(ice_thick)then
   varname = "hi"
    yaxlab = "Mean Ice Thickness (m)"
@@ -33,15 +33,14 @@ begin
  obsvar = varname+"obs"
  modvar = varname+"mod"
 
- ;bmnum = (/"2","3"/)
- bmnum = (/"2","3", "31"/)
- bench = RT3+"BM"+bmnum+"_ice/"
+ bmnum = (/"31","5"/)
+ bench = CL+"P"+bmnum+"ice/"
  cfsv2 = CL+"CFSv2/"
  iobs =  CL+"IceData/"
  print(bench)
 
  if(batch .eq. "no")then
-    Year = 2015
+    Year = 2011
   Region = 15-1
 ;  Region = 10-1
 ;  Region = 21-1
@@ -90,11 +89,16 @@ begin
 ; obs,cfsv2 and benchmark files all have same
 ; time axis beginning 1-jan-2011 thru 18-jan-2018
 ; to plot a single year comparison, need to find
-; both the k-index for the run (168 total) as well 
+; both the k-index for the run (168 total) as well
 ; as the l-index in the time series
 ;************************************************
     
-     Obs = iobs+"iceobs_stats.nc"
+     obssrc = "goddard_nt_seaice_conc"
+     obslab = "NASA Team"
+     ;obssrc = "seaice_conc_cdr"
+     ;obslab = "CDR"
+
+     Obs = iobs+"iceobs_stats."+obssrc+".nc"
      BMs = bench+"stats.nc"
      CFS = cfsv2+"stats.nc"
     ObsF = addfile(Obs,"r")
@@ -129,9 +133,9 @@ begin
     timeCalendar = ObsF->time@calendar
 
     obs = ObsF->$obsvar$(lstep0:lstepf,Region)
-    bm2 = BMsF[0]->$modvar$(lstep0:lstepf,kstep0:kstepf,Region)
-    bm3 = BMsF[1]->$modvar$(lstep0:lstepf,kstep0:kstepf,Region)
-    bm31= BMsF[2]->$modvar$(lstep0:lstepf,kstep0:kstepf,Region)
+    ; bm1 = bm choice 1, bm2 = bm choice 2
+    bm1 = BMsF[0]->$modvar$(lstep0:lstepf,kstep0:kstepf,Region)
+    bm2 = BMsF[1]->$modvar$(lstep0:lstepf,kstep0:kstepf,Region)
     cfs = CFSF->$modvar$(lstep0:lstepf,kstep0:kstepf,Region)
     dims = dimsizes(bm2)
     ntime = dims(0)
@@ -144,8 +148,8 @@ begin
 
 ;************************************************
 ; 0 = obs
-; 1 = bm2 
-; 2 = bm3 
+; 1 = bm choice 1
+; 2 = bm choice 2
 ; 3 = cfs
 ;************************************************
 
@@ -155,14 +159,12 @@ begin
     ;print("data_all "+dims(0)+"  "+dims(1)+"  "+dims(2))
     do k = 0,nexp-1
      data_all(0,k,:) = obs(:)
-     data_all(1,k,:) = bm2(:,k)
-     data_all(2,k,:) = bm3(:,k)
-     data_all(3,k,:) = bm31(:,k)
-     data_all(4,k,:) = cfs(:,k)
+     data_all(1,k,:) = bm1(:,k)
+     data_all(2,k,:) = bm2(:,k)
+     data_all(3,k,:) = cfs(:,k)
     end do
 
      lines = (/ "Lines" \
-               ,"Lines", "Lines" \
                ,"Lines", "Lines" \
                ,"Lines", "Lines" \
                ,"Lines", "Lines" \
@@ -170,28 +172,25 @@ begin
      colors = (/  "black" \
                ,    "red",   "red" \
                ,   "blue",  "blue" \
-               ,  "green",  "green" \
                , "grey50", "grey50" \
               /)
      thicks = (/    5.0 \
                ,    3.0,     3.0 \
                ,    3.0,     3.0 \
                ,    3.0,     3.0 \
-               ,    3.0,     3.0 \
               /)
      dashes = (/    0.0 \
                ,    0.0,     1.0 \
-               ,    0.0,     1.0 \   
-               ,    0.0,     1.0 \   
-               ,    0.0,     1.0 \ 
+               ,    0.0,     1.0 \
+               ,    0.0,     1.0 \
               /)
 
 ;************************************************
 ;
 ;************************************************
 
- ; 1 obs + 2*bmx3 + cfsx2 
-  nlines = 1+2*3+2
+ ; 1 obs + 2*(2 benchmark choices) + cfsx2
+  nlines = 1+2*2+2
 
  legendlabs = new((/nlines/),"string")
  legendfhgt = new((/nlines/),"float")
@@ -204,22 +203,18 @@ begin
    legendlabs(0) = "CryoSat-2 Level-4 Ice Thickness, v1"
    else
     if(ice_area)then
-     ;legendlabs(0) = "NOAA/NSIDC Climate Record Ice Area, v3"
-     legendlabs(0) = "NOAA/NSIDC CDR v3, Ice Area "
+     legendlabs(0) = obslab+", Ice Area "
     else
-     ;legendlabs(0) = "NOAA/NSIDC Climate Record Ice Extent, v3"
-     legendlabs(0) = "NOAA/NSIDC CDR v3, Ice Extent "
+     legendlabs(0) = obslab+", Ice Extent "
     end if
    end if
 
-   legendlabs(1) = "BM"+bmnum(0)+", initialized 1st"
-   legendlabs(2) = "BM"+bmnum(0)+", initialized 15th"
-   legendlabs(3) = "BM"+bmnum(1)+", initialized 1st"
-   legendlabs(4) = "BM"+bmnum(1)+", initialized 15th"
-   legendlabs(5) = "BM"+bmnum(2)+", initialized 1st"
-   legendlabs(6) = "BM"+bmnum(2)+", initialized 15th"
-   legendlabs(7) = "CFSv2, initialized 1st"
-   legendlabs(8) = "CFSv2, initialized 15th"
+   legendlabs(1) = "P"+bmnum(0)+", initialized 1st"
+   legendlabs(2) = "P"+bmnum(0)+", initialized 15th"
+   legendlabs(3) = "P"+bmnum(1)+", initialized 1st"
+   legendlabs(4) = "P"+bmnum(1)+", initialized 15th"
+   legendlabs(5) = "CFSv2, initialized 1st"
+   legendlabs(6) = "CFSv2, initialized 15th"
    legendfhgt    =  0.10
 
     mmin = min(data_all)
@@ -302,7 +297,7 @@ begin
   lgres@lgLineColors         = colors
   lgres@lgLineThicknesses    = thicks
   lgres@lgLineLabelStrings   = legendlabs
-  lgres@lgItemOrder          = (/8, 7, 6,5,4,3,2,1,0/)
+  lgres@lgItemOrder          = (/6,5,4,3,2,1,0/)
   ;print(lines)
 ;************************************************
 ; for simple_legend_ndc
@@ -355,7 +350,7 @@ begin
   res@xyDashPattern     = dashes(jj)
   oplot(jj-1) = gsn_csm_xy (wks,time,data_all(2,1:nexp-1:2,:), res) ; create plot
 
-  ; 1st, 15th of each month, third plotted bm (bmnum(1))
+  ; 1st, 15th of each month, cfs
   jj = jj+1
   res@xyLineThicknessF  = thicks(jj)
   res@xyLineColor       = colors(jj)
@@ -366,18 +361,7 @@ begin
   res@xyDashPattern     = dashes(jj)
   oplot(jj-1) = gsn_csm_xy (wks,time,data_all(3,1:nexp-1:2,:), res) ; create plot
 
-  ; 1st, 15th of each month, cfs
-  jj = jj+1
-  res@xyLineThicknessF  = thicks(jj)
-  res@xyLineColor       = colors(jj)
-  res@xyDashPattern     = dashes(jj)
-  oplot(jj-1) = gsn_csm_xy (wks,time,data_all(4,0:nexp-1:2,:), res) ; create plot
-  jj = jj+1
-  res@xyLineColor       = colors(jj)
-  res@xyDashPattern     = dashes(jj)
-  oplot(jj-1) = gsn_csm_xy (wks,time,data_all(4,1:nexp-1:2,:), res) ; create plot
-
-  do ii = 0,7
+  do ii = 0,5
    overlay(plot,oplot(ii))
   end do
 
