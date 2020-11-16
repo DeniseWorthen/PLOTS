@@ -41,7 +41,7 @@
 
   ; get corresponding obs date
   time0 = cd_inv_string(year+"0101",format)
-  ostep = toint((time-time0)/24)
+  ostep = toint((time-time0)/24)+1
   print("Obs julian day "+ostep)
 
 ;************************************************
@@ -72,7 +72,7 @@
     varname = "aice_h"
    levs = (/0.0,1.0,0.1/)
 
-   plottitle = "mean "+varname+" after "+day+" days, initial date "+mon+iday
+   plottitle = "mean "+varname+": "+fmd+" (initial date "+mon+iday+" + "+day+" days)"
 ;************************************************
 ; read in netCDF file
 ;************************************************
@@ -82,8 +82,8 @@
     ListSetType(icefiles,"join")
 
      avar = icefiles[:]->$varname$(:,0,:,:)
-     avar@lon2d = icefiles[:]->$tlonname$(:,:,:)
-     avar@lat2d = icefiles[:]->$tlatname$(:,:,:)
+     avar@lon2d = icefiles[0]->$tlonname$(:,:)
+     avar@lat2d = icefiles[0]->$tlatname$(:,:)
      ;printVarSummary(avar)
 
 ;************************************************
@@ -105,10 +105,8 @@
     ovar = obsfiles[:]->ai(:,ostep-1,:,:)
     ovar@lon2d = gf->lon
     ovar@lat2d = gf->lat
+    ;printVarSummary(ovar)
 
-    printVarSummary(ovar)
-
-if(1 .eq. 0)then
 ;************************************************
 ; add a poly line showing the polar seem along
 ; great circle path from (lon1,lat1) to (lon2,lat2)
@@ -122,11 +120,17 @@ if(1 .eq. 0)then
 ;************************************************
 ; define the map
 ;************************************************
-  wkstype="X11"
-  ;wkstype="png"
-  wkstype@wkWidth=800
-  wkstype@wkHeight=800
-  wkstitle=varname+"_"+imon
+
+  ;wkstype="X11"
+  wkstype="png"
+  if(wkstype .eq. "png")then
+   wkstype@wkWidth=2500
+   wkstype@wkHeight=2500
+  else
+   wkstype@wkWidth=800
+   wkstype@wkHeight=800
+  end if
+  wkstitle=varname+"_"+mon+iday
   wks   = gsn_open_wks (wkstype,wkstitle)              ; send graphics to X11 window
 
   plot = new(nruns+nobs,graphic)
@@ -227,12 +231,12 @@ if(1 .eq. 0)then
   ii = 2
   res@mpFillOn   = True
   res@gsnCenterString = obslabs(0)
-  plot(ii) = gsn_csm_contour_map_polar(wks,aobs(0,:,:),res)    ; create the plot
+  plot(ii) = gsn_csm_contour_map_polar(wks,ovar(0,:,:),res)    ; create the plot
 
   ii = 3
   res@mpFillOn   = True
   res@gsnCenterString = obslabs(1)
-  plot(ii) = gsn_csm_contour_map_polar(wks,aobs(1,:,:),res)    ; create the plot
+  plot(ii) = gsn_csm_contour_map_polar(wks,ovar(1,:,:),res)    ; create the plot
 
 ;************************************************
 ; make the panel
@@ -255,6 +259,5 @@ if(1 .eq. 0)then
    system(imcmd)
   end if
 
-  end if
 exit
 end
