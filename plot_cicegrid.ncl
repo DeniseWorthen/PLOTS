@@ -10,15 +10,10 @@ begin
 ; read in netCDF file
 ;************************************************
 
-  ; hycom-cice
-  ;rtsrc  = "/scratch4/NCEPDEV/ocean/save/Denise.Worthen/NEMS_INPUT0.1/"
-  ;grdsrc = "cice_data/mx024/"
-  ;grdfile = "cice_grid_024.nc"
+  rtsrc =  "/work/noaa/stmp/dworthen/stmp/dworthen/S2S_RT/rt_207744/s2s_control/history/"
 
-  ; mom6-cice
-  rtsrc = "/home/Denise.Worthen/MOM2CICE_2/"
-  grdsrc = ""
-  grdfile = "grid_cice_NEMS_mx025.nc"
+  res = "mx100"
+  grdfile = "iceh_ic.2016-10-03-00000.nc"
  
   rad2deg = 180.d0/acos(-1.0d0)
 
@@ -27,23 +22,19 @@ begin
 ;************************************************
 
   ; load the grid file
-  gr =addfile(rtsrc+grdsrc+grdfile,"r")
+  gr =addfile(rtsrc+grdfile,"r")
 
-  varname="htn"
-  latname="latCv"
-  lonname="lonCv"
-  levs=(/6400.0, 6600.0, 5.0/)
-  minlat=88.0
+  varname="tmask"
+  ;varname="aice"
+  latname="TLAT"
+  lonname="TLON"
+  levs=(/0.0, 1.0, 0.1/)
+  minlat=66.0
 
-  ;varname="hte"
-  ;latname="latCu"
-  ;lonname="lonCu"
-  ;levs=(/9200.0, 12200.0, 100.0/)
-  ;minlat=82.0
-
-  var = gr->$varname$
-  var@lon2d=gr->$lonname$*rad2deg
-  var@lat2d=gr->$latname$*rad2deg
+  var = gr->$varname$(:,:)
+  printVarSummary(var)
+  var@lon2d=gr->$lonname$
+  var@lat2d=gr->$latname$
 
 ;************************************************
 ; add a poly line showing the polar seem along
@@ -109,7 +100,7 @@ begin
 ;************************************************
 
   plot = gsn_csm_contour_map_polar(wks,var,res)    ; create the plot
-  dum= gsn_add_polyline(wks,plot,(/lon1, lon2/) , (/lat1, lat2/) ,pres)
+  ;dum= gsn_add_polyline(wks,plot,(/lon1, lon2/) , (/lat1, lat2/) ,pres)
 
   draw(plot)
   frame(wks)

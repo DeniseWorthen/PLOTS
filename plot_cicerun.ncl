@@ -29,18 +29,18 @@ begin
 ; read in netCDF file
 ;************************************************
 
- cyear = "2013"
-  cmon = "08"
-  imon = "07"
-  cday = "05"
+ cyear = "2016"
+  cmon = "10"
+  imon = "10"
+  cday = "04"
  chour = "00000"
  idate = cyear+cmon+"0100"
  cdate = cyear+cmon+cday
 
   ; rtsrc = "cice6_35d/cpld_fv3_ccpp_384_mom6_cice_cmeps_35d_"+cyear+imon+"0100/"
-   rtsrc = "rt_428139/cpld_fv3_ccpp_384_mom6_cice_cmeps_35d_"+cyear+imon+"0100/"
+   rtsrc = "rt_207744/s2s_control/"
    ; use one file for grid
-   gf =addfile(RT1+rtsrc+"history/iceh_ic."+cyear+"-"+imon+"-01-00000.nc","r")
+   ;gf =addfile(RT1+rtsrc+"iceh_ic."+cyear+"-"+imon+"-01-00000.nc","r")
    ;print(gf)
    tlatname="TLAT"
    tlonname="TLON"
@@ -96,8 +96,8 @@ begin
     icef = addfile(RT1+rtsrc+"history/iceh_06h."+cyear+"-"+cmon+"-"+cday+"-00000.nc","r")
   icevar = icef->$varname$(lstep,:,:)
   ;icevar = icevar/100.0
-  icevar@lon2d=gf->$tlonname$*rfactor
-  icevar@lat2d=gf->$tlatname$*rfactor
+  icevar@lon2d=icef->$tlonname$*rfactor
+  icevar@lat2d=icef->$tlatname$*rfactor
   ;printVarSummary(icevar)
   icevar@units=""
   icevar@long_name=""
@@ -143,8 +143,8 @@ begin
 
   ;res@cnFillMode = "MeshFill"
   res@cnFillMode = "RasterFill"
-  res@mpFillOn   = True
-  ;res@mpOutlineOn   = False
+  res@mpFillOn   = False
+  res@mpOutlineOn   = False
 
   res@gsnStringFontHeightF = 0.05
 

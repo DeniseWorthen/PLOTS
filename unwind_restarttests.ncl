@@ -6,41 +6,47 @@
 ; Ufuk Turuncoglu turuncu@ucar.edu
 ;**********************************************************
 begin
-     RT = "/work/noaa/stmp/dworthen/stmp/dworthen/FV3_RT/rt_425683/"
+     RT = "/work/noaa/stmp/dworthen/smtest/"
 
    date = "2016-10-03-"
   ntile = 6
+ 
+    res = 96
+   cres = ""
+     dt = 900
+
+  ;  res = 192
+  ; cres = "_c192"
+  ;   dt = 900
+
+ ;   res = 384
+ ;  cres = "_c384"
+ ;    dt = 450
 
  ;   res = 96
- ;  cres = ""
+ ;  cres = "_mx025"
  ;    dt = 900
 
- ;   res = 192
- ;  cres = "_c192"
- ;    dt = 900
+  ; 12h + 1dt
+  ;times = (/86400/2 + dt, 86400/2 + 2*dt/)
+   ;dirs = (/"cpld_control_prod"+cres+"/RESTART/", "cpld_restart_prod"+cres+"/RESTART/"/)
+   dirs = (/"hour2/RESTART/", "restr/RESTART/"/)
+  ;times = (/"00900", "01800"/)
+  times = (/"04500"/)
+  ; dirs = (/"cpld_control"+cres+"/RESTART/"/)
 
-    res = 384
-   cres = "_c384"
-     dt = 450
-
-  times = (/dt, 2*dt/)
-
-   dirs = (/"cpld_controlfrac"+cres+"_prod/" \
-           ,"cpld_control"+cres+"_prod/" /)
-  ;times = (/"00900","01800"/)
-   fsrc = "ufs.cpld.cpl.hi."+date
-
+   fsrc = "ufs.cpld.cpl.hi."
   ndirs = dimsizes(dirs)
     nts = dimsizes(times)
 
 do nd = 0,ndirs-1
  do nt = 0,nts-1
     time = times(nt)
-   ctime = sprinti("%0.5i", time)
   dirsrc = RT+dirs(nd)
-   ifile = fsrc + ctime
+  dirout = dirsrc
+   ifile = fsrc+date
 
-  fname = dirsrc+ifile+".nc"
+  fname = dirsrc+ifile+time+".nc"
   print("input file "+fname)
   ff = addfile(fname,"r")
 
@@ -55,7 +61,6 @@ do nd = 0,ndirs-1
   ;--- reshape variables---
   lon3d = new((/ ntile, res, res /), typeof(lon1d))
   lat3d = new((/ ntile, res, res /), typeof(lat1d))
-  ;printVarSummary(lat3d)
 
   do i = 0, ntile-1
    istr = (i*res*res)
@@ -102,7 +107,8 @@ do nd = 0,ndirs-1
 
   do i = 0, ntile-1
 
-    ofile = dirsrc+"ufs.cpl.hi-"+time+".tile"+sprinti("%d", i+1)+".nc"
+    ;ofile = dirsrc+fsrc+time+".tile"+sprinti("%d", i+1)+".nc"
+    ofile = dirout+fsrc+time+".tile"+sprinti("%d", i+1)+".nc"
     print("output file "+ofile)
     system("rm -f "+ofile)
     fout = addfile(ofile, "c")
@@ -155,7 +161,8 @@ do nd = 0,ndirs-1
      end do
 
      do i = 0, ntile-1
-      ofile = dirsrc+"ufs.cpl.hi-"+time+".tile"+sprinti("%d", i+1)+".nc"
+      ;ofile = dirsrc+fsrc+time+".tile"+sprinti("%d", i+1)+".nc"
+      ofile = dirout+fsrc+time+".tile"+sprinti("%d", i+1)+".nc"
        fout = addfile(ofile, "w")
        fout->$vname$ = (/ var3d(i,:,:) /)
      end do
