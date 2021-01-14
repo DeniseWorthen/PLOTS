@@ -1,31 +1,18 @@
 ;**********************************************************
 ; re-write CMEPS coupler history fields for Atm
-; imports, exports and masks to tiled files for
+; imports, exports and masks to tiled files for 
 ;
 ; adapted from code originally written by
 ; Ufuk Turuncoglu turuncu@ucar.edu
 ;**********************************************************
 begin
-
      RT = "/glade/scratch/worthen/"
-    ;res = 384
-    res = 96
-  cdate = "2016-10-03-"
-    
+    res = 384
   ntile = 6
-   dirs = (/"hour2_frac/"/)
-   times = (/"00900","01800","07200"/)
-  ndirs = dimsizes(dirs)
-    nts = dimsizes(times)
-   fsrc = "ufs.s2s."
 
-do nd = 0,ndirs-1
- do nt = 0,nts-1
-    time = times(nt)
-  dirsrc = RT+dirs(nd)
-   ifile = fsrc+"cpl.hi."+cdate
-
-  fname = dirsrc+ifile+time+".nc"
+  dirsrc = RT+"orioro/cmeps/"
+   fname = dirsrc+"ufs.s2s.c384_t025.jan.jul02.cold.cpl.r.2012-01-01-03600.nc"
+ 
   print("input file "+fname)
   ff = addfile(fname,"r")
 
@@ -74,7 +61,7 @@ do nd = 0,ndirs-1
       vname .eq. "atmExp_lon")then
     valid(ii) = False
    end if
-  end do
+  end do 
   do ii = 0,nvars-1
    vname = vnames(ii)
    ;print(ii+" "+vnames(ii)+"  "+valid(ii))
@@ -86,7 +73,8 @@ do nd = 0,ndirs-1
 
   do i = 0, ntile-1
 
-    ofile = dirsrc+fsrc+time+".tile"+sprinti("%d", i+1)+".nc"
+    ;ofile = dirsrc+"diff.tile"+sprinti("%d", i+1)+".nc"
+    ofile = dirsrc+"cpl.r.tile"+sprinti("%d", i+1)+".nc"
     print("output file "+ofile)
     system("rm -f "+ofile)
     fout = addfile(ofile, "c")
@@ -120,7 +108,7 @@ do nd = 0,ndirs-1
 
     fout->grid_xt = (/ lon3d(i,:,:) /)
     fout->grid_yt = (/ lat3d(i,:,:) /)
-  end do
+  end do 
 
 ;**********************************************************
 ; add variables
@@ -139,7 +127,8 @@ do nd = 0,ndirs-1
      end do
 
      do i = 0, ntile-1
-      ofile = dirsrc+fsrc+time+".tile"+sprinti("%d", i+1)+".nc"
+    ;  ofile = dirsrc+"diff.tile"+sprinti("%d", i+1)+".nc"
+       ofile = dirsrc+"cpl.r.tile"+sprinti("%d", i+1)+".nc"
        fout = addfile(ofile, "w")
        fout->$vname$ = (/ var3d(i,:,:) /)
      end do
@@ -147,10 +136,7 @@ do nd = 0,ndirs-1
     delete(var3d)
    end if
   end do
-  delete(vnames)
-  delete(valid)
-end do  ; nts
-end do  ; ndirs
+
 
 exit
 end

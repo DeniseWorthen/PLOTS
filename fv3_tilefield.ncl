@@ -7,56 +7,40 @@
 
 ;************************************************
 
-  ; hera
-  RT1 = "/scratch2/NCEPDEV/stmp1/Denise.Worthen/"
-  RT2 = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/"
-  RT3 = "/scratch2/NCEPDEV/stmp3/Denise.Worthen/"
-  RT4 = "/scratch1/NCEPDEV/stmp4/Denise.Worthen/"
-  ; theia
-  ;RT1 = "/scratch3/NCEPDEV/stmp1/Denise.Worthen/"
-  ;RT2 = "/scratch3/NCEPDEV/stmp2/Denise.Worthen/"
-  ;RT3 = "/scratch4/NCEPDEV/stmp3/Denise.Worthen/"
-  ;RT4 = "/scratch4/NCEPDEV/stmp4/Denise.Worthen/"
+  RT4 = "/glade/scratch/worthen/initTests/"
 
-   hemi = "NH"
- ; hemi = "SH"
- ; hemi = "none"
-
-  rad2deg=180.d0/acos(-1.0d0)
-  icemin = 1.0e-6
+  ;hemi="NH"
+  ;hemi="SH"
+  ;hemi="none"
+  hemi="wedge"
 
 ;************************************************
 ;
 ;************************************************
 
   lstep=0
-  if(hemi .eq. "none")then
-    tile = "tile4"
-  else
-   if(hemi .eq. "NH")then
+  if(hemi .eq. "wedge")then
+    tile = "tile3"
+  end if
+  if(hemi .eq. "NH")then
     tile = "tile3"
   end if
   if(hemi .eq. "SH")then
     tile = "tile6"
   end if
- end if
+  if(hemi .eq. "none")then
+    tile = tile4
+  end if
 
-  ;model = "phyf000:07:30."
-  model = "phyf000:15:00."
+  model = "phyf000:07:30."
   tlonname = "grid_xt"
   tlatname = "grid_yt"
-  rfactor=rad2deg
-  ;model = "oro_data."
-  ;tlonname = "lon"
-  ;tlatname = "lat"
-  ;rfactor=1.0
 
-  rtsrc = "NEMS_Shan_fix/2012070100_1d_inst/tmp/cpld_fv3_384_mom6_cice_warm_bm2_nems/"
-  ;rtsrc = "NEMS_upfv3_fix3/2012070100_1d_inst/tmp/cpld_fv3_384_mom6_cice_warm_bm2_nems/"
-  afile = addfile(RT1+rtsrc+model+tile+".nc","r")
+   rtsrc="cmepsv06_cold2/"
+      gf=addfile(RT4+rtsrc+model+tile+".nc","r")
 
-  tilecorners = tilegrid(afile->$tlonname$*rad2deg,afile->$tlatname$*rad2deg,tile)
   if(hemi .eq. "none")then
+   tilecorners = tilegrid(gf->$tlonname$,gf->$tlatname$,tile)
    minlon = tilecorners[0]
    minlat = tilecorners[1]
    maxlon = tilecorners[2]
@@ -64,41 +48,37 @@
    midlon = minlon + 0.5*(maxlon - minlon)
    ;print(minlat+"   "+maxlat)
    ;print(minlon+"   "+maxlon+"  "+midlon+"  "+0.5*(maxlon - minlon))
-  else
-   if(hemi .eq. "NH")then
+  end if
+  if(hemi .eq. "NH")then
     minlat =  66.0
     midlon = -45.0
-   else
-    maxlat = -50.0
-    midlon =   0.0
-   end if
   end if
+  if(hemi .eq. "SH")then
+     maxlat = -50.0
+     midlon =   0.0
+  end if
+  if(hemi .eq. "wedge")then
+   minlat =  62.0
+   maxlat =  76.0
+   minlon = 240.0
+   maxlon = 280.0
+   midlon = minlon + (maxlon - minlon)/2.0
+  end if
+  print(minlat+"   "+maxlat)
+  print(minlon+"   "+maxlon+"  "+midlon+"  "+0.5*(maxlon - minlon))
 
+  aname = "icec"
+  levs=(/0.0,1.0,0.05/)
+
+  avar = gf->$aname$(0,:,:)
+  avar@lon2d = gf->$tlonname$
+  avar@lat2d = gf->$tlatname$
+
+  imask = avar
+  imask = where(gf->land(0,:,:) .eq. 1.0, 0.0, 1.0)
+  
   palette="MPL_rainbow"
-  ;print(afile)
-  ;aname = "icec"
-  ;levs=(/0.0,1.0,0.1/)
-  ;aname = "land"
-  ;levs=(/0.0,2.0,1/)
-  ;palette="amwg"
-  ;aname = "tisfc"
-  aname = "tmpsfc"
-  levs=(/-2.0,0.0,.2/)
-  ;aname = "ulwrf"
-  ;levs=(/300,322,1/)
-
-  ;aname = "slmsk"
-  ;levs=(/0.0,4.0,1/)
-
-  avar = afile->$aname$(0,:,:)
- ; avar = afile->$aname$(:,:)
-  avar = (afile->$aname$(lstep,:,:)) - 273.15
-  avar = where(afile->land(lstep,:,:) .eq. 1.0, avar@_FillValue, avar)
-  ;avar = where(afile->icec(lstep,:,:) .lt. icemin, avar@_FillValue, avar)
-  avar@lon2d = afile->$tlonname$*rad2deg
-  avar@lat2d = afile->$tlatname$*rad2deg
-
-  plottitle=rtsrc+model+tile+".nc  "+aname
+  plottitle=model+tile
 
 ;************************************************
 ; define the map
@@ -108,7 +88,10 @@
   ;wkstype="png"
   wkstype@wkWidth=800
   wkstype@wkHeight=800
-  wks   = gsn_open_wks (wkstype,model+tile)              ; send graphics to X11 window
+  wks   = gsn_open_wks (wkstype,"test")              ; send graphics to X11 window
+
+  plot = new(1,graphic)
+ oplot = new(1,graphic)
 
   res                      = True        ; plot mods desired
   res@gsnDraw              = False       ; do not draw until the end
@@ -121,7 +104,7 @@
 
   res@gsnStringFontHeightF = 0.01
 
-  if(hemi .ne. "none")then
+  if(hemi .eq. "NH" .or. hemi .eq. "SH")then
    res@gsnPolar   =  hemi                         ; specify the hemisphere
    if(hemi .eq. "NH")then
     res@mpMinLatF    =  66.0                          ; minimum lat to plot
@@ -154,7 +137,6 @@
   res@cnLevelSpacingF = levs(2)                      ; set the interval between contours
 
   res@cnMissingValPerimOn     = False            ; turn on the missing value perimeter
-  ;res@cnMissingValPerimColor  = "black"           ; outline the perimeter red
   res@cnMissingValFillPattern = 0               ; choose fill pattern 0 (solid fill) 
   res@cnMissingValFillColor   = "gray"          ; color fill missing areas blue
 
@@ -162,14 +144,33 @@
   res@tiMainString = plottitle
 
 ;************************************************
+; resources for overlay
+;************************************************
+
+  ores                  = True        ; plot mods desired
+  ores@cnLineThicknessF = 2.0            ; line thickness
+  ores@cnLineLabelsOn   = False
+  ores@cnInfoLabelOn    = False
+  ores@gsnDraw          = False ; don't draw
+  ores@gsnFrame         = False ; don't advance frame
+  ores@gsnLeftString    = ""    ; no titles
+  ores@gsnRightString   = ""
+  ores@cnLevelSelectionMode = "ExplicitLevels"     ; set the contour levels with the following 3 resources
+  ores@cnLevels = (/0.0/)
+  ores@cnFillOn          = True                  ; color fill
+  ;ores@cnFillPalette            = "gray6"
+
+;************************************************
 ;
 ;************************************************
 
-  if(hemi .eq. "none")then
+  if(hemi .eq. "wedge" .or. hemi .eq. "none")then
    plot = gsn_csm_contour_map(wks,avar,res)    ; create the plot
   else
    plot = gsn_csm_contour_map_polar(wks,avar,res)    ; create the plot
   end if
+  ;oplot = gsn_csm_contour(wks,imask,ores)             ; create the plot
+  ;overlay(plot,oplot)
 
   draw(plot)
   frame(wks)

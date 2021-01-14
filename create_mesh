@@ -1,0 +1,50 @@
+#!/bin/bash
+#PBS -A P93300606
+#PBS -N job_name
+#PBS -j oe
+#PBS -q share
+#PBS -l walltime=05:00
+#PBS -l select=1:mpiprocs=2
+#PBS -o log.out
+
+export TMPDIR=/glade/scratch/$USER/temp
+mkdir -p $TMPDIR
+#export MPI_USE_ARRAY=false
+
+cd /glade/scratch/mvertens/meshes
+
+#file_i="tx0.66v1_SCRIP_190314.nc"
+#file_o="tx0.66v1_190314_ESMFmesh_c20190714.nc" 
+
+#file_i="SCRIPgrid_greenland_4km_epsg3413_c170414.nc"
+#file_o="SCRIPgrid_greenland_4km_epsg3413_c170414_ESMFmesh_c20190729.nc"
+
+#file_i="SCRIPgrid_gland_5km_c150511.nc" 
+#file_o="gland_5km_c150511_ESMFmesh_c20190929.nc" 
+
+#file_i="fv1.9x2.5_141008.nc"
+#file_o="fv1.9x2.5_141008_ESMFmesh_c20191001.nc"
+
+#file_i="/glade/p/cesmdata/cseg/inputdata/lnd/clm2/mappingdata/grids/SCRIPgrid_0.5x0.5_nomask_c110308.nc"
+#file_o="/glade/p/cesmdata/cseg/inputdata/share/meshes/r05_nomask_c110308_ESMFmesh_c20191210.nc"
+
+#file_i="/glade/work/barlage/ctsm/conus/scrip/wrf2clm_land.nc"
+#file_o="wrf2clm_land_conus_ESMFMesh_c20191210.nc"
+
+#file_i="/glade/p/cesmdata/cseg/inputdata/lnd/clm2/mappingdata/grids/SCRIPgrid_64x128_nomask_c110308.nc"
+#file_o="64x128_nomask_c110308_ESMFmesh_c20200313"
+
+#file_i="/glade/p/cesmdata/cseg/mapping/grids/T62_040121.nc"
+#file_o="T62_ESMFMesh_c20200511.nc"
+
+#file_i="/glade/p/cesmdata/cseg/mapping/grids/1degcore_130703.nc"
+#file_o="rx1_nomask_ESMFmesh_c20200511.nc"
+
+#file_i="/glade/p/cesmdata/cseg/mapping/grids/gx1v7_151008.nc"
+#file_o="gx1v7_ESMFmesh_c2020511.nc"
+
+file_i="/glade/p/cesmdata/cseg/mapping/grids/T42_001005.nc"
+file_o="T42_ESMFmesh_c20200629.nc"
+
+#mpiexec_mpt `hostname` -np 2 /glade/scratch/mvertens/meshes/ESMF_Scrip2Unstruct $file_i $file_o  0 ESMF 
+mpiexec_mpt -np 2 /glade/scratch/mvertens/meshes/ESMF_Scrip2Unstruct $file_i $file_o  0 ESMF 

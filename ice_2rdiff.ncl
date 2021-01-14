@@ -9,11 +9,12 @@
 ; read in netCDF file
 ;************************************************
   ; cheyenne
-  RT2 = "/glade/scratch/worthen/MStone/"
+  ;RT2 = "/glade/scratch/worthen/MStone/"
+  RT2 = "/glade/scratch/worthen/ciceTests/"
 
  idate = "2012010100"
- plotlabs = (/"NEMS mediator", "CMEPS"/)
-      rts = (/"nems_long","cmeps_long"/)
+ plotlabs = (/"CICE5", "CICE6"/)
+      rts = (/"cice5_10d","cice6_10d"/)
     csets = (/"/",\
               "/"/)
 
@@ -29,9 +30,9 @@
      chour = "00000"
      cdate = cyear+cmon+"01"
 
-   icefiles = addfiles(RT2+rts+csets+"history/iceh_06h."+cyear+"-"+cmon+"-"+cday+"-"+chour+".nc","r")
+   icefiles = addfiles(RT2+rts+csets+"history/iceh_inst."+cyear+"-"+cmon+"-"+cday+"-"+chour+".nc","r")
    ListSetType(icefiles,"cat")
-   ;print(icefiles)
+   print(icefiles)
 
   ; ice fields
   iceflds = (/"aice_h",   \
@@ -43,7 +44,8 @@
               "fsens_h",  \
               "fswdn_h",  \
               "flwdn_h",  \
-              "fresh_h"   \
+              "fresh_h",  \
+              "fhocn_h"   \
               /) 
   nflds = dimsizes(iceflds)
 
@@ -60,6 +62,7 @@
   plotlevs( 7,:) = (/-240.0,240.0,20.00/)  ; SW
   plotlevs( 8,:) = (/-100.0,100.0,10.00/)  ; LW
   plotlevs( 9,:) = (/  -4.0,  4.0, 0.20/)  ; fresh
+  plotlevs(10,:) = (/ -20.0, 20.0, 2.00/)  ; fhocn
   
   cmap="BlueWhiteOrangeRed"
 
@@ -80,7 +83,7 @@
 ;************************************************
 
   ; pick a field to plot
-  fldtoplot =0
+  fldtoplot =10
        levs = plotlevs(fldtoplot,:)
     fldname = iceflds(fldtoplot)
 
@@ -106,8 +109,8 @@
 ; define the map
 ;************************************************
 
-  ;wkstype="X11"
-  wkstype="png"
+  wkstype="X11"
+  ;wkstype="png"
   wkstype@wkWidth=800
   wkstype@wkHeight=800
   wks   = gsn_open_wks (wkstype,wkstitle)              ; send graphics to X11 window

@@ -8,20 +8,18 @@
 
   load "levscmapCICE.ncl"
 
-  ; hera
-  RT1 = "/scratch2/NCEPDEV/stmp1/Denise.Worthen/"
-  RT2 = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/"
-  RT3 = "/scratch2/NCEPDEV/stmp3/Denise.Worthen/"
-  RT4 = "/scratch1/NCEPDEV/stmp4/Denise.Worthen/"
+  ; cheyenne
+  RT1 = "/glade/scratch/worthen/ciceTests/"
 
   fancylevs = "yes"
        hemi = "NH"
   ;    hemi = "SH"
-  ;varnames = (/"aice", "hi"/)
-  varnames = (/"aice", "Tsfc"/)
+  varnames = (/"aice", "hi"/)
+  ;varnames = (/"aice", "sst"/)
+  ;varnames = (/"aice", "Tsfc"/)
   ;varnames = (/"hs", "hi"/)
   ; varnames = (/"hs", "albsni"/)
-  ; varnames = (/"meltt", "meltb"/)
+  ; varnames = (/"fhocn", "Tsfc"/)
     outname = "ice"+hemi
       nvars = dimsizes(varnames)
   ; array contour levels for variables
@@ -30,6 +28,7 @@
 
   if(hemi .eq. "NH")then
     minlat = 66.0
+  ;  minlat = 86.0
   else
     maxlat = -50.0
   end if
@@ -42,11 +41,12 @@
    ulonname="ULON"
 
   cyear = "2012"
-   cmon = "07"
-   cday = "21"
+   cmon = "01"
+   cday = "11"
   ;idate = cyear+cmon+iday+"00"
   ;cdate = cyear+cmon+cday+".01."+idate
   cdate = cyear+"-"+cmon+"-"+cday+"-00000"
+  ;cdate = cyear+"-"+cmon+"-"+cday+"-21600"
   idate = cyear+"-"+cmon+"-"+"01-00000"
   lstep = 1-1
 
@@ -54,21 +54,13 @@
 ; read in netCDF file
 ;************************************************
 
-   ;rtname1 = "BM2-NEMS-update"
-   ; rtsrc1 = RT4+"NEMS_update/2012070100_20d/"
-   ;  cset1 = "tmp/cpld_fv3_384_mom6_cice_warm_bm2_nems/"
+   rtname1 = "cice5_10d"
+    rtsrc1 = RT1+rtname1
+     cset1 = "/"
 
-   ;rtname2 = "BM2-CMEPS-update"
-   ; rtsrc2 = RT4+"CMEPS_update/2012070100_20d/"
-   ;  cset2 = "tmp/cpld_fv3_384_mom6_cice_warm_bm2/"
-
-   rtname1 = "BM2-CMEPS-update; ktherm=1"
-    rtsrc1 = RT3+"CMEPS_update/2012070100_20d/"
-     cset1 = "tmp/cpld_fv3_384_mom6_cice_warm_bm2/"
-
-   rtname2 = "BM2-CMEPS-update; mushy"
-    rtsrc2 = RT3+"CMEPS_update/2012070100_20d_mushy"
-     cset2 = "tmp/cpld_fv3_384_mom6_cice_warm_bm2/"
+   rtname2 = "cice6_10d"
+    rtsrc2 = RT1+rtname2
+     cset2 = "/"
 
    ; use one file for grid
    ;     gf = addfile(rtsrc2+"iceh_ic."+cyear+iday+".nc","r")
@@ -81,15 +73,15 @@
 
      fnames = new((/2/),string)
   ;fnames(0) = dirs(0)+"ice2013080100.01.2013070100.nc"
-  fnames(0) = dirs(0)+"history/iceh_06h."+cdate+".nc"
-  fnames(1) = dirs(1)+"history/iceh_06h."+cdate+".nc"
+  fnames(0) = dirs(0)+"history/iceh_inst."+cdate+".nc"
+  fnames(1) = dirs(1)+"history/iceh_inst."+cdate+".nc"
   print(fnames(0))
   print(fnames(1))
 
   filelist = addfiles(fnames,"r")
   ;print(filelist)
   ;wkstitle = "cice2run"
-  wkstitle = varnames(0)+"_"+varnames(1)
+  wkstitle = varnames(0)+"_"+varnames(1)+"_"+hemi
 
 ;************************************************
 ; add a poly line showing the polar seem along
@@ -174,17 +166,22 @@ begin
    res@cnLevelSelectionMode        = "ExplicitLevels"
    res@cnLevels                    = (/     0.15,0.50,0.7,0.8,0.85,0.9,0.950/)
    res@lbLabelStrings              = (/0.00,0.15,0.50,0.7,0.8,0.85,0.9,0.950/)+""
-  ;else if(name .eq. "hi_h" .or. name .eq. "hi")then
-  ; res@cnLevelSelectionMode        = "ExplicitLevels"
-  ; res@cnLevels                    = (/     0.15,0.50,1.0,1.5,2.0,2.5,3.0,3.5,4.0/)
-  ; res@lbLabelStrings              = (/0.00,0.15,0.50,1.0,1.5,2.0,2.5,3.0,3.5,4.0/)+""
+  else if(name .eq. "hi_h" .or. name .eq. "hi")then
+   res@cnLevelSelectionMode        = "ExplicitLevels"
+   if(hemi .eq. "NH")then
+    res@cnLevels                    = (/     0.15,0.30,0.50,1.0,1.5,2.0,2.5,3.0,3.5,4.0/)
+    res@lbLabelStrings              = (/0.00,0.15,0.30,0.50,1.0,1.5,2.0,2.5,3.0,3.5,4.0/)+""
+   else
+    res@cnLevels                    = (/     0.10,0.20,0.6,0.80,1.2,1.6,2.0/)
+    res@lbLabelStrings              = (/0.00,0.10,0.20,0.6,0.80,1.2,1.6,2.0/)+""
+   end if
   else
    res@cnLevelSelectionMode = "ManualLevels"        ; set the contour levels with the following 3 resources
    res@cnMinLevelValF       = pltlevs(0)            ; set the minimum contour level
    res@cnMaxLevelValF       = pltlevs(1)            ; set the maximum contour level
    res@cnLevelSpacingF      = pltlevs(2)            ; set the interval between contours
    ;res@lbLabelAlignment     = "InteriorEdges"
-  ;end if
+  end if
   end if
  else
    res@cnLevelSelectionMode = "ManualLevels"        ; set the contour levels with the following 3 resources
@@ -324,5 +321,10 @@ end
   gsn_text_ndc(wks,labelstrings(0),0.25,0.03,txres) 
   gsn_text_ndc(wks,labelstrings(1),0.75,0.03,txres) 
  frame(wks)
+
+  if(wkstype .eq. "png")then
+   imcmd = "convert -trim "+wkstitle+".png "+wkstitle+".jpg"
+   system(imcmd)
+  end if
 exit
 end

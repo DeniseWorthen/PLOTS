@@ -19,10 +19,10 @@ begin
    botmelt_levs=(/   0.00,     2.00,  0.100/)
    ;   tsfc_levs=(/ -30.00,     0.00,  1.000/)
    ;   tsfc_levs=(/ -45.00,    -10.00,  1.000/)
-   ;   tsfc_levs=(/ -8.00,     0.00,  0.200/)
-      tsfc_levs=(/ -6.00,     0.00,  0.05/)
+      tsfc_levs=(/ -20.00,     0.00,  0.500/)
+   ;   tsfc_levs=(/ -6.00,     0.00,  0.05/)
    ;    sst_levs=(/   0.00,    16.00,  0.500/)
-       sst_levs=(/  -1.80,     0.00,  0.050/)
+       sst_levs=(/  -1.80,     -1.70,  0.002/)
        sss_levs=(/ 28.40,  35.20,  0.200/)
    ;   snow_levs=(/   0.00,     0.50,  0.010/)
    ; in mm
@@ -31,7 +31,7 @@ begin
        alb_levs=(/  20.00,    80.00,  2.000/)
        ice_levs=(/   0.00,     1.00,  0.050/)
    ;    ice_levs=(/   0.70,     1.00,  0.005/)
-   ;    ice_levs=(/   0.90,     1.00,  0.005/)
+   ;    ice_levs=(/   0.92,     1.00,  0.001/)
    ;     hi_levs=(/   0.00,     4.00,  0.500/)
    if(hemisphere .eq. "SH")then
         hi_levs=(/   0.00,     2.00,  0.100/)
@@ -55,6 +55,7 @@ begin
    else
      icespd_levs=(/   0.00,  20.00,  0.500/)
    end if
+     fhocn_levs=(/  -60.00,  0.00,  5.000/)
 
    ; default
     cmap = "MPL_rainbow"
@@ -143,6 +144,10 @@ begin
    if(name .eq. "icespd")then
     levs = icespd_levs
     cmap = "WhBlGrYeRe"
+   end if
+   if(name .eq. "fhocn")then
+    levs = fhocn_levs
+    cmap = "ncl_default"
    end if
 
    ;print(name+"  "+levs)
