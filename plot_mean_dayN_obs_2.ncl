@@ -150,13 +150,13 @@
      end if
    end do
   end do
-  printVarSummary(ovar)
+  ;printVarSummary(ovar)
 
   aobs = dim_avg_n(ovar,1)
     gf = addfile(obslist(0),"r")
    aobs@lon2d=gf->$icelonname$
    aobs@lat2d=gf->$icelatname$
-  printVarSummary(aobs)
+  ;printVarSummary(aobs)
 
    delete([/gf,ovar,nx,ny/])
 

@@ -12,23 +12,9 @@ begin
  batch = "no"
  ;batch = "yes"
 
-   ice_thick = False
-    ice_area = True
- if(ice_thick)then
-  varname = "hi"
-   yaxlab = "Mean Ice Thickness (m)"
-   wkslab = "Thick"
- else
-  if(ice_area)then
-   varname = "ar"
-    yaxlab = "Area (Millions of square kilometers)"
-    wkslab = "Area"
-  else
-   varname = "ex"
-    yaxlab = "Extent (Millions of square kilometers)"
-    wkslab = "Extent"
-  end if
- end if
+  varname = "hs"
+   yaxlab = "Mean Snow Depth (m)"
+   wkslab = "Snow"
 
  obsvar = varname+"obs"
  modvar = varname+"mod"
@@ -40,7 +26,7 @@ begin
  print(bench)
 
  if(batch .eq. "no")then
-    Year = 2015
+    Year = 2013
 ;  Region = 15-1
   Region = 10-1
 ;  Region = 21-1
@@ -92,7 +78,7 @@ begin
 ; both the k-index for the run (168 total) as well
 ; as the l-index in the time series
 ;************************************************
-    
+     ; here just use obs for the time axis retrieval
      obssrc = "goddard_nt_seaice_conc"
      obslab = "NASA Team"
      ;obssrc = "seaice_conc_cdr"
@@ -132,7 +118,6 @@ begin
     timeUnits = ObsF->time@units
     timeCalendar = ObsF->time@calendar
 
-    obs = ObsF->$obsvar$(lstep0:lstepf,Region)
     ; bm1 = bm choice 1, bm2 = bm choice 2
     bm1 = BMsF[0]->$modvar$(lstep0:lstepf,kstep0:kstepf,Region)
     bm2 = BMsF[1]->$modvar$(lstep0:lstepf,kstep0:kstepf,Region)
@@ -147,40 +132,38 @@ begin
   wkstitle=wkslab+Year+"_region"+rnum
 
 ;************************************************
-; 0 = obs
-; 1 = bm choice 1
-; 2 = bm choice 2
-; 3 = cfs
+; 0 = bm choice 1
+; 1 = bm choice 2
+; 2 = cfs
 ;************************************************
 
-    tot = 1 + 1 + dimsizes(bmnum)
+    tot = 1 + dimsizes(bmnum)
     data_all = new((/tot,nexp,ntime/),"float")
     dims = dimsizes(data_all)
     ;print("data_all "+dims(0)+"  "+dims(1)+"  "+dims(2))
     do k = 0,nexp-1
-     data_all(0,k,:) = obs(:)
-     data_all(1,k,:) = bm1(:,k)
-     data_all(2,k,:) = bm2(:,k)
-     data_all(3,k,:) = cfs(:,k)
+     data_all(0,k,:) = bm1(:,k)
+     data_all(1,k,:) = bm2(:,k)
+     data_all(2,k,:) = cfs(:,k)
     end do
 
-     lines = (/ "Lines" \
-               ,"Lines", "Lines" \
+     lines = (/ \
+                "Lines", "Lines" \
                ,"Lines", "Lines" \
                ,"Lines", "Lines" \
              /)
-     colors = (/  "black" \
-               ,    "red",   "red" \
+     colors = (/ \
+                    "red",   "red" \
                ,   "blue",  "blue" \
                , "grey50", "grey50" \
               /)
-     thicks = (/    5.0 \
-               ,    3.0,     3.0 \
+     thicks = (/  \
+                    3.0,     3.0 \
                ,    3.0,     3.0 \
                ,    3.0,     3.0 \
               /)
-     dashes = (/    0.0 \
-               ,    0.0,     1.0 \
+     dashes = (/  \
+                    0.0,     1.0 \
                ,    0.0,     1.0 \
                ,    0.0,     1.0 \
               /)
@@ -189,8 +172,8 @@ begin
 ;
 ;************************************************
 
- ; 1 obs + 2*(2 benchmark choices) + cfsx2
-  nlines = 1+2*2+2
+ ;  2*(2 benchmark choices) + cfsx2
+  nlines = 2*2+2
 
  legendlabs = new((/nlines/),"string")
  legendfhgt = new((/nlines/),"float")
@@ -199,22 +182,12 @@ begin
  legenddash = new((/nlines/),"float")
  legendmark = new((/nlines/),"float")
 
-   if(ice_thick)then
-   legendlabs(0) = "CryoSat-2 Level-4 Ice Thickness, v1"
-   else
-    if(ice_area)then
-     legendlabs(0) = obslab+", Ice Area "
-    else
-     legendlabs(0) = obslab+", Ice Extent "
-    end if
-   end if
-
-   legendlabs(1) = "P"+bmnum(0)+", initialized 1st"
-   legendlabs(2) = "P"+bmnum(0)+", initialized 15th"
-   legendlabs(3) = "P"+bmnum(1)+", initialized 1st"
-   legendlabs(4) = "P"+bmnum(1)+", initialized 15th"
-   legendlabs(5) = "CFSv2, initialized 1st"
-   legendlabs(6) = "CFSv2, initialized 15th"
+   legendlabs(0) = "P"+bmnum(0)+", initialized 1st"
+   legendlabs(1) = "P"+bmnum(0)+", initialized 15th"
+   legendlabs(2) = "P"+bmnum(1)+", initialized 1st"
+   legendlabs(3) = "P"+bmnum(1)+", initialized 15th"
+   legendlabs(4) = "CFSv2, initialized 1st"
+   legendlabs(5) = "CFSv2, initialized 15th"
    legendfhgt    =  0.10
 
     mmin = min(data_all)
@@ -323,13 +296,19 @@ begin
 ;
 ;************************************************
 
- ; obs
-  res@xyLineThicknessF  = 5.0
-  res@xyLineColor       = "black"
-  plot = gsn_csm_xy (wks,time,data_all(0,0,:),res) ; create plot
-
-   jj = 1
+   jj = 0
   ; 1st, 15th of each month, first plotted bm (bmnum(0))
+  res@xyLineThicknessF  = thicks(jj)
+  res@xyLineColor       = colors(jj)
+  res@xyDashPattern     = dashes(jj)
+   plot = gsn_csm_xy (wks,time,data_all(0,0:nexp-1:2,:), res) ; create plot
+  jj = jj+1
+  res@xyLineColor       = colors(jj)
+  res@xyDashPattern     = dashes(jj)
+  oplot(jj-1) = gsn_csm_xy (wks,time,data_all(0,1:nexp-1:2,:), res) ; create plot
+
+  ; 1st, 15th of each month, second plotted bm (bmnum(1))
+  jj = jj+1
   res@xyLineThicknessF  = thicks(jj)
   res@xyLineColor       = colors(jj)
   res@xyDashPattern     = dashes(jj)
@@ -339,7 +318,7 @@ begin
   res@xyDashPattern     = dashes(jj)
   oplot(jj-1) = gsn_csm_xy (wks,time,data_all(1,1:nexp-1:2,:), res) ; create plot
 
-  ; 1st, 15th of each month, second plotted bm (bmnum(1))
+  ; 1st, 15th of each month, cfs
   jj = jj+1
   res@xyLineThicknessF  = thicks(jj)
   res@xyLineColor       = colors(jj)
@@ -350,18 +329,7 @@ begin
   res@xyDashPattern     = dashes(jj)
   oplot(jj-1) = gsn_csm_xy (wks,time,data_all(2,1:nexp-1:2,:), res) ; create plot
 
-  ; 1st, 15th of each month, cfs
-  jj = jj+1
-  res@xyLineThicknessF  = thicks(jj)
-  res@xyLineColor       = colors(jj)
-  res@xyDashPattern     = dashes(jj)
-  oplot(jj-1) = gsn_csm_xy (wks,time,data_all(3,0:nexp-1:2,:), res) ; create plot
-  jj = jj+1
-  res@xyLineColor       = colors(jj)
-  res@xyDashPattern     = dashes(jj)
-  oplot(jj-1) = gsn_csm_xy (wks,time,data_all(3,1:nexp-1:2,:), res) ; create plot
-
-  do ii = 0,5
+  do ii = 0,4
    overlay(plot,oplot(ii))
   end do
 

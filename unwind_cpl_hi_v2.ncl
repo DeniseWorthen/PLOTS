@@ -1,23 +1,23 @@
 ;**********************************************************
 ; re-write CMEPS coupler history fields for Atm
-; imports, exports and masks to tiled files for 
+; imports, exports and masks to tiled files for
 ;
 ; adapted from code originally written by
 ; Ufuk Turuncoglu turuncu@ucar.edu
 ;**********************************************************
 begin
-     RT = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/S2S_RT/restart_tests/"
+     RT = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/lev_debug_tests/"
     res = 96
   ntile = 6
 
-   dirs = (/"hour2/RESTART/" \
-           ,"restr/RESTART/" /)
+   dirs = (/"cpld_debug_L127_prod/" \
+           ,"cpld_debug_prod/" /)
    ;        /)
   ;times = (/"2013-04-01-00450", "2013-04-01-00900"/)
-  times = (/"2016-10-03-04500"/)
+  times = (/"2016-10-03-00900"/)
    ;fsrc = "ufs.s2s.cold.cpl.hi."
    ;fsrc = "ufs.s2s.cpl.r."
-   fsrc = "ufs.s2s.cpl.hi."
+   fsrc = "ufs.cpld.cpl.hi."
   ndirs = dimsizes(dirs)
     nts = dimsizes(times)
 
@@ -78,7 +78,7 @@ do nd = 0,ndirs-1
       vname .eq. "atmExp_lon")then
     valid(ii) = False
    end if
-  end do 
+  end do
   do ii = 0,nvars-1
    vname = vnames(ii)
    ;print(ii+" "+vnames(ii)+"  "+valid(ii))
@@ -125,7 +125,7 @@ do nd = 0,ndirs-1
 
     fout->grid_xt = (/ lon3d(i,:,:) /)
     fout->grid_yt = (/ lat3d(i,:,:) /)
-  end do 
+  end do
 
 ;**********************************************************
 ; add variables

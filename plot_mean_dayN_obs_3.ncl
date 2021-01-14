@@ -23,7 +23,7 @@
    CL = "/scratch2/NCEPDEV/climate/Denise.Worthen/"
 
   year = "2012" ; mean ice obs are on fake 2012 calendar
-   mon = "08"
+   mon = "02"
   iday = "01"
   ; +35d
     day = 35
@@ -69,8 +69,13 @@
 
    ; varname = "hi_h"
    ;levs = (/0.0,3.0,0.1/)
-    varname = "aice_h"
-   levs = (/0.0,1.0,0.1/)
+   ; varname = "aice_h"
+   ;levs = (/0.0,1.0,0.1/)
+   ; varname = "Tsfc_h"
+   ;levs = (/-30.0,0.0,1.0/)
+    varname = "hs_h"
+   levs = (/0.0,0.50,0.01/)
+   ;levs = (/0.0,0.20,0.005/)
 
    plottitle = "mean "+varname+": "+fmd+" (initial date "+mon+iday+" + "+day+" days)"
 ;************************************************
@@ -121,8 +126,8 @@
 ; define the map
 ;************************************************
 
-  ;wkstype="X11"
-  wkstype="png"
+  wkstype="X11"
+  ;wkstype="png"
   if(wkstype .eq. "png")then
    wkstype@wkWidth=2500
    wkstype@wkHeight=2500
@@ -180,9 +185,13 @@
    ;res@cnMaxLevelValF  = levs(1)                      ; set the maximum contour level
    ;res@cnLevelSpacingF = levs(2)                      ; set the interval between contours
   else
-   res@cnLevelSelectionMode        = "ExplicitLevels"
-   res@cnLevels                    = (/     0.15,0.50,0.7,0.8,0.85,0.9,0.950/)
-   res@lbLabelStrings              = (/0.00,0.15,0.50,0.7,0.8,0.85,0.9,0.950/)+""
+   ;res@cnLevelSelectionMode        = "ExplicitLevels"
+   ;res@cnLevels                    = (/     0.15,0.50,0.7,0.8,0.85,0.9,0.950/)
+   ;res@lbLabelStrings              = (/0.00,0.15,0.50,0.7,0.8,0.85,0.9,0.950/)+""
+   res@cnLevelSelectionMode = "ManualLevels"     ; set the contour levels with the following 3 resources
+   res@cnMinLevelValF  = levs(0)                      ; set the minimum contour level
+   res@cnMaxLevelValF  = levs(1)                      ; set the maximum contour level
+   res@cnLevelSpacingF = levs(2)                      ; set the interval between contours
   end if
 
   ;res@cnFillPalette         = "WhBlGrYeRe"              ; choose colormap
@@ -231,12 +240,12 @@
   ii = 2
   res@mpFillOn   = True
   res@gsnCenterString = obslabs(0)
-  plot(ii) = gsn_csm_contour_map_polar(wks,ovar(0,:,:),res)    ; create the plot
+  ;plot(ii) = gsn_csm_contour_map_polar(wks,ovar(0,:,:),res)    ; create the plot
 
   ii = 3
   res@mpFillOn   = True
   res@gsnCenterString = obslabs(1)
-  plot(ii) = gsn_csm_contour_map_polar(wks,ovar(1,:,:),res)    ; create the plot
+  ;plot(ii) = gsn_csm_contour_map_polar(wks,ovar(1,:,:),res)    ; create the plot
 
 ;************************************************
 ; make the panel

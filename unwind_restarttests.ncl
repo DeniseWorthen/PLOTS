@@ -6,7 +6,7 @@
 ; Ufuk Turuncoglu turuncu@ucar.edu
 ;**********************************************************
 begin
-     RT = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/rt_212486/"
+     RT = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/lev127/"
 
    date = "2016-10-03-"
   ntile = 6
@@ -28,10 +28,12 @@ begin
  ;    dt = 900
 
   ; 12h + 1dt
-  times = (/86400/2 + dt, 86400/2 + 2*dt/)
-   dirs = (/"cpld_control_prod"+cres+"/RESTART/", "cpld_restart_prod"+cres+"/RESTART/"/)
+  ;times = (/86400/2 + dt, 86400/2 + 2*dt/)
+  ; dirs = (/"cpld_control_prod"+cres+"/RESTART/", "cpld_restart_prod"+cres+"/RESTART/"/)
   ;times = (/"00900", "01800"/)
   ; dirs = (/"cpld_control"+cres+"/RESTART/"/)
+  times = (/"00900"/)
+   dirs = (/"cpld_control_prod/"/)
 
    fsrc = "ufs.cpld.cpl.hi."
   ndirs = dimsizes(dirs)
