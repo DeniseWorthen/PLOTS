@@ -7,25 +7,40 @@
 ;**********************************************************
 begin
 
-     RT = "/glade/scratch/worthen/"
-    ;res = 384
-    res = 96
-  cdate = "2016-10-03-"
-    
+     RT = "/glade/scratch/worthen/FV3_RT/"
+
+   date = "2016-10-03-"
   ntile = 6
-   dirs = (/"hour2_frac/"/)
-   times = (/"00900","01800","07200"/)
+
+ ;   res = 96
+ ;  cres = ""
+ ;    dt = 900
+
+ ;   res = 192
+ ;  cres = "_c192"
+ ;    dt = 900
+
+    res = 384
+   cres = "_c384"
+     dt = 450
+
+  times = (/dt, 2*dt, 3*dt/)
+
+   dirs = (/"cpld_controlfrac"+cres+"_prod/" \
+           ,"cpld_control"+cres+"_prod/" /)
+   fsrc = "ufs.cpld.cpl.hi."
+    
   ndirs = dimsizes(dirs)
     nts = dimsizes(times)
-   fsrc = "ufs.s2s."
 
 do nd = 0,ndirs-1
  do nt = 0,nts-1
     time = times(nt)
+   ctime = sprinti("%0.5i", time)
   dirsrc = RT+dirs(nd)
-   ifile = fsrc+"cpl.hi."+cdate
+   ifile = fsrc + + date+ ctime
 
-  fname = dirsrc+ifile+time+".nc"
+  fname = dirsrc+ifile+".nc"
   print("input file "+fname)
   ff = addfile(fname,"r")
 
@@ -40,6 +55,7 @@ do nd = 0,ndirs-1
   ;--- reshape variables---
   lon3d = new((/ ntile, res, res /), typeof(lon1d))
   lat3d = new((/ ntile, res, res /), typeof(lat1d))
+  ;printVarSummary(lat3d)
 
   do i = 0, ntile-1
    istr = (i*res*res)
