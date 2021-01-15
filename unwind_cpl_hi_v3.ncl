@@ -24,30 +24,24 @@ begin
  ;  cres = "_c384"
  ;    dt = 450
 
-  times = ispan(900,21600,900)
-  ;times = (/dt, 2*dt, 3*dt/)
-  ;print(times)
-   dirs = (/"cpld_controlfrac"+cres+"_prod/" \
-           ,"cpld_control"+cres+"_prod/" /)
-   fsrc = "ufs.cpld.cpl.hi."
-    
-  ndirs = dimsizes(dirs)
-    nts = dimsizes(times)
+     dir = "cpld_controlfrac"+cres+"_prod/"
+    fsrc = "ufs.cpld.cpl.hi."
+  dirsrc = RT+dir
+  
+  filelist = systemfunc("ls "+dirsrc+fsrc+date+"*.nc")
+      fcpl = addfiles(filelist,"r")
+       nts = dimsizes(filelist)
+  print(filelist)
 
-do nd = 0,ndirs-1
- do nt = 0,nts-1
-    time = times(nt)
-   ctime = sprinti("%0.5i", time)
-  dirsrc = RT+dirs(nd)
-   ifile = fsrc + date+ ctime
-
-  fname = dirsrc+ifile+".nc"
-  print("input file "+fname)
-  ff = addfile(fname,"r")
+  ;--- read time variable ---
+          time = fcpl[:]->time
+     timeUnits = fcpl[0]->time@units
+  timeCalendar = fcpl[0]->time@calendar
+  ;printVarSummary(time)
 
   ;--- read coordinate variables ---
-  lat1d = ff->atmImp_lat(0,0,:)
-  lon1d = ff->atmImp_lon(0,0,:)
+  lat1d = fcpl[0]->atmImp_lat(0,0,:)
+  lon1d = fcpl[0]->atmImp_lon(0,0,:)
   lat1d@units = "degrees_N"
   lon1d@units = "degrees_E"
   ;printVarSummary(lat1d)
@@ -71,7 +65,7 @@ do nd = 0,ndirs-1
 ; subset variables
 ;**********************************************************
 
-  vnames = getfilevarnames (ff)
+  vnames = getfilevarnames (fcpl[0])
   nvars = dimsizes(vnames)
   valid = new((/nvars/), logical)
 
@@ -103,23 +97,25 @@ do nd = 0,ndirs-1
 
   do i = 0, ntile-1
 
-    ofile = dirsrc+fsrc+time+".tile"+sprinti("%d", i+1)+".nc"
+    ofile = dirsrc+fsrc+"tile"+sprinti("%d", i+1)+".nc"
     print("output file "+ofile)
     system("rm -f "+ofile)
     fout = addfile(ofile, "c")
     setfileoption(fout, "DefineMode", True)
 
     ;--- create dimensions ---
-    dimNames = (/ "grid_xt", "grid_yt" /)
-    dimSizes = (/ res, res /)
-    dimUnlim = (/ False, False /)
+    dimNames = (/ "time", "grid_xt", "grid_yt" /)
+    dimSizes = (/     -1,       res,       res /)
+    dimUnlim = (/   True,     False,     False /)
     filedimdef(fout, dimNames, dimSizes, dimUnlim)
 
     ;--- create lat,lon variable ---
     filevardef(fout, "grid_xt", typeof(lon1d), (/ "grid_yt", "grid_xt" /))
     filevardef(fout, "grid_yt", typeof(lat1d), (/ "grid_yt", "grid_xt" /))
+    filevardef(fout,  "time", typeof(time),  getvardims(time))
 
     ; Copy attributes associated with each variable to the file
+    filevarattdef(fout,     "time",   time)
     ;filevarattdef(fout,  "grid_yt",  lat3d)
     ;filevarattdef(fout,  "grid_xt",  lon3d)
 
@@ -127,16 +123,18 @@ do nd = 0,ndirs-1
     do ii = 0,nvars-1
      if(valid(ii)) then
       vname = vnames(ii)
-      ;printVarSummary(ff->$vname$(0,0,:))
-      var1d = (/ff->$vname$(0,0,:)/)
+      ;printVarSummary(fcpl[:]->$vname$(:,0,:))
+      var1d = (/fcpl[:]->$vname$(:,0,:)/)
       ;printVarSummary(var1d)
-      filevardef(fout, vname, typeof(var1d), (/ "grid_yt", "grid_xt" /))
+      filevardef(fout, vname, typeof(var1d), (/ "time", "grid_yt", "grid_xt" /))
      end if
     end do
     setfileoption(fout, "DefineMode", False)
 
+    ; write the dimensions to the file
     fout->grid_xt = (/ lon3d(i,:,:) /)
     fout->grid_yt = (/ lat3d(i,:,:) /)
+    fout->time    = (/ time /)
   end do
 
 ;**********************************************************
@@ -146,19 +144,19 @@ do nd = 0,ndirs-1
   do ii = 0,nvars-1
    if(valid(ii)) then
     vname = vnames(ii)
-     var1d = (/ff->$vname$(0,0,:)/)
-     var3d = new((/ ntile, res, res /), typeof(var1d), default_fillvalue(typeof(var1d)) )
+     var1d = (/fcpl[:]->$vname$(:,0,:)/)
+     var3d = new((/ ntile, nts, res, res /), typeof(var1d), default_fillvalue(typeof(var1d)) )
 
      do i = 0, ntile-1
       istr = (i*res*res)
       iend = istr+res*res-1
-      var3d(i,:,:) = onedtond(var1d(istr:iend), (/ res, res /))
+      var3d(i,:,:,:) = onedtond(var1d(:,istr:iend), (/nts, res, res /))
      end do
 
      do i = 0, ntile-1
-      ofile = dirsrc+fsrc+time+".tile"+sprinti("%d", i+1)+".nc"
+      ofile = dirsrc+fsrc+"tile"+sprinti("%d", i+1)+".nc"
        fout = addfile(ofile, "w")
-       fout->$vname$ = (/ var3d(i,:,:) /)
+       fout->$vname$ = (/ var3d(i,:,:,:) /)
      end do
     delete(var1d)
     delete(var3d)
@@ -166,8 +164,6 @@ do nd = 0,ndirs-1
   end do
   delete(vnames)
   delete(valid)
-end do  ; nts
-end do  ; ndirs
 
 exit
 end

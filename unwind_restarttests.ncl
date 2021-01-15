@@ -6,7 +6,7 @@
 ; Ufuk Turuncoglu turuncu@ucar.edu
 ;**********************************************************
 begin
-     RT = "/glade/scratch/worthen/FV3_RT/lev127/"
+     RT = "/glade/scratch/worthen/FV3_RT/rt_8737/"
 
    date = "2016-10-03-"
   ntile = 6
