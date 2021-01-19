@@ -109,7 +109,7 @@ begin
     setfileoption(fout, "DefineMode", True)
 
     ;--- create dimensions ---
-    dimNames = (/ "time", "grid_xt", "grid_yt" /)
+    dimNames = (/ "time", "grid_yt", "grid_xt" /)
     dimSizes = (/     -1,       res,       res /)
     dimUnlim = (/   True,     False,     False /)
     filedimdef(fout, dimNames, dimSizes, dimUnlim)
