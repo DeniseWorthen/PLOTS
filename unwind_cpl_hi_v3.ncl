@@ -7,7 +7,7 @@
 ;**********************************************************
 begin
 
-     RT = "/glade/scratch/worthen/FV3_RT/rt_28678/"
+     RT = "/glade/scratch/worthen/FV3_RT/rt_22693/"
 
    date = "2016-10-03-"
   ntile = 6
@@ -24,15 +24,18 @@ begin
  ;  cres = "_c384"
  ;    dt = 450
 
-     dir = "cpld_controlfrac"+cres+"_prod/"
+     dir = "test48/"
+    ; dir = "cpld_controlfrac"+cres+"_prod/"
+    ; dir = "cpld_control"+cres+"_prod/"
     fsrc = "ufs.cpld.cpl.hi."
   dirsrc = RT+dir
   
-  filelist = systemfunc("ls "+dirsrc+fsrc+date+"*.nc")
+  filelist = systemfunc("ls "+dirsrc+fsrc+"*.nc")
       fcpl = addfiles(filelist,"r")
        nts = dimsizes(filelist)
   print(filelist)
 
+;if(1.eq.0)then
   ;--- read time variable ---
           time = fcpl[:]->time
      timeUnits = fcpl[0]->time@units
@@ -99,7 +102,9 @@ begin
 
     ofile = dirsrc+fsrc+"tile"+sprinti("%d", i+1)+".nc"
     print("output file "+ofile)
-    system("rm -f "+ofile)
+    if(isfilepresent(ofile))then
+     system("rm -f "+ofile)
+    end if
     fout = addfile(ofile, "c")
     setfileoption(fout, "DefineMode", True)
 
@@ -162,8 +167,32 @@ begin
     delete(var3d)
    end if
   end do
+  delete(fout)
   delete(vnames)
   delete(valid)
+;end if
+;**********************************************************
+;
+;atmImp_Sa_ofrac = mask(fout->atmImp_Sa_ofrac, fout->atmImp_Sa_ofrac .lt. 1.0, True)
+;atmExp_Si_ifrac = fout->atmExp_Si_ifrac
+;**********************************************************
+
+     ; tile 3
+   ;     i = 2
+   ; ofile = dirsrc+fsrc+"tile"+sprinti("%d", i+1)+".nc"
+   ;  fout = addfile(ofile, "r")
+
+   ;atmExp_Si_ifrac = mask(fout->atmExp_Si_ifrac, fout->atmExp_Si_ifrac .gt. 0.0, True)
+   ;atmImp_Sa_ofrac = 1.0 - fout->atmImp_Sa_ofrac
+   ;atmImp_Sa_ofrac = mask(atmImp_Sa_ofrac, atmImp_Sa_ofrac .gt. 0.0, True)
+   ;print("minval Si_ifrac "+dim_min_n(atmExp_Si_ifrac, (/1,2/))+"  max val Sa_ofrac "+dim_min_n(atmImp_Sa_ofrac, (/1,2/)))
+
+   ;med_frac_atm_ofrac = mask(fout->Med_frac_atm_ofrac, fout->Med_frac_atm_ofrac .gt. 0.0, True)
+   ;atmImp_Sa_ofrac = mask(fout->atmImp_Sa_ofrac, fout->atmImp_Sa_ofrac .gt. 0.0, True)
+   ;print("minval med_frac_atm_ofrac "+dim_min_n(med_frac_atm_ofrac, (/1,2/))+"  min val Sa_ofrac "+dim_min_n(atmImp_Sa_ofrac, (/1,2/)))
+   ;med_frac_atm_ofrac = mask(fout->Med_frac_atm_ofrac, fout->Med_frac_atm_ofrac .gt. 0.0, True)
+   ;med_frac_atm_onorm = mask(fout->Med_frac_atm_onorm, fout->Med_frac_atm_onorm .gt. 0.0, True)
+   ;print("minval med_frac_atm_ofrac "+dim_min_n(med_frac_atm_ofrac, (/1,2/))+"  min val Sa_ofrac "+dim_min_n(med_frac_atm_onorm, (/1,2/)))
 
 exit
 end
