@@ -19,7 +19,7 @@
 ;************************************************
 
      rtsrc = "$WORK/EMC_CICE/tools/"
-  ; get ang from cice grid file 
+  ; get ang from cice grid file
    varsrc  = "grid_cice_NEMS_"+grres+".nc"
 
    cornerprefix = "u"
@@ -157,7 +157,7 @@
 
   res@gsnStringFontHeightF = 0.05
 ;************************************************
-; add a poly line showing the polar seem along  
+; add a poly line showing the polar seem along
 ; great circle path from (lon1,lat1) to (lon2,lat2)
 ;************************************************
 

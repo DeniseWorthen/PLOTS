@@ -12,15 +12,10 @@
   RT2 = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/"
   RT3 = "/scratch2/NCEPDEV/stmp3/Denise.Worthen/"
   RT4 = "/scratch1/NCEPDEV/stmp4/Denise.Worthen/"
-  ; theia
-  ;RT1 = "/scratch3/NCEPDEV/stmp1/Denise.Worthen/"
-  ;RT2 = "/scratch3/NCEPDEV/stmp2/Denise.Worthen/"
-  ;RT3 = "/scratch4/NCEPDEV/stmp3/Denise.Worthen/"
-  ;RT4 = "/scratch4/NCEPDEV/stmp4/Denise.Worthen/"
 
  ;  hemi = "NH"
-  hemi = "SH"
- ; hemi = "none"
+ ; hemi = "SH"
+  hemi = "none"
 
   rad2deg=180.d0/acos(-1.0d0)
   icemin = 1.0e-6
@@ -42,27 +37,33 @@
  end if
 
   ;model = "phyf000:07:30."
-  model = "phyf006."
+  model = "phyf000."
   tlonname = "grid_xt"
   tlatname = "grid_yt"
   rfactor=rad2deg
   ;model = "oro_data."
-  ;tlonname = "lon"
-  ;tlatname = "lat"
+  ;tlonname = "geolon"
+  ;tlatname = "geolat"
   ;rfactor=1.0
 
-  rtsrc = "S2S_RT/nems_ww3/cpld_fv3_ccpp_384_mom6_cice_ww3_1d_bmark_rt/"
-  afile = addfile(RT2+rtsrc+model+tile+".nc","r")
+  ;rtsrc = "FV3_RT/test96/debug/INPUT/"
+  ;afile = addfile(RT2+rtsrc+model+tile+".nc","r")
+  ;afile = addfile("/scratch2/NCEPDEV/climate/Denise.Worthen/grids-20210201/C96.mx100.tile4.nc","r")
+  afile = addfile("/scratch2/NCEPDEV/climate/Denise.Worthen/GRIDS/C96.mx100.tile4.nc","r")
 
   tilecorners = tilegrid(afile->$tlonname$,afile->$tlatname$,tile)
   if(hemi .eq. "none")then
-   minlon = tilecorners[0]
-   minlat = tilecorners[1]
-   maxlon = tilecorners[2]
-   maxlat = tilecorners[3]
+   ;minlon = tilecorners[0]
+   ;minlat = tilecorners[1]
+   ;maxlon = tilecorners[2]
+   ;maxlat = tilecorners[3]
+   minlon = 144.0
+   minlat = -10.
+   maxlon = 154.0
+   maxlat = 0.0
    midlon = minlon + 0.5*(maxlon - minlon)
-   ;print(minlat+"   "+maxlat)
-   ;print(minlon+"   "+maxlon+"  "+midlon+"  "+0.5*(maxlon - minlon))
+   print(minlat+"   "+maxlat)
+   print(minlon+"   "+maxlon+"  "+midlon+"  "+0.5*(maxlon - minlon))
   else
    if(hemi .eq. "NH")then
     minlat =  66.0
@@ -81,23 +82,23 @@
   ;levs=(/0.0,2.0,1/)
   ;palette="amwg"
   ;aname = "tisfc"
-  aname = "tmpsfc"
-  levs=(/-2.0,0.0,.2/)
+  ;aname = "tmpsfc"
+  ;levs=(/-2.0,0.0,.2/)
   ;aname = "ulwrf"
   ;levs=(/300,322,1/)
 
-  ;aname = "slmsk"
-  ;levs=(/0.0,4.0,1/)
+  aname = "land_frac"
+  levs=(/0.0,1.0,0.1/)
 
-  avar = afile->$aname$(0,:,:)
- ; avar = afile->$aname$(:,:)
-  avar = (afile->$aname$(lstep,:,:)) - 273.15
-  avar = where(afile->land(lstep,:,:) .eq. 1.0, avar@_FillValue, avar)
+  ;avar = afile->$aname$(0,:,:)
+  avar = afile->$aname$(:,:)
+  ;avar = (afile->$aname$(lstep,:,:)) - 273.15
+  ;avar = where(afile->land(lstep,:,:) .eq. 1.0, avar@_FillValue, avar)
   ;avar = where(afile->icec(lstep,:,:) .lt. icemin, avar@_FillValue, avar)
   avar@lon2d = afile->$tlonname$
   avar@lat2d = afile->$tlatname$
 
-  plottitle=rtsrc+model+tile+".nc  "+aname
+  ;plottitle=rtsrc+model+tile+".nc  "+aname
 
 ;************************************************
 ; define the map
@@ -154,11 +155,11 @@
 
   res@cnMissingValPerimOn     = False            ; turn on the missing value perimeter
   ;res@cnMissingValPerimColor  = "black"           ; outline the perimeter red
-  res@cnMissingValFillPattern = 0               ; choose fill pattern 0 (solid fill) 
+  res@cnMissingValFillPattern = 0               ; choose fill pattern 0 (solid fill)
   res@cnMissingValFillColor   = "gray"          ; color fill missing areas blue
 
   res@tiMainFontHeightF = .010
-  res@tiMainString = plottitle
+  ;res@tiMainString = plottitle
 
 ;************************************************
 ;
