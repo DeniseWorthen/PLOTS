@@ -7,11 +7,11 @@
 ;**********************************************************
 begin
 
-     RT = "/glade/scratch/worthen/FV3_RT/rt_22693/"
+     RT = "/glade/scratch/worthen/FV3_RT/"
 
-   date = "2016-10-03-"
+   date = "2016-10-03-0"
 
-     dir = "test/"
+     dir = "test_dev/cpld_controlfrac_test/"
     ; dir = "cpld_controlfrac"+cres+"_prod/"
     ; dir = "cpld_control"+cres+"_prod/"
     fsrc = "ufs.cpld.cpl.hi."

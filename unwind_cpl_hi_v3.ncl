@@ -7,30 +7,33 @@
 ;**********************************************************
 begin
 
-     RT = "/glade/scratch/worthen/FV3_RT/rt_22693/"
+     ;RT = "/glade/scratch/worthen/FV3_RT/testnew/"
+     RT = "/glade/scratch/worthen/FV3_RT/testofrac/"
 
    date = "2016-10-03-"
   ntile = 6
 
-    res = 96
-   cres = ""
-     dt = 900
-
-  ;  res = 192
-  ; cres = "_c192"
+  ;  res = 96
+  ; cres = ""
   ;   dt = 900
+
+    res = 192
+   cres = "_c192"
+     dt = 900
 
  ;   res = 384
  ;  cres = "_c384"
  ;    dt = 450
 
-     dir = "test48/"
+     dir = "testbilinnorm/"
+     ;dir = "test_dev/test0/"
+     ;dir = "test_nonorm/"
     ; dir = "cpld_controlfrac"+cres+"_prod/"
     ; dir = "cpld_control"+cres+"_prod/"
     fsrc = "ufs.cpld.cpl.hi."
   dirsrc = RT+dir
-  
-  filelist = systemfunc("ls "+dirsrc+fsrc+"*.nc")
+
+  filelist = systemfunc("ls "+dirsrc+fsrc+date+"0*.nc")
       fcpl = addfiles(filelist,"r")
        nts = dimsizes(filelist)
   print(filelist)

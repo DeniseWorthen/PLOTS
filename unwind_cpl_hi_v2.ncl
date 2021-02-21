@@ -7,28 +7,35 @@
 ;**********************************************************
 begin
 
-     RT = "/glade/scratch/worthen/FV3_RT/rt_28678/"
+     RT = "/glade/scratch/worthen/FV3_RT/testofrac/"
 
    date = "2016-10-03-"
   ntile = 6
 
-    res = 96
-   cres = ""
-     dt = 900
-
-  ;  res = 192
-  ; cres = "_c192"
+  ;  res = 96
+  ; cres = ""
   ;   dt = 900
+
+    res = 192
+   cres = "_c192"
+     dt = 900
 
  ;   res = 384
  ;  cres = "_c384"
  ;    dt = 450
 
-  times = ispan(900,21600,900)
+  ; times = (/7200/)
+  times = ispan(900,7200,900)
   ;times = (/dt, 2*dt, 3*dt/)
   ;print(times)
-   dirs = (/"cpld_controlfrac"+cres+"_prod/" \
-           ,"cpld_control"+cres+"_prod/" /)
+  ; dirs = (/"c96meshoff_compice/" \
+  ;         ,"c96meshoff_compocn/" /)
+   ;dirs = (/"c192meshoff_compice/" \
+   ;        ,"c192meshoff_compocn/" /)
+   ;dirs = (/"testdev/", "testbilin/"/)
+   ;fsrc = "ufs.cpld.cpl.hi."
+   ;dirs = (/"test2/","test3/"/)
+   dirs = (/"test1/"/)
    fsrc = "ufs.cpld.cpl.hi."
     
   ndirs = dimsizes(dirs)
