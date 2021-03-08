@@ -24,23 +24,13 @@ begin
  ;  cres = "_c384"
  ;    dt = 450
 
-   dirs = (/"testbilin/"/)
-   ;dirs = (/"testdev/", "testbilin/"/)
-   ;fsrc = "af.rgstore.src.atm.ocn.bilnr"
-   ;fsrc = "b4.rgstore.dst.ocn.atm.consd"
-   fsrc = "rh.fb.ocn.atm.consd.Fioo_q"
-   ;fsrc = "rh.fb.ice.atm.consd.Faii_evap"
-   ;fsrc = "rh.esmflds.ocn.atm.consd.So_dhdy"
-   ;fsrc = "rh.esmflds.ice.atm.consf.Fioi_melth"
-   ;fsrc = "rh.fb.ocn.atm.consd.So_v"
-   ;fsrc = "dst.atm.ifrac.nc"
-   ;fsrc = "dstlat.atm.nc"
+   ;dirs = (/"jnk/"/)
+   dirs = (/"testdev/", "testbilin/"/)
+   ;fsrc = "dststatus.ocn.atm.consd"
+   fsrc = "dststatus.ocn.atm.nstod_consd"
 
   ;vname = "mesh"
   vname = "dststatus"
-  ;vname = "ifrac"
-  ;vname = "ifrac"
-  ;vname = "dstlat"
 
   ntile = 6
   ndirs = dimsizes(dirs)
@@ -50,6 +40,7 @@ begin
 ;**********************************************************
 
   fname = RT+dirs(0)+"ufs.cpld.cpl.hi."+date+"00900.nc"
+  ;fname = RT+dirs(0)+"ufs.cpld.cpl.hi."+date+"03600.nc"
   print("input file "+fname)
   ff = addfile(fname,"r")
 
@@ -92,7 +83,7 @@ do nd = 0,ndirs-1
   printVarSummary(var1d)
 
   ; get the index seq to resort
-  doffile = dirsrc+"dof.atm.ifrac.nc"
+  doffile = dirsrc+"dof.atm.nc"
   doff = addfile(doffile,"r")
   dof = doff->dof(:)
 

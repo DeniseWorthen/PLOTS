@@ -8,13 +8,18 @@
 begin
 
      RT = "/glade/scratch/worthen/FV3_RT/testnew/"
-  ;   RT = "/glade/scratch/worthen/FV3_RT/testbob/"
-  ;   RT = "/glade/scratch/worthen/FV3_RT/test192/"
+     ;RT = "/glade/scratch/worthen/FV3_RT/testdatm/"
    date = "2016-10-03-"
 
    dirs = (/"testbilin/"/)
-   ;dirs = (/"testdev/", "testbilin/"/)
-   fsrc = "rh.esmflds.atm.ice.consf.Faxa_rain.nc"
+   ;dirs = (/"testmask/", "testmaskall/"/)
+  ;   fsrc = "dststatus.atm.ocn.bilnr.nc"
+  ;doffile = "dof.ocn.nc"
+  ;   fsrc = "dststatus.atm.ice.bilnr.nc"
+  ;doffile = "dof.ice.nc"
+  ;   fsrc = "dststatus.atm.ocn.nstod_consf.nc"
+     fsrc = "dststatus.atm.ocn.consf.nc"
+  doffile = "dof.ocn.nc"
 
   vname = "dststatus"
 
@@ -40,8 +45,7 @@ do nd = 0,ndirs-1
   printVarSummary(var1d)
 
   ; get the index seq to resort
-  doffile = dirsrc+"dof.ice.ifrac.nc"
-  doff = addfile(doffile,"r")
+  doff = addfile(dirsrc+doffile,"r")
   dof = doff->dof(:)
 
   ip = dim_pqsort(dof,1)
@@ -52,7 +56,7 @@ do nd = 0,ndirs-1
 ; pre-define the output file
 ;**********************************************************
 
-    ofile = dirsrc+"test.nc"
+    ofile = dirsrc+"dst."+fsrc
     print("output file "+ofile)
     system("rm -f "+ofile)
     fout = addfile(ofile, "c")

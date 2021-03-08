@@ -1,41 +1,56 @@
-; This file still has to be loaded manually
-load "$NCARG_ROOT/lib/ncarg/nclscripts/esmf/ESMF_regridding.ncl"
 ;**********************************************************
+; re-write CMEPS coupler history fields for Atm
+; imports, exports and masks to tiled files for
+;
+; adapted from code originally written by
+; Ufuk Turuncoglu turuncu@ucar.edu
 ;**********************************************************
 begin
 
-     RT = "/glade/scratch/worthen/testland/"
+     RT = "/glade/scratch/worthen/FV3_RT/testnew/"
+   date = "2016-10-03-"
+
     res = 96
+   cres = ""
+     dt = 900
+
+  ;  res = 192
+  ; cres = "_c192"
+  ;   dt = 900
+
+ ;   res = 384
+ ;  cres = "_c384"
+ ;    dt = 450
+
+   dirs = (/"testbilin/"/)
+   ;fsrc = "b4.rgstore.src.atm.ocn.bilnr"
+   ;fsrc = "rh.fb.ocn.atm.consd.Fioo_q"
+   ;fsrc = "rh.fb.ocn.atm.consd.Fioo_q"
+   fsrc = "dst.atm.ifrac.nc"
   ntile = 6
-   ores = "mx066"
-   ares = "C"+res
+  ndirs = dimsizes(dirs)
 
-   wgtsfile = RT+"c96_mx066.nc"
-   ocngrd = addfile(RT+"tx0.66v1_SCRIP_190314.nc","r")
+;**********************************************************
+; retrieve lat/lon from first coupler history file
+;**********************************************************
 
-  ff = addfile(wgtsfile,"r")
-  lat1d = ff->yc_b
-  lon1d = ff->xc_b
+  fname = RT+dirs(0)+"ufs.cpld.cpl.hi."+date+"00900.nc"
+  print("input file "+fname)
+  ff = addfile(fname,"r")
+
+  ;--- read coordinate variables ---
+  lat1d = ff->atmImp_lat(0,0,:)
+  lon1d = ff->atmImp_lon(0,0,:)
   lat1d@units = "degrees_N"
   lon1d@units = "degrees_E"
   ;printVarSummary(lat1d)
-
-     col = ff->col
-     row = ff->row
-       S = ff->S
-     n_s = dimsizes(S)
-  dst_field = new(dimsizes(lat1d),double,"No_FillValue")
-  dst_field = 0.0
-  ;print(dimsizes(row))
-  ;print(dimsizes(col))
-  ;print(dimsizes(S))
-  ;print(n_s)
-  ;print(dimsizes(dst_field))
+  ;printVarSummary(lon1d)
 
   ;--- reshape variables---
   lon3d = new((/ ntile, res, res /), typeof(lon1d))
   lat3d = new((/ ntile, res, res /), typeof(lat1d))
   ;printVarSummary(lat3d)
+
   do i = 0, ntile-1
    istr = (i*res*res)
    iend = istr+res*res-1
@@ -43,35 +58,42 @@ begin
    lon3d(i,:,:) = onedtond(lon1d(istr:iend), (/ res, res /))
   end do
 
-  i1d = ocngrd->grid_imask
-  src_field = new(dimsizes(i1d),double,"No_FillValue")
-  src_field = todouble(i1d)
-  ;printVarSummary(src_field)
-  ;print(dimsizes(src_field))
+  delete(ff)
+  delete(fname)
 
-  print(n_s+"  "+dimsizes(dst_field)+"  "+dimsizes(row))
-  print(dimsizes(src_field)+"  "+dimsizes(col))
+;**********************************************************
+;
+;**********************************************************
 
-  do i = 0,n_s-1
-  ;do i = 1,n_s
-  ;print(i+"  "+row(i)+"  "+col(i))
-    ii = row(i)-1
-    jj = col(i)
-   ;if(jj .eq. 0)then
-   ; print(i+"  "+row(i)+"  "+col(i))
-   ;end if 
-   dst_field(ii) = dst_field(ii) + S(i)*src_field(jj)
-  end do
-  
-  ;dst_field = ESMF_regrid_with_weights(src_field,wgtsfile,False)
-  ;printVarSummary(dst_field)
+do nd = 0,ndirs-1
+  dirsrc = RT+dirs(nd)
+   ifile = fsrc
+
+  fname = dirsrc+ifile+".nc"
+  print("input file "+fname)
+  ff = addfile(fname,"r")
+
+  ;vname = "mesh"
+  vname = "dststatus"
+  ;vname = "ifrac"
+  var1d = ff->$vname$(:)
+  ;printVarSummary(var1d)
+
+  doffile = dirsrc+"dof.atm.ifrac.nc"
+  doff = addfile(doffile,"r")
+  dof = doff->dof(:)
+
+  ip = dim_pqsort(dof,1)
+  var1d_sort=var1d
+  var1d_sort=var1d(ip)
+
 ;**********************************************************
 ; pre-define the output file
 ;**********************************************************
 
   do i = 0, ntile-1
 
-    ofile = RT+"dst_field.tile"+sprinti("%d", i+1)+".nc"
+    ofile = dirsrc+fsrc+".tile"+sprinti("%d", i+1)+".nc"
     print("output file "+ofile)
     system("rm -f "+ofile)
     fout = addfile(ofile, "c")
@@ -88,38 +110,43 @@ begin
     filevardef(fout, "grid_yt", typeof(lat1d), (/ "grid_yt", "grid_xt" /))
 
     ; Copy attributes associated with each variable to the file
-    filevarattdef(fout,  "grid_yt",  lat3d)
-    filevarattdef(fout,  "grid_xt",  lon3d)
+    ;filevarattdef(fout,  "grid_yt",  lat3d)
+    ;filevarattdef(fout,  "grid_xt",  lon3d)
 
     ;--- create variable ---
-    ;  vname = "dst_field"
-    ;  filevardef(fout, vname, typeof(dst_field), (/ "grid_yt", "grid_xt" /))
+
+     filevardef(fout, vname, typeof(var1d), (/ "grid_yt", "grid_xt" /))
     setfileoption(fout, "DefineMode", False)
 
     fout->grid_xt = (/ lon3d(i,:,:) /)
     fout->grid_yt = (/ lat3d(i,:,:) /)
   end do
 
-;if(1 .eq. 0)then
 ;**********************************************************
 ; add variables
 ;**********************************************************
 
-     vname = "dst_field"
-     var3d = new((/ ntile, res, res /), typeof(dst_field), default_fillvalue(typeof(dst_field)) )
+     var3d = new((/ ntile, res, res /), typeof(var1d), default_fillvalue(typeof(var1d)) )
+     ;printVarSummary(var3d)
 
      do i = 0, ntile-1
       istr = (i*res*res)
       iend = istr+res*res-1
-      var3d(i,:,:) = onedtond(dst_field(istr:iend), (/ res, res /))
+      ;var3d(i,:,:) = onedtond(var1d(istr:iend), (/ res, res /))
+      var3d(i,:,:) = onedtond(var1d_sort(istr:iend), (/ res, res /))
+      print("tile number = "+i+" "+istr+" "+iend)
      end do
 
      do i = 0, ntile-1
-      ofile = RT+"dst_field.tile"+sprinti("%d", i+1)+".nc"
+      ofile = dirsrc+fsrc+".tile"+sprinti("%d", i+1)+".nc"
        fout = addfile(ofile, "w")
-       fout->$vname$ = (/ var3d(i,:,:) /)
+       ;fout->$vname$ = (/ var3d(i,:,:) /)
+       fout->$vname$ = var3d(i,:,:)
+       delete(fout)
      end do
+    delete(var1d)
+    delete(var3d)
+end do  ; ndirs
 
-;end if
 exit
 end

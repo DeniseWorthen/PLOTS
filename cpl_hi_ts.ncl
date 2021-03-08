@@ -11,9 +11,7 @@ begin
 
    date = "2016-10-03-0"
 
-     dir = "test_dev/cpld_controlfrac_test/"
-    ; dir = "cpld_controlfrac"+cres+"_prod/"
-    ; dir = "cpld_control"+cres+"_prod/"
+     dir = "testnew/testbilin/"
     fsrc = "ufs.cpld.cpl.hi."
   dirsrc = RT+dir
   
