@@ -4,28 +4,38 @@
 ;
 ; adapted from code originally written by
 ; Ufuk Turuncoglu turuncu@ucar.edu
+
+  load "dststatus_counts.ncl"
+
 ;**********************************************************
 begin
 
      RT = "/glade/scratch/worthen/FV3_RT/testnew/"
      ;RT = "/glade/scratch/worthen/FV3_RT/testdatm/"
-   date = "2016-10-03-"
+     ;RT = "/glade/scratch/worthen/FV3_RT/rt_72321/"
 
-   dirs = (/"testbilin/"/)
+   nflags = 8
+   dirs = (/"testdev/"/)
+   ;dirs = (/"gefsbilin_nstod/"/)
    ;dirs = (/"testmask/", "testmaskall/"/)
   ;   fsrc = "dststatus.atm.ocn.bilnr.nc"
-  ;doffile = "dof.ocn.nc"
-  ;   fsrc = "dststatus.atm.ice.bilnr.nc"
-  ;doffile = "dof.ice.nc"
-  ;   fsrc = "dststatus.atm.ocn.nstod_consf.nc"
+ ; doffile = "dof.ocn.nc"
+ ;    fsrc = "dststatus.atm.ice.bilnr_nstod.nc"
+ ; doffile = "dof.ice.nc"
+     ;fsrc = "dststatus.atm.ocn.nstod_consf.nc"
      fsrc = "dststatus.atm.ocn.consf.nc"
+;    ; fsrc = "unityone.atm.ocn.consf.nc"
   doffile = "dof.ocn.nc"
 
+  ;vname = "unity"
   vname = "dststatus"
 
   ; mx100
   ni = 360
   nj = 320
+  ; mx050
+  ;ni = 720
+  ;nj = 576
 
   ndirs = dimsizes(dirs)
 
@@ -42,7 +52,10 @@ do nd = 0,ndirs-1
   ff = addfile(fname,"r")
 
   var1d = ff->$vname$(:)
-  printVarSummary(var1d)
+  ;printVarSummary(var1d)
+  do i = 0,nflags-1
+   ret = dststatus_counts(var1d,i+1)
+  end do
 
   ; get the index seq to resort
   doff = addfile(dirsrc+doffile,"r")
@@ -95,6 +108,7 @@ do nd = 0,ndirs-1
     delete(var1d)
     delete(var2d)
 end do  ; ndirs
+
 
 exit
 end

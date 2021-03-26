@@ -4,12 +4,17 @@
 ;
 ; adapted from code originally written by
 ; Ufuk Turuncoglu turuncu@ucar.edu
+ 
+  load "dststatus_counts.ncl"
+
 ;**********************************************************
 begin
 
+   nflags = 8
      RT = "/glade/scratch/worthen/FV3_RT/testnew/"
   ;   RT = "/glade/scratch/worthen/FV3_RT/testbob/"
   ;   RT = "/glade/scratch/worthen/FV3_RT/test192/"
+  ;   RT = "/glade/scratch/worthen/FV3_RT/rt_72321/"
    date = "2016-10-03-"
 
     res = 96
@@ -24,16 +29,14 @@ begin
  ;  cres = "_c384"
  ;    dt = 450
 
-   dirs = (/"jnk/"/)
+
+   dirs = (/"testdev/"/)
+   ;dirs = (/"testbilin/"/)
    ;dirs = (/"testdev/", "testbilin/"/)
-   fsrc = "dststatus.ocn.atm.consd.nc"
 
-   ; get the index seq to resort
-   doffile = dirsrc+"dof.atm.nc"
-   doff = addfile(doffile,"r")
-   dof = doff->dof(:)
-
-  vname = "dststatus"
+   vname = "dststatus"
+   fsrc = vname+".ocn.atm.consd"
+   ;fsrc = vname+".ocn.atm.consf"
 
   ntile = 6
   ndirs = dimsizes(dirs)
@@ -43,6 +46,7 @@ begin
 ;**********************************************************
 
   fname = RT+dirs(0)+"ufs.cpld.cpl.hi."+date+"00900.nc"
+  ;fname = RT+dirs(0)+"RESTART/ufs.cpld.cpl.r.2016-10-04-00000.nc"
   print("input file "+fname)
   ff = addfile(fname,"r")
 
@@ -75,14 +79,22 @@ begin
 
 do nd = 0,ndirs-1
   dirsrc = RT+dirs(nd)
-   ifile = fsrc
 
-  fname = dirsrc+ifile+".nc"
+  ; get the index seq to resort
+  doffile = dirsrc+"dof.atm.nc"
+  doff = addfile(doffile,"r")
+  dof = doff->dof(:)
+
+  fname = dirsrc+fsrc+".nc"
   print("input file "+fname)
   ff = addfile(fname,"r")
 
   var1d = ff->$vname$(:)
   printVarSummary(var1d)
+ 
+  do i = 0,nflags-1
+   ret = dststatus_counts(var1d,i+1)
+  end do
 
   ip = dim_pqsort(dof,1)
   var1d_sort=var1d
