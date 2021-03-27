@@ -10,11 +10,12 @@
 ;**********************************************************
 begin
 
-   nflags = 8
-     RT = "/glade/scratch/worthen/FV3_RT/testnew/"
+   nl = str_get_nl()
+   nflags = 9
+  ;   RT = "/glade/scratch/worthen/FV3_RT/testnew/"
   ;   RT = "/glade/scratch/worthen/FV3_RT/testbob/"
-  ;   RT = "/glade/scratch/worthen/FV3_RT/test192/"
-  ;   RT = "/glade/scratch/worthen/FV3_RT/rt_72321/"
+ ;    RT = "/glade/scratch/worthen/FV3_RT/test192/"
+     RT = "/glade/scratch/worthen/FV3_RT/test96/"
    date = "2016-10-03-"
 
     res = 96
@@ -30,9 +31,9 @@ begin
  ;    dt = 450
 
 
-   dirs = (/"testdev/"/)
+   ;dirs = (/"testdev/"/)
    ;dirs = (/"testbilin/"/)
-   ;dirs = (/"testdev/", "testbilin/"/)
+   dirs = (/"testdev/", "testbilin/"/)
 
    vname = "dststatus"
    fsrc = vname+".ocn.atm.consd"
@@ -78,6 +79,7 @@ begin
 ;**********************************************************
 
 do nd = 0,ndirs-1
+  print(" "+nl)
   dirsrc = RT+dirs(nd)
 
   ; get the index seq to resort
@@ -90,11 +92,13 @@ do nd = 0,ndirs-1
   ff = addfile(fname,"r")
 
   var1d = ff->$vname$(:)
-  printVarSummary(var1d)
+  ;printVarSummary(var1d)
  
+   total = 0
   do i = 0,nflags-1
-   ret = dststatus_counts(var1d,i+1)
+   total = total+dststatus_counts(var1d,i)
   end do
+   print("total count of all dststatus types = "+total+" size of var1d = "+dimsizes(var1d))
 
   ip = dim_pqsort(dof,1)
   var1d_sort=var1d
@@ -147,7 +151,7 @@ do nd = 0,ndirs-1
       iend = istr+res*res-1
       ;var3d(i,:,:) = onedtond(var1d(istr:iend), (/ res, res /))
       var3d(i,:,:) = onedtond(var1d_sort(istr:iend), (/ res, res /))
-      print("tile number = "+i+" "+istr+" "+iend)
+      ;print("tile number = "+i+" "+istr+" "+iend)
      end do
 
      do i = 0, ntile-1

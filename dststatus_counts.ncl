@@ -20,11 +20,10 @@ begin
    tmp = where(tmp .eq. flagnum, 1, 0)
    count = dim_sum(tmp)
 
-   if(count .ne. 0)then
+   ;if(count .ne. 0)then
     print("dststatus flag = "+flagnum+" count = "+count+"  "+flagname)
-   end if
+   ;end if
 
    delete(tmp)
-   delete(count)
-   return (0)
+   return (count)
 end

@@ -14,7 +14,8 @@ begin
      ;RT = "/glade/scratch/worthen/FV3_RT/testdatm/"
      ;RT = "/glade/scratch/worthen/FV3_RT/rt_72321/"
 
-   nflags = 8
+   nl = str_get_nl()
+   nflags = 9
    dirs = (/"testdev/"/)
    ;dirs = (/"gefsbilin_nstod/"/)
    ;dirs = (/"testmask/", "testmaskall/"/)
@@ -54,7 +55,7 @@ do nd = 0,ndirs-1
   var1d = ff->$vname$(:)
   ;printVarSummary(var1d)
   do i = 0,nflags-1
-   ret = dststatus_counts(var1d,i+1)
+   ret = dststatus_counts(var1d,i)
   end do
 
   ; get the index seq to resort
