@@ -36,21 +36,27 @@
   end if
  end if
 
-  ;model = "phyf000:07:30."
-  model = "phyf000."
-  tlonname = "grid_xt"
-  tlatname = "grid_yt"
-  rfactor=rad2deg
-  ;model = "oro_data."
-  ;tlonname = "geolon"
-  ;tlatname = "geolat"
-  ;rfactor=1.0
 
-  ;rtsrc = "FV3_RT/test96/debug/INPUT/"
-  ;afile = addfile(RT2+rtsrc+model+tile+".nc","r")
-  ;afile = addfile("/scratch2/NCEPDEV/climate/Denise.Worthen/grids-20210201/C96.mx100.tile4.nc","r")
-  ;afile = addfile("/scratch2/NCEPDEV/climate/Denise.Worthen/GRIDS/C96.mx100.tile4.nc","r")
-  afile = addfile("/scratch2/NCEPDEV/climate/Denise.Worthen/GTMP/C96.mx100.tile4.nc","r")
+  ;rtsrc = "grids-20210223"
+  ;gfile = "C96.mx100."+tile+".nc"
+  ;afile = addfile("/scratch2/NCEPDEV/climate/Denise.Worthen/"+rtsrc+"/"+gfile,"r")
+  ;plottitle="New mapped ocean mask "+gfile
+
+  ;rtsrc = "mapped_omask_fix_mx100"
+  ;gfile = "C96.mx100."+tile+".nc"
+  ;afile = addfile("/scratch2/NCEPDEV/stmp1/Denise.Worthen/ForShan/"+rtsrc+"/"+gfile,"r")
+  ;plottitle="Previous mapped ocean mask "+gfile
+
+  ;tlonname = "grid_xt"
+  ;tlatname = "grid_yt"
+  ;rfactor=rad2deg
+
+  rtsrc = "C96_l127.mx100_frac"
+  gfile = "oro_data."+tile+".nc"
+  afile = addfile("/scratch2/BMC/gsd-fv3-dev/FV3-MOM6-CICE5/inputdata_v16_rtest/FV3_input_frac/"+rtsrc+"/"+gfile,"r")
+  plottitle="New mapped ocean mask "+gfile
+  tlonname = "geolon"
+  tlatname = "geolat"
 
   tilecorners = tilegrid(afile->$tlonname$,afile->$tlatname$,tile)
   if(hemi .eq. "none")then
@@ -76,30 +82,14 @@
   end if
 
   palette="MPL_rainbow"
-  ;print(afile)
-  ;aname = "icec"
-  ;levs=(/0.0,1.0,0.1/)
-  ;aname = "land"
-  ;levs=(/0.0,2.0,1/)
-  ;palette="amwg"
-  ;aname = "tisfc"
-  ;aname = "tmpsfc"
-  ;levs=(/-2.0,0.0,.2/)
-  ;aname = "ulwrf"
-  ;levs=(/300,322,1/)
-
   aname = "land_frac"
   levs=(/0.0,1.0,0.1/)
 
-  ;avar = afile->$aname$(0,:,:)
   avar = afile->$aname$(:,:)
-  ;avar = (afile->$aname$(lstep,:,:)) - 273.15
-  ;avar = where(afile->land(lstep,:,:) .eq. 1.0, avar@_FillValue, avar)
-  ;avar = where(afile->icec(lstep,:,:) .lt. icemin, avar@_FillValue, avar)
+  avar = 1.0 - avar
   avar@lon2d = afile->$tlonname$
   avar@lat2d = afile->$tlatname$
 
-  ;plottitle=rtsrc+model+tile+".nc  "+aname
 
 ;************************************************
 ; define the map
@@ -107,9 +97,10 @@
 
   wkstype="X11"
   ;wkstype="png"
+  wkstitle=rtsrc+"_"+gfile
   wkstype@wkWidth=800
   wkstype@wkHeight=800
-  wks   = gsn_open_wks (wkstype,model+tile)              ; send graphics to X11 window
+  wks   = gsn_open_wks (wkstype,wkstitle)              ; send graphics to X11 window
 
   res                      = True        ; plot mods desired
   res@gsnDraw              = False       ; do not draw until the end
@@ -160,7 +151,18 @@
   res@cnMissingValFillColor   = "gray"          ; color fill missing areas blue
 
   res@tiMainFontHeightF = .010
-  ;res@tiMainString = plottitle
+  res@tiMainString = plottitle
+
+;************************************************
+; Resources for the polymark
+;************************************************
+
+  pmres                 = True           ; polyline mods desired
+  pmres@gsMarkerIndex   = 16             ; Use filled dots for markers.
+  pmres@gsMarkerSizeF   = 0.02
+
+  xlat = -5.818
+  xlon = 148.5
 
 ;************************************************
 ;
@@ -171,9 +173,22 @@
   else
    plot = gsn_csm_contour_map_polar(wks,avar,res)    ; create the plot
   end if
+  dum = gsn_add_polymarker(wks,plot,xlon,xlat,pmres)
 
   draw(plot)
   frame(wks)
 
+;************************************************
+;
+;************************************************
+
+  if(wkstype .eq. "png")then
+   imcmd = "convert -trim "+wkstitle+".png "+wkstitle+".jpg"
+   ;print(imcmd)
+   system(imcmd)
+   imcmd = "convert -bordercolor white -border 0x20 "+wkstitle+".jpg "+wkstitle+".jpg"
+   ;print(imcmd)
+   system(imcmd)
+  end if
 exit
 end

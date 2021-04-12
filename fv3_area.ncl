@@ -13,93 +13,46 @@
   RT3 = "/scratch2/NCEPDEV/stmp3/Denise.Worthen/"
   RT4 = "/scratch1/NCEPDEV/stmp4/Denise.Worthen/"
 
- ;  hemi = "NH"
- ; hemi = "SH"
+  ; all tiles are the same
   hemi = "none"
+  tile = "tile4"
 
   rad2deg=180.d0/acos(-1.0d0)
-  icemin = 1.0e-6
 
 ;************************************************
 ;
 ;************************************************
 
   lstep=0
-  if(hemi .eq. "none")then
-    tile = "tile4"
-  else
-   if(hemi .eq. "NH")then
-    tile = "tile3"
-  end if
-  if(hemi .eq. "SH")then
-    tile = "tile6"
-  end if
- end if
 
-  ;model = "phyf000:07:30."
-  model = "phyf000."
-  tlonname = "grid_xt"
-  tlatname = "grid_yt"
+  tlonname = "grid_lon"
+  tlatname = "grid_lat"
   rfactor=rad2deg
-  ;model = "oro_data."
-  ;tlonname = "geolon"
-  ;tlatname = "geolat"
-  ;rfactor=1.0
 
-  ;rtsrc = "FV3_RT/test96/debug/INPUT/"
-  ;afile = addfile(RT2+rtsrc+model+tile+".nc","r")
-  ;afile = addfile("/scratch2/NCEPDEV/climate/Denise.Worthen/grids-20210201/C96.mx100.tile4.nc","r")
-  ;afile = addfile("/scratch2/NCEPDEV/climate/Denise.Worthen/GRIDS/C96.mx100.tile4.nc","r")
-  afile = addfile("/scratch2/NCEPDEV/climate/Denise.Worthen/GTMP/C96.mx100.tile4.nc","r")
+  rtsrc= RT2+"/FV3_RT/testruns/testbilin/"
+  gfile = "grid_spec"
+  afile = addfile(rtsrc+gfile+"."+tile+".nc","r")
+  plottitle="C96 Area"
+  print(rtsrc+gfile)
 
   tilecorners = tilegrid(afile->$tlonname$,afile->$tlatname$,tile)
-  if(hemi .eq. "none")then
-   ;minlon = tilecorners[0]
-   ;minlat = tilecorners[1]
-   ;maxlon = tilecorners[2]
-   ;maxlat = tilecorners[3]
-   minlon = 144.0
-   minlat = -10.
-   maxlon = 154.0
-   maxlat = 0.0
+   minlon = tilecorners[0]
+   minlat = tilecorners[1]
+   maxlon = tilecorners[2]
+   maxlat = tilecorners[3]
    midlon = minlon + 0.5*(maxlon - minlon)
    print(minlat+"   "+maxlat)
    print(minlon+"   "+maxlon+"  "+midlon+"  "+0.5*(maxlon - minlon))
-  else
-   if(hemi .eq. "NH")then
-    minlat =  66.0
-    midlon = -45.0
-   else
-    maxlat = -50.0
-    midlon =   0.0
-   end if
-  end if
 
-  palette="MPL_rainbow"
-  ;print(afile)
-  ;aname = "icec"
-  ;levs=(/0.0,1.0,0.1/)
-  ;aname = "land"
-  ;levs=(/0.0,2.0,1/)
-  ;palette="amwg"
-  ;aname = "tisfc"
-  ;aname = "tmpsfc"
-  ;levs=(/-2.0,0.0,.2/)
-  ;aname = "ulwrf"
-  ;levs=(/300,322,1/)
+  palette="amwg256"
+  aname = "area"
+  levs=(/0.0,140.,5./)
 
-  aname = "land_frac"
-  levs=(/0.0,1.0,0.1/)
-
-  ;avar = afile->$aname$(0,:,:)
   avar = afile->$aname$(:,:)
-  ;avar = (afile->$aname$(lstep,:,:)) - 273.15
-  ;avar = where(afile->land(lstep,:,:) .eq. 1.0, avar@_FillValue, avar)
-  ;avar = where(afile->icec(lstep,:,:) .lt. icemin, avar@_FillValue, avar)
+  avar = avar/1.0e8
   avar@lon2d = afile->$tlonname$
   avar@lat2d = afile->$tlatname$
-
-  ;plottitle=rtsrc+model+tile+".nc  "+aname
+  printVarSummary(avar)
 
 ;************************************************
 ; define the map
@@ -107,9 +60,10 @@
 
   wkstype="X11"
   ;wkstype="png"
+  wkstitle="area_"+gfile+"_"+tile
   wkstype@wkWidth=800
   wkstype@wkHeight=800
-  wks   = gsn_open_wks (wkstype,model+tile)              ; send graphics to X11 window
+  wks   = gsn_open_wks (wkstype,wkstitle)              ; send graphics to X11 window
 
   res                      = True        ; plot mods desired
   res@gsnDraw              = False       ; do not draw until the end
@@ -122,23 +76,11 @@
 
   res@gsnStringFontHeightF = 0.01
 
-  if(hemi .ne. "none")then
-   res@gsnPolar   =  hemi                         ; specify the hemisphere
-   if(hemi .eq. "NH")then
-    res@mpMinLatF    =  66.0                          ; minimum lat to plot
-    res@mpCenterLonF = -45
-   end if
-   if(hemi .eq. "SH")then
-    res@mpMaxLatF    = -50                            ; minimum lat to plot
-    res@mpCenterLonF = 0.0
-   end if
-  else
    res@mpMinLatF            =  minlat      ; range to zoom in on
    res@mpMaxLatF            =  maxlat
    res@mpMinLonF            =  minlon
    res@mpMaxLonF            =  maxlon
    res@mpCenterLonF         =  midlon
-  end if
 
   res@cnFillDrawOrder   = "PreDraw"             ; draw contours first
   res@cnFillOn          = True                  ; color fill
@@ -160,20 +102,28 @@
   res@cnMissingValFillColor   = "gray"          ; color fill missing areas blue
 
   res@tiMainFontHeightF = .010
-  ;res@tiMainString = plottitle
+  res@tiMainString = plottitle
 
 ;************************************************
 ;
 ;************************************************
 
-  if(hemi .eq. "none")then
    plot = gsn_csm_contour_map(wks,avar,res)    ; create the plot
-  else
-   plot = gsn_csm_contour_map_polar(wks,avar,res)    ; create the plot
-  end if
 
   draw(plot)
   frame(wks)
 
+;************************************************
+;
+;************************************************
+
+  if(wkstype .eq. "png")then
+   imcmd = "convert -trim "+wkstitle+".png "+wkstitle+".jpg"
+   ;print(imcmd)
+   system(imcmd)
+   imcmd = "convert -bordercolor white -border 0x20 "+wkstitle+".jpg "+wkstitle+".jpg"
+   ;print(imcmd)
+   system(imcmd)
+  end if
 exit
 end

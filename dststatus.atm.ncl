@@ -6,28 +6,38 @@
 ; Ufuk Turuncoglu turuncu@ucar.edu
 ;**********************************************************
 begin
-     RT = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/zorlPR/"
-    res = 384
+
+     RT = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/testruns/"
+   date = "2016-10-03-"
+
+    res = 96
+   cres = ""
+     dt = 900
+
+  ;  res = 192
+  ; cres = "_c192"
+  ;   dt = 900
+
+ ;   res = 384
+ ;  cres = "_c384"
+ ;    dt = 450
+
+   dirs = (/"testbilin/"/)
+   ;dirs = (/"testdev/", "testbilin/"/)
+   fsrc = "dststatus.ocn.atm.consd.nc"
+   ;fsrc = "unityone.ocn.atm.consf.nc"
+
+  vname = "dststatus"
+  ;vname = "unity"
+
   ntile = 6
-
-   dirs = (/"testdev_seqnofrac/","testzorl_seqnofrac/" /)
-  ;times = (/"2013-04-01-00450", "2013-04-01-00900"/)
-  times = (/"2016-10-03-00900"/)
-   ;fsrc = "ufs.s2s.cold.cpl.hi."
-   ;fsrc = "ufs.s2s.cpl.r."
-   fsrc = "ufs.cpld.cpl.hi."
   ndirs = dimsizes(dirs)
-    nts = dimsizes(times)
 
-do nd = 0,ndirs-1
- do nt = 0,nts-1
-    time = times(nt)
-  dirsrc = RT+dirs(nd)
-  ;dirout = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/"
-  dirout = dirsrc
-   ifile = fsrc
+;**********************************************************
+; retrieve lat/lon from first coupler history file
+;**********************************************************
 
-  fname = dirsrc+ifile+time+".nc"
+  fname = RT+dirs(0)+"ufs.cpld.cpl.hi."+date+"00900.nc"
   print("input file "+fname)
   ff = addfile(fname,"r")
 
@@ -42,6 +52,7 @@ do nd = 0,ndirs-1
   ;--- reshape variables---
   lon3d = new((/ ntile, res, res /), typeof(lon1d))
   lat3d = new((/ ntile, res, res /), typeof(lat1d))
+  ;printVarSummary(lat3d)
 
   do i = 0, ntile-1
    istr = (i*res*res)
@@ -49,38 +60,33 @@ do nd = 0,ndirs-1
    lat3d(i,:,:) = onedtond(lat1d(istr:iend), (/ res, res /))
    lon3d(i,:,:) = onedtond(lon1d(istr:iend), (/ res, res /))
   end do
-   ;printVarSummary(lat3d)
-   ;printVarSummary(lon3d)
+
+  delete(ff)
+  delete(fname)
 
 ;**********************************************************
-; subset variables
+;
 ;**********************************************************
 
-  vnames = getfilevarnames (ff)
-  nvars = dimsizes(vnames)
-  valid = new((/nvars/), logical)
+do nd = 0,ndirs-1
+  dirsrc = RT+dirs(nd)
+   ifile = fsrc
 
-  do ii = 0,nvars-1
-   tf = isStrSubset(vnames(ii), "atmImp") .or. \
-        isStrSubset(vnames(ii), "atmExp") .or. \
-        isStrSubset(vnames(ii), "Med_frac_atm")
-    valid(ii) = tf
-  end do
-  do ii = 0,nvars-1
-   vname = vnames(ii)
-   if(vname .eq. "atmImp_lat"       .or. \
-      vname .eq. "atmImp_lon"       .or. \
-      vname .eq. "Med_frac_atm_lat" .or. \
-      vname .eq. "Med_frac_atm_lon" .or. \
-      vname .eq. "atmExp_lat"       .or. \
-      vname .eq. "atmExp_lon")then
-    valid(ii) = False
-   end if
-  end do
-  do ii = 0,nvars-1
-   vname = vnames(ii)
-   ;print(ii+" "+vnames(ii)+"  "+valid(ii))
-  end do
+   ; get the index seq to resort
+   doffile = dirsrc+"dof.atm.nc"
+   doff = addfile(doffile,"r")
+   dof = doff->dof(:)
+
+  fname = dirsrc+ifile+".nc"
+  print("input file "+fname)
+  ff = addfile(fname,"r")
+
+  var1d = ff->$vname$(:)
+  printVarSummary(var1d)
+
+  ip = dim_pqsort(dof,1)
+  var1d_sort=var1d
+  var1d_sort=var1d(ip)
 
 ;**********************************************************
 ; pre-define the output file
@@ -88,8 +94,7 @@ do nd = 0,ndirs-1
 
   do i = 0, ntile-1
 
-    ;ofile = dirsrc+fsrc+time+".tile"+sprinti("%d", i+1)+".nc"
-    ofile = dirout+fsrc+time+".tile"+sprinti("%d", i+1)+".nc"
+    ofile = dirsrc+fsrc+".tile"+sprinti("%d", i+1)+".nc"
     print("output file "+ofile)
     system("rm -f "+ofile)
     fout = addfile(ofile, "c")
@@ -110,15 +115,8 @@ do nd = 0,ndirs-1
     ;filevarattdef(fout,  "grid_xt",  lon3d)
 
     ;--- create variable ---
-    do ii = 0,nvars-1
-     if(valid(ii)) then
-      vname = vnames(ii)
-      ;printVarSummary(ff->$vname$(0,0,:))
-      var1d = (/ff->$vname$(0,0,:)/)
-      ;printVarSummary(var1d)
-      filevardef(fout, vname, typeof(var1d), (/ "grid_yt", "grid_xt" /))
-     end if
-    end do
+
+     filevardef(fout, vname, typeof(var1d), (/ "grid_yt", "grid_xt" /))
     setfileoption(fout, "DefineMode", False)
 
     fout->grid_xt = (/ lon3d(i,:,:) /)
@@ -129,30 +127,26 @@ do nd = 0,ndirs-1
 ; add variables
 ;**********************************************************
 
-  do ii = 0,nvars-1
-   if(valid(ii)) then
-    vname = vnames(ii)
-     var1d = (/ff->$vname$(0,0,:)/)
      var3d = new((/ ntile, res, res /), typeof(var1d), default_fillvalue(typeof(var1d)) )
+     ;printVarSummary(var3d)
 
      do i = 0, ntile-1
       istr = (i*res*res)
       iend = istr+res*res-1
-      var3d(i,:,:) = onedtond(var1d(istr:iend), (/ res, res /))
+      ;var3d(i,:,:) = onedtond(var1d(istr:iend), (/ res, res /))
+      var3d(i,:,:) = onedtond(var1d_sort(istr:iend), (/ res, res /))
+      print("tile number = "+i+" "+istr+" "+iend)
      end do
 
      do i = 0, ntile-1
-      ;ofile = dirsrc+fsrc+time+".tile"+sprinti("%d", i+1)+".nc"
-      ofile = dirout+fsrc+time+".tile"+sprinti("%d", i+1)+".nc"
+      ofile = dirsrc+fsrc+".tile"+sprinti("%d", i+1)+".nc"
        fout = addfile(ofile, "w")
-       fout->$vname$ = (/ var3d(i,:,:) /)
+       ;fout->$vname$ = (/ var3d(i,:,:) /)
+       fout->$vname$ = var3d(i,:,:)
+       delete(fout)
      end do
     delete(var1d)
     delete(var3d)
-   end if
-  end do
-
-end do  ; nts
 end do  ; ndirs
 
 exit
