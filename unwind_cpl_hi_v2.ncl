@@ -6,13 +6,15 @@
 ; Ufuk Turuncoglu turuncu@ucar.edu
 ;**********************************************************
 begin
-     RT = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/zorlPR/"
-    res = 384
+     RT = "/lustre/f2/scratch/Denise.Worthen/FV3_RT/"
+    res = 96
   ntile = 6
 
-   dirs = (/"testdev_seqnofrac/","testzorl_seqnofrac/" /)
+   ;dirs = (/"test_input/cpld_debugfrac/","test_input/test_seq/" /)
+   dirs = (/"test_dev/cpld_debugfrac/" /)
   ;times = (/"2013-04-01-00450", "2013-04-01-00900"/)
-  times = (/"2016-10-03-00900"/)
+  ;times = (/"2016-10-03-00900"/)
+  times = (/"2016-10-03-01800"/)
    ;fsrc = "ufs.s2s.cold.cpl.hi."
    ;fsrc = "ufs.s2s.cpl.r."
    fsrc = "ufs.cpld.cpl.hi."

@@ -7,15 +7,12 @@
 
 ;************************************************
 
-  ; hera
-  RT1 = "/scratch2/NCEPDEV/stmp1/Denise.Worthen/"
-  RT2 = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/"
-  RT3 = "/scratch2/NCEPDEV/stmp3/Denise.Worthen/"
-  RT4 = "/scratch1/NCEPDEV/stmp4/Denise.Worthen/"
+  ; gaea
+  RT1 = "/lustre/f2/scratch/Denise.Worthen/FV3_RT/"
 
  ;  hemi = "NH"
- ; hemi = "SH"
-  hemi = "none"
+  hemi = "SH"
+ ; hemi = "none"
 
   rad2deg=180.d0/acos(-1.0d0)
   icemin = 1.0e-6
@@ -36,21 +33,21 @@
   end if
  end if
 
-  ;model = "phyf000:07:30."
-  model = "phyf000."
   tlonname = "grid_xt"
   tlatname = "grid_yt"
   rfactor=rad2deg
-  ;model = "oro_data."
-  ;tlonname = "geolon"
-  ;tlatname = "geolat"
-  ;rfactor=1.0
 
-  ;rtsrc = "FV3_RT/test96/debug/INPUT/"
-  ;afile = addfile(RT2+rtsrc+model+tile+".nc","r")
-  ;afile = addfile("/scratch2/NCEPDEV/climate/Denise.Worthen/grids-20210201/C96.mx100.tile4.nc","r")
-  ;afile = addfile("/scratch2/NCEPDEV/climate/Denise.Worthen/GRIDS/C96.mx100.tile4.nc","r")
-  afile = addfile("/scratch2/NCEPDEV/climate/Denise.Worthen/GTMP/C96.mx100.tile4.nc","r")
+  ;model="Original C96mx100 input"
+  ;rtsrc = "test_dev/cpld_debugfrac/"
+  ;wkstitle="ori_input"
+
+  model="New C96mx100 input"
+ ; rtsrc = "test_input/cpld_debugfrac/"
+  rtsrc = "test_input/test_seq/"
+ ; wkstitle="new_input"
+  wkstitle="seqeuntial"
+  afile = addfile(RT1+rtsrc+"ufs.cpld.cpl.hi.2016-10-03-00900."+tile+".nc","r")
+  ofile = addfile(RT1+rtsrc+"INPUT/oro_data."+tile+".nc","r")
 
   tilecorners = tilegrid(afile->$tlonname$,afile->$tlatname$,tile)
   if(hemi .eq. "none")then
@@ -75,41 +72,43 @@
    end if
   end if
 
-  palette="MPL_rainbow"
+  ;palette="MPL_rainbow"
   ;print(afile)
   ;aname = "icec"
   ;levs=(/0.0,1.0,0.1/)
   ;aname = "land"
   ;levs=(/0.0,2.0,1/)
-  ;palette="amwg"
   ;aname = "tisfc"
   ;aname = "tmpsfc"
   ;levs=(/-2.0,0.0,.2/)
   ;aname = "ulwrf"
   ;levs=(/300,322,1/)
 
-  aname = "land_frac"
-  levs=(/0.0,1.0,0.1/)
+  aname = "atmImp_Sa_z"
+  ;oname = "Med_frac_atm_ofrac"
+  levs=(/-20.0,20.0,1.0/)
+  palette="BlueWhiteOrangeRed"
 
-  ;avar = afile->$aname$(0,:,:)
   avar = afile->$aname$(:,:)
-  ;avar = (afile->$aname$(lstep,:,:)) - 273.15
-  ;avar = where(afile->land(lstep,:,:) .eq. 1.0, avar@_FillValue, avar)
-  ;avar = where(afile->icec(lstep,:,:) .lt. icemin, avar@_FillValue, avar)
   avar@lon2d = afile->$tlonname$
   avar@lat2d = afile->$tlatname$
 
-  ;plottitle=rtsrc+model+tile+".nc  "+aname
+  oname = "slmsk"
+  ovar = ofile->$oname$(:,:)
+  ovar@lon2d = afile->$tlonname$
+  ovar@lat2d = afile->$tlatname$
+
+  plottitle=model+" "+tile+" "+aname
 
 ;************************************************
 ; define the map
 ;************************************************
 
-  wkstype="X11"
-  ;wkstype="png"
-  wkstype@wkWidth=800
-  wkstype@wkHeight=800
-  wks   = gsn_open_wks (wkstype,model+tile)              ; send graphics to X11 window
+  ;wkstype="X11"
+  wkstype="png"
+  wkstype@wkWidth=1200
+  wkstype@wkHeight=1200
+  wks   = gsn_open_wks (wkstype,wkstitle)              ; send graphics to X11 window
 
   res                      = True        ; plot mods desired
   res@gsnDraw              = False       ; do not draw until the end
@@ -120,7 +119,8 @@
   res@mpFillOn   = False
   res@mpOutlineOn   = False
 
-  res@gsnStringFontHeightF = 0.01
+  plot = new(1,graphic)
+ oplot = new(1,graphic)
 
   if(hemi .ne. "none")then
    res@gsnPolar   =  hemi                         ; specify the hemisphere
@@ -160,7 +160,23 @@
   res@cnMissingValFillColor   = "gray"          ; color fill missing areas blue
 
   res@tiMainFontHeightF = .010
-  ;res@tiMainString = plottitle
+  res@tiMainString = plottitle
+
+;************************************************
+; resources for overlay
+;************************************************
+
+  ores                  = True
+  ores@cnLineThicknessF = 2.0            ; line thickness
+  ores@cnLineColor      = "black"        ; line color
+  ores@cnLineLabelsOn   = False
+  ores@cnInfoLabelOn    = False
+  ores@gsnDraw          = False ; don't draw
+  ores@gsnFrame         = False ; don't advance frame
+  ores@gsnLeftString    = ""    ; no titles
+  ores@gsnRightString   = ""
+  ores@cnLevelSelectionMode = "ExplicitLevels"     ; set the contour levels with the following 3 resources
+  ores@cnLevels         = (/0.99/)
 
 ;************************************************
 ;
@@ -169,11 +185,22 @@
   if(hemi .eq. "none")then
    plot = gsn_csm_contour_map(wks,avar,res)    ; create the plot
   else
-   plot = gsn_csm_contour_map_polar(wks,avar,res)    ; create the plot
+   plot = gsn_csm_contour_map(wks,avar,res)    ; create the plot
+  oplot = gsn_csm_contour(wks,ovar,ores)    ; create the plot
+  overlay(plot,oplot)
+   ;plot = gsn_csm_contour_map_polar(wks,avar,res)    ; create the plot
   end if
 
   draw(plot)
   frame(wks)
 
+  if(wkstype .eq. "png")then
+   imcmd = "convert -trim "+wkstitle+".png "+wkstitle+".jpg"
+   ;print(imcmd)
+   system(imcmd)
+   imcmd = "convert -bordercolor white -border 0x10 "+wkstitle+".jpg "+wkstitle+".jpg"
+   ;print(imcmd)
+   system(imcmd)
+  end if
 exit
 end
