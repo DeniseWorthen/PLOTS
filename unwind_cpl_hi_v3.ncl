@@ -7,7 +7,7 @@
 ;**********************************************************
 begin
 
-     RT = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/testruns/"
+     RT = "/lustre/f2/scratch/Denise.Worthen/FV3_RT/"
 
    date = "2016-10-03-"
   ntile = 6
@@ -24,11 +24,11 @@ begin
   ; cres = "_c384"
   ;   dt = 300
 
-     dir = "testseq/"
+     dir = "test_aofrac/cpld_controlfrac_c192_aofrac/"
     fsrc = "ufs.cpld.cpl.hi."
   dirsrc = RT+dir
 
-  filelist = systemfunc("ls "+dirsrc+fsrc+date+"*.nc")
+  filelist = systemfunc("ls "+dirsrc+fsrc+date+"0*.nc")
       fcpl = addfiles(filelist,"r")
        nts = dimsizes(filelist)
   print(filelist)

@@ -154,6 +154,16 @@ do nd = 0,ndirs-1
    end if
   end do
 
+   do i = 0, ntile-1
+      ofile = dirout+fsrc+time+".tile"+sprinti("%d", i+1)+".nc"
+       fout = addfile(ofile, "r")
+       zbot = fout->atmImp_Sa_z
+      ofrac = fout->Med_frac_atm_ofrac
+
+      zbot = mask(zbot,(zbot .lt. 0.0 .and. ofrac .gt. 0.0), True)
+      print(ofile+"  "+num(.not.ismissing(zbot)))
+   end do
+
 end do  ; nts
 end do  ; ndirs
 
