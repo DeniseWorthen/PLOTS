@@ -1,7 +1,7 @@
 ;************************************************
 ; These files are loaded by default in NCL V6.2.0 and newer
 ; load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_code.ncl"
-; load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl" 
+; load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl"
 
   load "$NCARG_ROOT/lib/ncarg/nclscripts/contrib/cd_string.ncl"
   load "tilegrid.ncl"
@@ -11,16 +11,14 @@
 ;************************************************
 
   RT1 = "/scratch2/NCEPDEV/stmp1/Denise.Worthen/"
-  RT2 = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/S2S_RT/"
+  RT2 = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/"
   RT3 = "/scratch2/NCEPDEV/stmp3/Denise.Worthen/"
   RT4 = "/scratch1/NCEPDEV/stmp4/Denise.Worthen/"
 
- idate = "2011010100"
- plotlabs = (/"NEMS mediator", "CMEPS"/)
-      rts = (/"datm_nems_20d",\
-              "datm_cmeps_20d"/)
-    csets = (/"/cpld_datm_mom6_cice5_2d_cfsr/",\
-              "/cpld_datm_mom6_cice5_cmeps_2d_cfsr/"/)
+ plotlabs = (/"Unitynorm","AofracNorm"/)
+      rts = (/"ufs_test"/)
+    csets = (/"/cpld_controlfrac_c192/",\
+              "/cpld_controlfrac_c192_aofrac/"/)
 
   ;hemi = "NH"
   ;hemi = "SH"
@@ -49,13 +47,19 @@
  end if
 
  if(hemi .eq. "global")then
+  pltres = "global"
+ else
+  pltres = tile
+ end if
+
+ if(hemi .eq. "global")then
   minlon =   0.0
   maxlon = 360.0
   minlat = -90.0
   maxlat =  90.0
- else 
+ else
  ; uses nhout=1 file, could also hourly
-       gf = addfile(RT2+rts(0)+csets(0)+"phyf000."+tile+".nc","r")
+       gf = addfile(RT2+"FV3_RT/NORM_ONE_TESTS/"+rts(0)+csets(0)+"phyf000."+tile+".nc","r")
     tlonname = "grid_xt"
     tlatname = "grid_yt"
   tilecorners = tilegrid(gf->$tlonname$,gf->$tlatname$,tile)
@@ -81,15 +85,15 @@
 ;************************************************
 
      lstep = 1-1
-     cyear = "2011"
+     cyear = "2016"
       cmon = "10"
-      cday = "20"
+      cday = "04"
      chour = "21"
    cdate = cyear+cmon+"01"
 
-   ocnfiles = addfiles(RT2+rts+csets+"ocn_"+cyear+"_"+cmon+"_"+cday+"_"+chour+".nc","r")
+   ocnfiles = addfiles(RT2+"FV3_RT/NORM_ONE_TESTS/"+rts+csets+"ocn_"+cyear+"_"+cmon+"_"+cday+"_"+chour+".nc","r")
    ListSetType(ocnfiles,"cat")
-   ;print(ocnfiles)
+   print(ocnfiles)
 
   ; ocn fields
   ocnflds = (/"SST",      \
@@ -102,7 +106,7 @@
               "SW",       \
               "LW",       \
               "lprec"     \
-              /) 
+              /)
   nflds = dimsizes(ocnflds)
 
   ; plot levels
@@ -145,17 +149,18 @@
       oland = ocnfiles[0]->$olandname$
 
     pltlab0 = plotlabs(0)+"-"+plotlabs(1)
-   wkstitle = rts(0)+"-"+rts(1)+"_"+cday
+   ;wkstitle = rts(0)+"-"+rts(1)+"_"+cday
+   wkstitle = "test"
    print(wkstitle)
 ;************************************************
 ; define the map
 ;************************************************
 
-  ;wkstype="X11"
-  wkstype="png"
+  wkstype="X11"
+  ;wkstype="png"
   if(wkstype .eq. "png")then
-   wkstype@wkWidth=2500
-   wkstype@wkHeight=2500
+   wkstype@wkWidth=1200
+   wkstype@wkHeight=1200
   else
    wkstype@wkWidth=800
    wkstype@wkHeight=800

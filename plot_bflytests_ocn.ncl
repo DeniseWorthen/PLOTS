@@ -16,17 +16,17 @@
   RT4 = "/scratch1/NCEPDEV/stmp4/Denise.Worthen/"
 
  plotlabs = (/"Dev", "Dev+Butterfly", "Unitynorm"/)
-      rts = (/"ufs_dev", "ufs_dev", "ufs_test"/)
+      rts = (/"ufs_dev", "ufs_dev", "ufs_unity"/)
     csets = (/"/cpld_controlfrac_c192/",\
-              "/cpld_controlfrac_c192_butterfly/", \
+              "/cpld_controlfrac_c192_bfly/", \
               "/cpld_controlfrac_c192/"/)
 
    print(rts+csets)
 
   ;hemi = "NH"
   ;hemi = "SH"
-  ;hemi = "none"
-  hemi = "global"
+  hemi = "none"
+  ;hemi = "global"
 
  rad2deg=180.d0/acos(-1.0d0)
   icemin = 1.0e-6
@@ -62,7 +62,7 @@
   maxlat =  90.0
  else
  ; uses nhout=1 file, could also hourly
-       gf = addfile(RT2+"FV3_RT/NORM_ONE_TESTS/"+rts(0)+csets(0)+"phyf000."+tile+".nc","r")
+       gf = addfile(RT2+"FV3_RT/NORM_ONE_TESTS_2/"+rts(0)+csets(0)+"phyf000."+tile+".nc","r")
     tlonname = "grid_xt"
     tlatname = "grid_yt"
   tilecorners = tilegrid(gf->$tlonname$,gf->$tlatname$,tile)
@@ -95,7 +95,7 @@
      ; cday = "04"
      chour = "21"
 
-   ocnfiles = addfiles(RT2+"FV3_RT/NORM_ONE_TESTS/"+rts+csets+"ocn_"+cyear+"_"+cmon+"_"+cday+"_"+chour+".nc","r")
+   ocnfiles = addfiles(RT2+"FV3_RT/NORM_ONE_TESTS_2/"+rts+csets+"ocn_"+cyear+"_"+cmon+"_"+cday+"_"+chour+".nc","r")
    ListSetType(ocnfiles,"cat")
    ;print(ocnfiles)
 
@@ -177,8 +177,8 @@
 ; define the map
 ;************************************************
 
-  ;wkstype="X11"
-  wkstype="png"
+  wkstype="X11"
+  ;wkstype="png"
   wkstype@wkWidth=1200
   wkstype@wkHeight=1200
   wkstitle = fldname+"_"+pltres

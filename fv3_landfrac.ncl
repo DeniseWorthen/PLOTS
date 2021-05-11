@@ -51,10 +51,16 @@
   ;tlatname = "grid_yt"
   ;rfactor=rad2deg
 
-  rtsrc = "C96_l127.mx100_frac"
+  ;rtsrc = "C96_l127.mx100_frac"
+  ;gfile = "oro_data."+tile+".nc"
+  ;afile = addfile("/scratch2/BMC/gsd-fv3-dev/FV3-MOM6-CICE5/inputdata_v16_rtest/FV3_input_frac/"+rtsrc+"/"+gfile,"r")
+  ;plottitle="New mapped ocean mask "+gfile
+
+  rtsrc = "C96_L127.mx100_frac"
   gfile = "oro_data."+tile+".nc"
-  afile = addfile("/scratch2/BMC/gsd-fv3-dev/FV3-MOM6-CICE5/inputdata_v16_rtest/FV3_input_frac/"+rtsrc+"/"+gfile,"r")
-  plottitle="New mapped ocean mask "+gfile
+  afile = addfile("/scratch1/NCEPDEV/stmp4/Denise.Worthen/input-data_20210426/FV3_input_frac/"+rtsrc+"/"+gfile,"r")
+  plottitle="New inputdata ocean mask "+gfile
+
   tlonname = "geolon"
   tlatname = "geolat"
 

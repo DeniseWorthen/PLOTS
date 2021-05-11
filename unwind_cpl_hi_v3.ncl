@@ -7,7 +7,7 @@
 ;**********************************************************
 begin
 
-     RT = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/testruns/"
+     RT = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/rt_51448/"
 
    date = "2016-10-03-"
   ntile = 6
@@ -24,7 +24,7 @@ begin
   ; cres = "_c384"
   ;   dt = 300
 
-     dir = "testseq/"
+     dir = "cpld_controlfrac_c192_aofrac/"
     fsrc = "ufs.cpld.cpl.hi."
   dirsrc = RT+dir
 

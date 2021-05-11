@@ -6,13 +6,19 @@
 ; Ufuk Turuncoglu turuncu@ucar.edu
 ;**********************************************************
 begin
-     RT = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/zorlPR/"
-    res = 384
+     RT = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/rt_2752/"
+    res = 96
+    ;res = 384
   ntile = 6
 
-   dirs = (/"testdev_seqnofrac/","testzorl_seqnofrac/" /)
+  ; dirs = (/"test/","test_300/"/)
+  ; dirs = (/"test3_300/"/)
+   ;dirs = (/"cpld_debugfrac_dt_na/"/)
+   dirs = (/"cpld_debugfrac/"/)
   ;times = (/"2013-04-01-00450", "2013-04-01-00900"/)
   times = (/"2016-10-03-00900"/)
+  ;times = (/"2011-05-01-00225"/)
+  ;times = (/"2011-05-01-00300"/)
    ;fsrc = "ufs.s2s.cold.cpl.hi."
    ;fsrc = "ufs.s2s.cpl.r."
    fsrc = "ufs.cpld.cpl.hi."
@@ -150,6 +156,36 @@ do nd = 0,ndirs-1
     delete(var1d)
     delete(var3d)
    end if
+  end do
+
+  do i = 0, ntile-1
+      ofile = dirout+fsrc+time+".tile"+sprinti("%d", i+1)+".nc"
+       fout = addfile(ofile, "r")
+       lats = fout->grid_yt
+       lons = fout->grid_xt
+       zbot = fout->atmImp_Sa_z
+      ofrac = fout->Med_frac_atm_ofrac
+      ;printVarSummary(zbot)
+
+      ;zbot = mask(zbot,(zbot .lt. 0.0 .and. ofrac .gt. 0.0), True)
+      zbot = mask(zbot,(zbot .lt. 0.0 ), True)
+      zbot1 = ndtooned(zbot)
+      ;printVarSummary(zbot1)
+      print(ofile+"  "+num(.not.ismissing(zbot1)))
+      nvals = num(.not.ismissing(zbot1))
+
+      if(nvals .gt. 0)then
+       ijlocs = ind_resolve(ind(zbot1), (/res,res/) )
+       ;print(lats(ijlocs(:,0),ijlocs(:,1)) +"  "+lons(ijlocs(:,0),ijlocs(:,1)) )
+
+       do n = 0,nvals-1
+        nn = n+1
+        jj = ijlocs(n,0)+1
+        ii = ijlocs(n,1)+1
+        print("n = "+nn+" i,j "+ii+"  "+jj+"  lat,lon = "+lats(jj-1,ii-1)+", "+lons(jj-1,ii-1)+"  zbot = "+zbot(jj-1,ii-1))
+       end do
+       delete(ijlocs)
+      end if
   end do
 
 end do  ; nts

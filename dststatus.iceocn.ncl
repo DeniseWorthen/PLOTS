@@ -7,12 +7,12 @@
 ;**********************************************************
 begin
 
-     RT = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/datm_bilin/"
+     RT = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/test_input/"
 
-   dirs = (/"mx025cfsr_bilin/"/)
+   dirs = (/"cpld_controlfrac_debug/"/)
    ;dirs = (/"testmask/", "testmaskall/"/)
   ;   fsrc = "dststatus.atm.ocn.bilnr_nstod.nc"
-     fsrc = "dststatus.atm.ocn.bilnr.nc"
+     fsrc = "dststatus.atm.ocn.consf.nc"
   doffile = "dof.ocn.nc"
   ;   fsrc = "dststatus.atm.ice.bilnr.nc"
   ;doffile = "dof.ice.nc"
@@ -26,11 +26,11 @@ begin
   ;vname = "unity"
 
   ; mx100
-  ;ni = 360
-  ;nj = 320
+  ni = 360
+  nj = 320
   ; mx025
-  ni = 1440
-  nj = 1080
+  ;ni = 1440
+  ;nj = 1080
 
   ndirs = dimsizes(dirs)
 

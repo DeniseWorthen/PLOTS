@@ -14,8 +14,8 @@
   RT4 = "/scratch1/NCEPDEV/stmp4/Denise.Worthen/"
 
  ;  hemi = "NH"
- ; hemi = "SH"
-  hemi = "none"
+  hemi = "SH"
+ ; hemi = "none"
 
   rad2deg=180.d0/acos(-1.0d0)
   icemin = 1.0e-6
@@ -38,8 +38,7 @@
 
   tlonname = "grid_xt"
   tlatname = "grid_yt"
-  orolonname = "geolon"
-  orolatname = "geolat"
+  rfactor=rad2deg
 
   ;rtsrc = "FV3_RT/test96/debug/INPUT/"
   ;afile = addfile(RT2+rtsrc+model+tile+".nc","r")
@@ -55,28 +54,23 @@
  ; wkstitle="dt=300s"
  ; afile = addfile(RT2+rtsrc+"ufs.cpld.cpl.hi.2011-05-01-00300."+tile+".nc","r")
 
- ; wkstitle="dt_diff"
- ; afile = addfile(RT2+rtsrc+"diff.nc","r")
- ; ofile = addfile(RT2+rtsrc+"cpld_debugfrac/INPUT/oro_data."+tile+".nc","r")
-
  model="DT test"
-  rtsrc = "FV3_RT/test_dts_c96/cpld_debugfrac_na/"
-   time = "00900"
-  wkstitle="dt_"+time
-  afile = addfile(RT2+rtsrc+"ufs.cpld.cpl.hi.2016-10-03-"+time+"."+tile+".nc","r")
-  ; retrieve orodata file from INPUT directory
-  ofile = addfile(RT2+rtsrc+"INPUT/oro_data."+tile+".nc","r")
+  rtsrc = "FV3_RT/test_dts_c96/"
+  wkstitle="dt_diff"
+  afile = addfile(RT2+rtsrc+"diff.nc","r")
+  ofile = addfile(RT2+rtsrc+"cpld_debugfrac/INPUT/oro_data."+tile+".nc","r")
 
-  tilecorners = tilegrid(afile->$tlonname$,afile->$tlatname$,tile)
+  ;tilecorners = tilegrid(afile->$tlonname$,afile->$tlatname$,tile)
+  tilecorners = tilegrid(ofile->$tlonname$,ofile->$tlatname$,tile)
   if(hemi .eq. "none")then
-   minlon = tilecorners[0]
-   minlat = tilecorners[1]
-   maxlon = tilecorners[2]
-   maxlat = tilecorners[3]
-   ;minlon = 144.0
-   ;minlat = -10.
-   ;maxlon = 154.0
-   ;maxlat = 0.0
+   ;minlon = tilecorners[0]
+   ;minlat = tilecorners[1]
+   ;maxlon = tilecorners[2]
+   ;maxlat = tilecorners[3]
+   minlon = 144.0
+   minlat = -10.
+   maxlon = 154.0
+   maxlat = 0.0
    midlon = minlon + 0.5*(maxlon - minlon)
    print(minlat+"   "+maxlat)
    print(minlon+"   "+maxlon+"  "+midlon+"  "+0.5*(maxlon - minlon))
@@ -90,29 +84,32 @@
    end if
   end if
 
-  ;aname = "atmImp_Sa_tbot"
+  ;palette="MPL_rainbow"
+  ;print(afile)
+  ;aname = "icec"
+  ;levs=(/0.0,1.0,0.1/)
+  ;aname = "land"
+  ;levs=(/0.0,2.0,1/)
+  ;aname = "tisfc"
+  ;aname = "tmpsfc"
+  ;levs=(/-2.0,0.0,.2/)
+  ;aname = "ulwrf"
+  ;levs=(/300,322,1/)
+
+  aname = "atmImp_Sa_tbot"
+  oname = "Med_frac_atm_ofrac"
   ;levs=(/-5.0,5.0,0.5/)
-  ;levs=(/-1.0,1.0,0.1/)
-  aname = "atmImp_Sa_z"
-  ;levs=(/-20.0,20.0,1.0/)
-  levs=(/10.0,30.0,0.5/)
-  ;palette="BlueWhiteOrangeRed"
-  palette="WhBlGrYeRe"
+  levs=(/-1.0,1.0,0.1/)
+  palette="BlueWhiteOrangeRed"
 
   avar = afile->$aname$(:,:)
   avar@lon2d = afile->$tlonname$
   avar@lat2d = afile->$tlatname$
 
-  ;oname = "Med_frac_atm_ofrac"
-  ;ovar = afile->$oname$(:,:)
-  ;ovar@lon2d = afile->$tlonname$
-  ;ovar@lat2d = afile->$tlatname$
-
   oname = "slmsk"
   ovar = ofile->$oname$(:,:)
-  ovar@lon2d = ofile->$orolonname$
-  ovar@lat2d = ofile->$orolatname$
-  ;printVarSummary(ovar)
+  ovar@lon2d = afile->$tlonname$
+  ovar@lat2d = afile->$tlatname$
 
   plottitle=model+" "+tile+" "+aname
 
@@ -141,8 +138,7 @@
   if(hemi .ne. "none")then
    res@gsnPolar   =  hemi                         ; specify the hemisphere
    if(hemi .eq. "NH")then
-  ;  res@mpMinLatF    =  66.0                          ; minimum lat to plot
-    res@mpMinLatF    =  50.0                          ; minimum lat to plot
+    res@mpMinLatF    =  66.0                          ; minimum lat to plot
     res@mpCenterLonF = -45
    end if
    if(hemi .eq. "SH")then
@@ -193,7 +189,7 @@
   ores@gsnLeftString    = ""    ; no titles
   ores@gsnRightString   = ""
   ores@cnLevelSelectionMode = "ExplicitLevels"     ; set the contour levels with the following 3 resources
-  ores@cnLevels         = (/0.999/)
+  ores@cnLevels         = (/0.99/)
 
 ;************************************************
 ;
@@ -201,7 +197,6 @@
 
   if(hemi .eq. "none")then
    plot = gsn_csm_contour_map(wks,avar,res)    ; create the plot
-  oplot = gsn_csm_contour(wks,ovar,ores)    ; create the plot
   else
    plot = gsn_csm_contour_map(wks,avar,res)    ; create the plot
   oplot = gsn_csm_contour(wks,ovar,ores)    ; create the plot
