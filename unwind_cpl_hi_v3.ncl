@@ -8,9 +8,10 @@
 begin
 
      ;RT = "/glade/scratch/worthen/FV3_RT/testnew/"
-     RT = "/glade/scratch/worthen/FV3_RT/testnew/"
+     RT = "/glade/scratch/worthen/FV3_RT/rt_47146/"
 
-   date = "2016-10-03-"
+  ; date = "2016-10-03-"
+   date = "2016-10-"
   ntile = 6
 
     res = 96
@@ -20,23 +21,28 @@ begin
   ;  res = 192
   ; cres = "_c192"
   ;   dt = 900
-
+   
  ;   res = 384
  ;  cres = "_c384"
  ;    dt = 450
 
-     dir = "testdev/"
+     ;dir = "test_concur/"
      ;dir = "test_dev/test0/"
      ;dir = "test_nonorm/"
-    ; dir = "cpld_controlfrac"+cres+"_prod/"
+     dir = "cpld_controlfrac_aofrac"+cres+"/"
     ; dir = "cpld_control"+cres+"_prod/"
     fsrc = "ufs.cpld.cpl.hi."
   dirsrc = RT+dir
 
-  filelist = systemfunc("ls "+dirsrc+fsrc+date+"0*.nc")
-      fcpl = addfiles(filelist,"r")
-       nts = dimsizes(filelist)
-  print(filelist)
+  nfbeg = 0
+  nfend = 20
+  nfiles= (nfend-nfbeg)
+  ;filelist = systemfunc("ls "+dirsrc+fsrc+date+"0*.nc")
+  filelist = systemfunc("ls "+dirsrc+fsrc+date+"*.nc")
+  ;print(filelist)
+      fcpl = addfiles(filelist(nfbeg:nfend),"r")
+       nts = dimsizes(filelist(nfbeg:nfend))
+  print(filelist(nfbeg:nfend))
 
 ;if(1.eq.0)then
   ;--- read time variable ---
@@ -166,6 +172,8 @@ begin
        fout = addfile(ofile, "w")
        fout->$vname$ = (/ var3d(i,:,:,:) /)
      end do
+     print("done with variable "+vname)
+
     delete(var1d)
     delete(var3d)
    end if

@@ -12,32 +12,31 @@ begin
 
    nl = str_get_nl()
    nflags = 9
-  ;   RT = "/glade/scratch/worthen/FV3_RT/testnew/"
-  ;   RT = "/glade/scratch/worthen/FV3_RT/testbob/"
- ;    RT = "/glade/scratch/worthen/FV3_RT/test192/"
-     RT = "/glade/scratch/worthen/FV3_RT/test96/"
+     RT = "/glade/scratch/worthen/FV3_RT/bilintest/"
    date = "2016-10-03-"
 
     res = 96
    cres = ""
      dt = 900
 
-  ;  res = 192
-  ; cres = "_c192"
-  ;   dt = 900
+ ;   res = 192
+ ;  cres = "_c192"
+ ;   dt = 900
 
  ;   res = 384
  ;  cres = "_c384"
  ;    dt = 450
 
 
-   ;dirs = (/"testdev/"/)
+   ;dirs = (/"test/"/)
    ;dirs = (/"testbilin/"/)
-   dirs = (/"testdev/", "testbilin/"/)
+   dirs = (/"cpld_controlfrac/", "cpld_controlfrac_biln/"/)
 
    vname = "dststatus"
    fsrc = vname+".ocn.atm.consd"
    ;fsrc = vname+".ocn.atm.consf"
+   ;vname = "meshmask"
+   ;fsrc = "mask.ocn.atm.consf"
 
   ntile = 6
   ndirs = dimsizes(dirs)
@@ -46,7 +45,7 @@ begin
 ; retrieve lat/lon from first coupler history file
 ;**********************************************************
 
-  fname = RT+dirs(0)+"ufs.cpld.cpl.hi."+date+"00900.nc"
+  fname = RT+dirs(0)+"ufs.cpld.cpl.hi."+date+"03600.nc"
   ;fname = RT+dirs(0)+"RESTART/ufs.cpld.cpl.r.2016-10-04-00000.nc"
   print("input file "+fname)
   ff = addfile(fname,"r")

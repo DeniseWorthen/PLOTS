@@ -10,22 +10,21 @@
 ;**********************************************************
 begin
 
-     RT = "/glade/scratch/worthen/FV3_RT/testnew/"
-     ;RT = "/glade/scratch/worthen/FV3_RT/testdatm/"
-     ;RT = "/glade/scratch/worthen/FV3_RT/rt_72321/"
+     RT = "/glade/scratch/worthen/FV3_RT/bilintest/"
 
    nl = str_get_nl()
    nflags = 9
-   dirs = (/"testdev/"/)
-   ;dirs = (/"gefsbilin_nstod/"/)
-   ;dirs = (/"testmask/", "testmaskall/"/)
+   dirs = (/"cpld_controlfrac_biln/"/)
+   ;dirs = (/"cpld_controlfrac/", "cpld_controlfrac_biln/"/)
   ;   fsrc = "dststatus.atm.ocn.bilnr.nc"
  ; doffile = "dof.ocn.nc"
  ;    fsrc = "dststatus.atm.ice.bilnr_nstod.nc"
  ; doffile = "dof.ice.nc"
      ;fsrc = "dststatus.atm.ocn.nstod_consf.nc"
-     fsrc = "dststatus.atm.ocn.consf.nc"
-;    ; fsrc = "unityone.atm.ocn.consf.nc"
+    ;fsrc = "dststatus.atm.ocn.consf_fnorm.nc"
+   ; fsrc = "dststatus.atm.ocn.consf.nc"
+  ;   fsrc = "unityone.atm.ocn.consf.nc"
+     fsrc = "dststatus.atm.ocn.bilnr_nstod.nc"
   doffile = "dof.ocn.nc"
 
   ;vname = "unity"
