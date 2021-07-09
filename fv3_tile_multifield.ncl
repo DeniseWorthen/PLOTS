@@ -69,9 +69,9 @@
 
  ; AOD test
  model = "control_merra2"
- rtsrc = "FV3_RT/rt_227500/test_control/"
+ rtsrc = "FV3_RT/rt_274628/test/"
   wkstitle="aod550"
-  afile = addfile(RT2+rtsrc+"sfcf000."+tile+".nc","r")
+  afile = addfile(RT2+rtsrc+"sfcf012."+tile+".nc","r")
   ; retrieve orodata file from INPUT directory
   ofile = addfile(RT2+rtsrc+"INPUT/oro_data."+tile+".nc","r")
 
@@ -107,16 +107,24 @@
   ;palette="BlueWhiteOrangeRed"
   palette="WhBlGrYeRe"
 
-  aname = "aod550"
-  avar = afile->$aname$(0,:,:)
-  levs=(/0.0,1.0,0.1/)
-  avar@lon2d = afile->$tlonname$
-  avar@lat2d = afile->$tlatname$
+  ; atm fields
+  atmflds = (/"aod550",     \
+              "bc_aod550",  \
+              "du_aod550",  \
+              "oc_aod550",  \
+              "ss_aod550",  \
+              "su_aod550"   \
+              /)
+  nflds = dimsizes(atmflds)
 
-  ;oname = "Med_frac_atm_ofrac"
-  ;ovar = afile->$oname$(:,:)
-  ;ovar@lon2d = afile->$tlonname$
-  ;ovar@lat2d = afile->$tlatname$
+  ; plot levels
+  plotlevs = new((/nflds,3/), float)
+  plotlevs( 0,:) = (/  0.0,  1.00, 0.100/)
+  plotlevs( 1,:) = (/  0.0,  0.02, 0.001/)  ; bc
+  plotlevs( 2,:) = (/  0.0,  1.00, 0.100/)  ; du
+  plotlevs( 3,:) = (/  0.0,  0.20, 0.010/)  ; oc
+  plotlevs( 4,:) = (/  0.0,  0.20, 0.010/)  ; ss
+  plotlevs( 5,:) = (/  0.0,  0.20, 0.010/)  ; su
 
   oname = "slmsk"
   ovar = ofile->$oname$(:,:)
@@ -124,7 +132,7 @@
   ovar@lat2d = ofile->$orolatname$
   ;printVarSummary(ovar)
 
-  plottitle=model+" "+tile+" "+aname
+  plottitle=model+" sfcf000 "+tile
 
 ;************************************************
 ; define the map
@@ -145,8 +153,8 @@
   res@mpFillOn   = False
   res@mpOutlineOn   = False
 
-  plot = new(1,graphic)
- oplot = new(1,graphic)
+  plot = new(nflds,graphic)
+ oplot = new(nflds,graphic)
 
   if(hemi .ne. "none")then
    res@gsnPolar   =  hemi                         ; specify the hemisphere
@@ -176,10 +184,10 @@
   ;res@cnFillOn          = False                  ; color fill
   res@cnFillPalette            = palette
 
-  res@cnLevelSelectionMode = "ManualLevels"     ; set the contour levels with the following 3 resources
-  res@cnMinLevelValF  = levs(0)                      ; set the minimum contour level
-  res@cnMaxLevelValF  = levs(1)                      ; set the maximum contour level
-  res@cnLevelSpacingF = levs(2)                      ; set the interval between contours
+  ;res@cnLevelSelectionMode = "ManualLevels"     ; set the contour levels with the following 3 resources
+  ;res@cnMinLevelValF  = levs(0)                      ; set the minimum contour level
+  ;res@cnMaxLevelValF  = levs(1)                      ; set the maximum contour level
+  ;res@cnLevelSpacingF = levs(2)                      ; set the interval between contours
 
   res@cnMissingValPerimOn     = False            ; turn on the missing value perimeter
   ;res@cnMissingValPerimColor  = "black"           ; outline the perimeter red
@@ -187,7 +195,7 @@
   res@cnMissingValFillColor   = "gray"          ; color fill missing areas blue
 
   res@tiMainFontHeightF = .010
-  res@tiMainString = plottitle
+  ;res@tiMainString = plottitle
 
 ;************************************************
 ; resources for overlay
@@ -205,31 +213,62 @@
   ores@cnLevelSelectionMode = "ExplicitLevels"     ; set the contour levels with the following 3 resources
   ores@cnLevels         = (/0.999/)
 
+; ***************************************************
+; panel resources
+; **************************************************
+
+  resP                       = True                 ; modify the panel plot
+  resP@gsnMaximize           = True                 ; maximize in frame
+  resP@gsnFrame              = False                ; don't advance frame yet
+  resP@gsnPanelLabelBar      = False                 ; turn on a common labelbar for the entire panel plot
+
+  resP@gsnPanelMainFontHeightF = 0.020           ; new resource added in NCL V6.4.0
+  resP@gsnPanelMainString = plottitle
+
 ;************************************************
 ;
 ;************************************************
 
-  if(hemi .eq. "none")then
-   plot = gsn_csm_contour_map(wks,avar,res)    ; create the plot
-  oplot = gsn_csm_contour(wks,ovar,ores)    ; create the plot
-  overlay(plot,oplot)
-  else
-   plot = gsn_csm_contour_map(wks,avar,res)    ; create the plot
-  oplot = gsn_csm_contour(wks,ovar,ores)    ; create the plot
-  overlay(plot,oplot)
-   ;plot = gsn_csm_contour_map_polar(wks,avar,res)    ; create the plot
-  end if
+  do ii = 0,nflds-1
+   aname = atmflds(ii)
+    avar = afile->$aname$(0,:,:)
+    levs = plotlevs(ii,:)
+    avar@lon2d = afile->$tlonname$
+    avar@lat2d = afile->$tlatname$
 
-  draw(plot)
+    res@cnLevelSelectionMode = "ManualLevels"     ; set the contour levels with the following 3 resources
+    res@cnMinLevelValF  = levs(0)                      ; set the minimum contour level
+    res@cnMaxLevelValF  = levs(1)                      ; set the maximum contour level
+    res@cnLevelSpacingF = levs(2)                      ; set the interval between contours
+
+   if(hemi .eq. "none")then
+     plot(ii) = gsn_csm_contour_map(wks,avar,res)    ; create the plot
+    oplot(ii) = gsn_csm_contour(wks,ovar,ores)    ; create the plot
+    overlay(plot(ii),oplot(ii))
+   else
+     plot(ii) = gsn_csm_contour_map(wks,avar,res)    ; create the plot
+    oplot(ii) = gsn_csm_contour(wks,ovar,ores)    ; create the plot
+    overlay(plot(ii),oplot(ii))
+   end if
+ end do
+
+;************************************************
+; make the panel
+;************************************************
+
+  gsn_panel(wks,plot,(/2,3/),resP)
+  ;gsn_panel(wks,plot,(/1,1/),resP)
+
   frame(wks)
+
+;************************************************
+;
+;************************************************
 
   if(wkstype .eq. "png")then
    imcmd = "convert -trim "+wkstitle+".png "+wkstitle+".jpg"
-   ;print(imcmd)
-   system(imcmd)
-   imcmd = "convert -bordercolor white -border 0x10 "+wkstitle+".jpg "+wkstitle+".jpg"
-   ;print(imcmd)
    system(imcmd)
   end if
+
 exit
 end

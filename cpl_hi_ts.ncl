@@ -6,11 +6,11 @@
 ; Ufuk Turuncoglu turuncu@ucar.edu
 ;**********************************************************
 begin
-     RT = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/rt_51448/"
+     RT = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/thermo_iter/"
 
-   date = "2016-10-03-"
+   date = "2014-01-03-"
 
-     dir = "cpld_controlfrac_c192_aofrac/"
+     dir = "h18+X/"
     fsrc = "ufs.cpld.cpl.hi."
   dirsrc = RT+dir
   

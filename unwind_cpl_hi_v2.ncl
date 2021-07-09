@@ -6,7 +6,7 @@
 ; Ufuk Turuncoglu turuncu@ucar.edu
 ;**********************************************************
 begin
-     RT = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/rt_2752/"
+     RT = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/rt_166074/"
     res = 96
     ;res = 384
   ntile = 6
@@ -14,7 +14,7 @@ begin
   ; dirs = (/"test/","test_300/"/)
   ; dirs = (/"test3_300/"/)
    ;dirs = (/"cpld_debugfrac_dt_na/"/)
-   dirs = (/"cpld_debugfrac/"/)
+   dirs = (/"test/"/)
   ;times = (/"2013-04-01-00450", "2013-04-01-00900"/)
   times = (/"2016-10-03-00900"/)
   ;times = (/"2011-05-01-00225"/)
