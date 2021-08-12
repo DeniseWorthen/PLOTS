@@ -11,8 +11,8 @@
   RT1 = "/lustre/f2/scratch/Denise.Worthen/FV3_RT/"
 
  ;  hemi = "NH"
-  hemi = "SH"
- ; hemi = "none"
+ ; hemi = "SH"
+  hemi = "none"
 
   rad2deg=180.d0/acos(-1.0d0)
   icemin = 1.0e-6
@@ -23,7 +23,7 @@
 
   lstep=0
   if(hemi .eq. "none")then
-    tile = "tile4"
+    tile = "tile5"
   else
    if(hemi .eq. "NH")then
     tile = "tile3"
@@ -42,23 +42,23 @@
   ;wkstitle="ori_input"
 
   model="New C96mx100 input"
- ; rtsrc = "test_input/cpld_debugfrac/"
-  rtsrc = "test_input/test_seq/"
- ; wkstitle="new_input"
-  wkstitle="seqeuntial"
+  rtsrc = "test_input/cpld_debugfrac/"
+ ; rtsrc = "test_input/test_seq/"
+  wkstitle="new_input"
+ ; wkstitle="seqeuntial"
   afile = addfile(RT1+rtsrc+"ufs.cpld.cpl.hi.2016-10-03-00900."+tile+".nc","r")
   ofile = addfile(RT1+rtsrc+"INPUT/oro_data."+tile+".nc","r")
 
   tilecorners = tilegrid(afile->$tlonname$,afile->$tlatname$,tile)
   if(hemi .eq. "none")then
-   ;minlon = tilecorners[0]
-   ;minlat = tilecorners[1]
-   ;maxlon = tilecorners[2]
-   ;maxlat = tilecorners[3]
-   minlon = 144.0
-   minlat = -10.
-   maxlon = 154.0
-   maxlat = 0.0
+   minlon = tilecorners[0]
+   minlat = tilecorners[1]
+   maxlon = tilecorners[2]
+   maxlat = tilecorners[3]
+   ;minlon = 144.0
+   ;minlat = -10.
+   ;maxlon = 154.0
+   ;maxlat = 0.0
    midlon = minlon + 0.5*(maxlon - minlon)
    print(minlat+"   "+maxlat)
    print(minlon+"   "+maxlon+"  "+midlon+"  "+0.5*(maxlon - minlon))
@@ -104,8 +104,8 @@
 ; define the map
 ;************************************************
 
-  ;wkstype="X11"
-  wkstype="png"
+  wkstype="X11"
+  ;wkstype="png"
   wkstype@wkWidth=1200
   wkstype@wkHeight=1200
   wks   = gsn_open_wks (wkstype,wkstitle)              ; send graphics to X11 window
@@ -184,6 +184,8 @@
 
   if(hemi .eq. "none")then
    plot = gsn_csm_contour_map(wks,avar,res)    ; create the plot
+  oplot = gsn_csm_contour(wks,ovar,ores)    ; create the plot
+  overlay(plot,oplot)
   else
    plot = gsn_csm_contour_map(wks,avar,res)    ; create the plot
   oplot = gsn_csm_contour(wks,ovar,ores)    ; create the plot

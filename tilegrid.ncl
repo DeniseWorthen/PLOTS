@@ -17,10 +17,15 @@ begin
   minlon = min(loncorners)
   maxlon = max(loncorners)
 
-  if(tile .eq. "tile1")then
+  if(tile .eq. "tile1" )then
    tmplon = minlon
    minlon = maxlon - 360.0
    maxlon = tmplon
   end if
+  ;if(tile .eq. "tile5" )then
+   ;tmplon = minlon - 180.0
+   ;minlon = minlon -360.
+   ;maxlon = maxlon -180.
+  ;end if
   return( [/minlon,minlat,maxlon,maxlat/])
 end

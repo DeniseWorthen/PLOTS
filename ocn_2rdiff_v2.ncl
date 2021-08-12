@@ -10,23 +10,19 @@
 ; read in netCDF file
 ;************************************************
 
-  RT1 = "/scratch2/NCEPDEV/stmp1/Denise.Worthen/"
-  RT2 = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/S2S_RT/"
-  RT3 = "/scratch2/NCEPDEV/stmp3/Denise.Worthen/"
-  RT4 = "/scratch1/NCEPDEV/stmp4/Denise.Worthen/"
+  RT1 = "/lustre/f2/scratch/Denise.Worthen/FV3_RT/"
 
- idate = "2011010100"
- plotlabs = (/"NEMS mediator", "CMEPS"/)
-      rts = (/"datm_nems_20d",\
-              "datm_cmeps_20d"/)
-    csets = (/"/cpld_datm_mom6_cice5_2d_cfsr/",\
-              "/cpld_datm_mom6_cice5_cmeps_2d_cfsr/"/)
+ idate = "2016_03_03"
+ plotlabs = (/"Aofrac normalization","Control"/)
+      rts = (/"test_aofrac",\
+              "test_aofrac"/)
+    csets = (/"/cpld_controlfrac_c192_aofrac/",\
+              "/cpld_controlfrac_c192/"/)
 
   ;hemi = "NH"
   ;hemi = "SH"
-  ;hemi = "none"
-  hemi = "global"
-
+  hemi = "none"
+  ;hemi = "global"
  rad2deg=180.d0/acos(-1.0d0)
   icemin = 1.0e-6
  const_lhvap = 2.501e6
@@ -55,16 +51,19 @@
   maxlat =  90.0
  else 
  ; uses nhout=1 file, could also hourly
-       gf = addfile(RT2+rts(0)+csets(0)+"phyf000."+tile+".nc","r")
+       gf = addfile(RT1+rts(0)+csets(0)+"phyf000."+tile+".nc","r")
     tlonname = "grid_xt"
     tlatname = "grid_yt"
   tilecorners = tilegrid(gf->$tlonname$,gf->$tlatname$,tile)
   if(hemi .eq. "none")then
    minlon = tilecorners[0]
    minlat = tilecorners[1]
-   maxlon = tilecorners[2]
-   maxlat = tilecorners[3]
+   ;maxlon = tilecorners[2]
+   ;maxlat = tilecorners[3]
+   maxlat = 0.0
+   maxlon = 160.0
    midlon = minlon + 0.5*(maxlon - minlon)
+   print(minlon+"   "+maxlon)
   else
    if(hemi .eq. "NH")then
     minlat =  66.0
@@ -81,13 +80,13 @@
 ;************************************************
 
      lstep = 1-1
-     cyear = "2011"
+     cyear = "2016"
       cmon = "10"
-      cday = "20"
+      cday = "04"
      chour = "21"
    cdate = cyear+cmon+"01"
 
-   ocnfiles = addfiles(RT2+rts+csets+"ocn_"+cyear+"_"+cmon+"_"+cday+"_"+chour+".nc","r")
+   ocnfiles = addfiles(RT1+rts+csets+"ocn_"+cyear+"_"+cmon+"_"+cday+"_"+chour+".nc","r")
    ListSetType(ocnfiles,"cat")
    ;print(ocnfiles)
 
@@ -120,17 +119,19 @@
   ;plotlevs( 5,:) = (/-120.0,120.0,10.0/) ; latent
   plotlevs( 5,:) = (/-10.0,10.0,1.0/) ; latent
   ;plotlevs( 6,:) = (/-120.0,120.0,10.0/) ; sensible
-  plotlevs( 6,:) = (/-5.0,5.0,0.5/) ; sensible
+  plotlevs( 6,:) = (/-4.0,4.0,0.5/) ; sensible
   plotlevs( 7,:) = (/-240.0,240.0,20.0/) ; SW
-  ;plotlevs( 8,:) = (/-100.0,100.0,10.0/) ; LW
-  plotlevs( 8,:) = (/-1.0,1.0,0.1/) ; LW
+  plotlevs( 8,:) = (/-10.0,10.0,2.0/) ; LW
+  ;plotlevs( 8,:) = (/-1.0,1.0,0.1/) ; LW
   ;plotlevs( 9,:) = (/  -2.0,  2.0, 0.2/) ; lprec*3600 mm/hr
   plotlevs( 9,:) = (/  -0.01,  0.01, 0.001/) ; lprec*3600 mm/hr
   
   cmap="BlueWhiteOrangeRed"
 
-  flds = (/0,1,2,4/)
+  ;flds = (/0,1,2,4/)
+  ;flds = (/0,1,2/)
   ;flds = (/5,6,8,9/)
+  flds = (/5,6/)
 
 ;************************************************
 ;  Ocn lats/lons and mask
@@ -145,7 +146,8 @@
       oland = ocnfiles[0]->$olandname$
 
     pltlab0 = plotlabs(0)+"-"+plotlabs(1)
-   wkstitle = rts(0)+"-"+rts(1)+"_"+cday
+   ;wkstitle = rts(0)+"-"+rts(1)+"_"+cday
+   wkstitle = hemi
    print(wkstitle)
 ;************************************************
 ; define the map
@@ -245,6 +247,13 @@ end
   if(fldname .eq. "lprec")then   ; make levels easier
    odiff0@units = "mm/d"
   end if
+  if(fldname .eq. "latent")then  ; shorten long name
+   tmp = odiff0@long_name
+   print(tmp)
+   ii = str_index_of_substr(tmp,"due",0)
+   ;print(ii)
+   odiff0@long_name = str_get_cols(tmp,0,ii(0)-1)
+  end if
 
   plot(kk) = subplot(kk,odiff0,levs,cmap,hemi)
   end do
@@ -259,7 +268,8 @@ end
   resP@gsnPanelLabelBar      = False                 ; turn on a common labelbar for the entire panel plot
 
   resP@gsnPanelMainFontHeightF = 0.015           ; new resource added in NCL V6.4.0
-  resP@gsnPanelMainString = cday+"-d integration from "+cdate+": "+pltlab0
+  ;resP@gsnPanelMainString = cday+"-d integration from "+cdate+": "+pltlab0
+  resP@gsnPanelMainString = "2-d integration from "+cdate+": "+pltlab0
 
  ; resP@gsnCenterStringFontHeightF      = 0.020
  ; resP@gsnCenterString                 = pltlab0
@@ -269,8 +279,8 @@ end
 ; make the panel
 ;************************************************
 
-  ;gsn_panel(wks,plot,(/dimsizes(flds),1/),resP)
-  gsn_panel(wks,plot,(/2,2/),resP)
+  gsn_panel(wks,plot,(/dimsizes(flds),1/),resP)
+  ;gsn_panel(wks,plot,(/2,2/),resP)
 
   frame(wks)
 

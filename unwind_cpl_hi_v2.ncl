@@ -6,15 +6,16 @@
 ; Ufuk Turuncoglu turuncu@ucar.edu
 ;**********************************************************
 begin
-     RT = "/lustre/f2/scratch/Denise.Worthen/FV3_RT/"
+     RT = "/lustre/f2/scratch/Denise.Worthen/FV3_RT/test_2threads/"
     res = 96
   ntile = 6
 
+   dirs = (/"test_cntrl/","test_2thrd/" /)
    ;dirs = (/"test_input/cpld_debugfrac/","test_input/test_seq/" /)
-   dirs = (/"test_dev/cpld_debugfrac/" /)
+   ;dirs = (/"test_dev/cpld_debugfrac/" /)
   ;times = (/"2013-04-01-00450", "2013-04-01-00900"/)
-  ;times = (/"2016-10-03-00900"/)
-  times = (/"2016-10-03-01800"/)
+  times = (/"2016-10-03-00900"/)
+  ;times = (/"2016-10-03-04500"/)
    ;fsrc = "ufs.s2s.cold.cpl.hi."
    ;fsrc = "ufs.s2s.cpl.r."
    fsrc = "ufs.cpld.cpl.hi."
