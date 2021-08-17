@@ -7,24 +7,25 @@
 ;**********************************************************
 begin
 
-     RT = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/thermo_iter/"
+     RT = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/albedo_RTs/"
 
-   date = "2014-01-03-"
+   date = "2016-10-"
   ntile = 6
 
  ;   res = 96
  ;  cres = ""
  ;    dt = 900
 
- ;   res = 192
- ;  cres = "_c192"
- ;    dt = 900
+    res = 192
+   cres = "_c192"
+     dt = 900
 
-    res = 384
-   cres = "_c384"
-     dt = 225
+   ; res = 384
+   ;cres = "_c384"
+   ;  dt = 225
 
-     dir = "h18+/"
+     dir = "test/"
+     ;dir = "h18+/"
      ;dir = "cpld_controlfrac_c192_aofrac/"
     fsrc = "ufs.cpld.cpl.hi."
   dirsrc = RT+dir

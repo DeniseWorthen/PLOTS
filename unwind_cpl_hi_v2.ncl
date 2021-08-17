@@ -6,17 +6,16 @@
 ; Ufuk Turuncoglu turuncu@ucar.edu
 ;**********************************************************
 begin
-     RT = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/rt_166074/"
-    res = 96
-    ;res = 384
+     RT = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/restarts/ca_on/"
+    ;res = 96
+    res = 384
   ntile = 6
 
-  ; dirs = (/"test/","test_300/"/)
+   dirs = (/"base/","rest/"/)
   ; dirs = (/"test3_300/"/)
    ;dirs = (/"cpld_debugfrac_dt_na/"/)
-   dirs = (/"test/"/)
   ;times = (/"2013-04-01-00450", "2013-04-01-00900"/)
-  times = (/"2016-10-03-00900"/)
+  times = (/"2021-03-22-32700"/)
   ;times = (/"2011-05-01-00225"/)
   ;times = (/"2011-05-01-00300"/)
    ;fsrc = "ufs.s2s.cold.cpl.hi."
@@ -158,6 +157,7 @@ do nd = 0,ndirs-1
    end if
   end do
 
+if(1 .eq. 0)then
   do i = 0, ntile-1
       ofile = dirout+fsrc+time+".tile"+sprinti("%d", i+1)+".nc"
        fout = addfile(ofile, "r")
@@ -187,6 +187,7 @@ do nd = 0,ndirs-1
        delete(ijlocs)
       end if
   end do
+end if
 
 end do  ; nts
 end do  ; ndirs
