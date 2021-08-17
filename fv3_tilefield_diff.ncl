@@ -7,11 +7,8 @@
 
 ;************************************************
 
-  ; hera
-  RT1 = "/scratch2/NCEPDEV/stmp1/Denise.Worthen/"
-  RT2 = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/S2S_RT/"
-  RT3 = "/scratch2/NCEPDEV/stmp3/Denise.Worthen/"
-  RT4 = "/scratch1/NCEPDEV/stmp4/Denise.Worthen/"
+  ; gaea
+  RT1 = "/lustre/f2/scratch/Denise.Worthen/FV3_RT/"
 
   hemi = "NH"
  ;hemi = "SH"
@@ -38,8 +35,6 @@
     tile = "tile6"
   end if
  end if
-
-  model = "phyf240."
 
   ;vname = "icec"
   vname = "tmpsfc"

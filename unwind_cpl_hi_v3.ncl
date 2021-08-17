@@ -12,19 +12,19 @@ begin
    date = "2016-10-03-"
   ntile = 6
 
- ;   res = 96
- ;  cres = ""
- ;    dt = 900
-
-    res = 192
-   cres = "_c192"
+    res = 96
+   cres = ""
      dt = 900
+
+ ;   res = 192
+ ;  cres = "_c192"
+ ;    dt = 900
 
   ;  res = 384
   ; cres = "_c384"
   ;   dt = 300
 
-     dir = "test_aofrac/cpld_controlfrac_c192_aofrac/"
+     dir = "truefalse_rt_2532/test/"
     fsrc = "ufs.cpld.cpl.hi."
   dirsrc = RT+dir
 

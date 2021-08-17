@@ -41,8 +41,8 @@
   ;rtsrc = "test_dev/cpld_debugfrac/"
   ;wkstitle="ori_input"
 
-  model="New C96mx100 input"
-  rtsrc = "test_input/cpld_debugfrac/"
+  model="Cpld_control_p7"
+  rtsrc = "rm_caglobal/"
  ; rtsrc = "test_input/test_seq/"
   wkstitle="new_input"
  ; wkstitle="seqeuntial"

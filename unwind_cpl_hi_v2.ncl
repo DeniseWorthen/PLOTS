@@ -6,19 +6,21 @@
 ; Ufuk Turuncoglu turuncu@ucar.edu
 ;**********************************************************
 begin
-     RT = "/lustre/f2/scratch/Denise.Worthen/FV3_RT/test_2threads/"
+     RT = "/lustre/f2/scratch/Denise.Worthen/FV3_RT/"
     res = 96
   ntile = 6
 
-   dirs = (/"test_cntrl/","test_2thrd/" /)
+   dirs = (/"rt_730/rm_caglobal/" /)
+   ;dirs = (/"rt_730/base/", "rt_730/rest/" /)
+   ;dirs = (/"test_cntrl/","test_2thrd/" /)
    ;dirs = (/"test_input/cpld_debugfrac/","test_input/test_seq/" /)
    ;dirs = (/"test_dev/cpld_debugfrac/" /)
   ;times = (/"2013-04-01-00450", "2013-04-01-00900"/)
-  times = (/"2016-10-03-00900"/)
+  times = (/"2021-03-22-65520"/)
   ;times = (/"2016-10-03-04500"/)
    ;fsrc = "ufs.s2s.cold.cpl.hi."
    ;fsrc = "ufs.s2s.cpl.r."
-   fsrc = "ufs.cpld.cpl.hi."
+   fsrc = "diff.ufs.cpld.cpl.hi."
   ndirs = dimsizes(dirs)
     nts = dimsizes(times)
 
@@ -155,15 +157,15 @@ do nd = 0,ndirs-1
    end if
   end do
 
-   do i = 0, ntile-1
-      ofile = dirout+fsrc+time+".tile"+sprinti("%d", i+1)+".nc"
-       fout = addfile(ofile, "r")
-       zbot = fout->atmImp_Sa_z
-      ofrac = fout->Med_frac_atm_ofrac
+   ;do i = 0, ntile-1
+   ;   ofile = dirout+fsrc+time+".tile"+sprinti("%d", i+1)+".nc"
+   ;    fout = addfile(ofile, "r")
+   ;    zbot = fout->atmImp_Sa_z
+   ;   ofrac = fout->Med_frac_atm_ofrac
 
-      zbot = mask(zbot,(zbot .lt. 0.0 .and. ofrac .gt. 0.0), True)
-      print(ofile+"  "+num(.not.ismissing(zbot)))
-   end do
+   ;   zbot = mask(zbot,(zbot .lt. 0.0 .and. ofrac .gt. 0.0), True)
+   ;   print(ofile+"  "+num(.not.ismissing(zbot)))
+   ;end do
 
 end do  ; nts
 end do  ; ndirs
