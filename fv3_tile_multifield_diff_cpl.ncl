@@ -10,12 +10,13 @@
   ; gaea
   RT = "/lustre/f2/scratch/ncep/Denise.Worthen/FV3_RT/"
 
- ; hemi = "NH"
- ; hemi = "SH"
-  hemi = "none"
+  hemi = "NH"
+  ;hemi = "SH"
+  ;hemi = "none"
 
+  plottype = "unmasked"
   ;plottype = "land"
-  plottype = "ocean"
+  ;plottype = "ocean"
 
   rad2deg=180.d0/acos(-1.0d0)
   icemin = 1.0e-6
@@ -40,11 +41,11 @@
     tlonname = "grid_xt"
     tlatname = "grid_yt"
 
- wkstitle = "cpldcontrol"
+ wkstitle = "cpldcontrolc192"
   runlabs = (/"Control","Restart"/)
- dirs = (/"restarts/rm_caglobal/base/", "restarts/rm_caglobal/rest/" /)
+ dirs = (/"rt_38267/base/", "rt_38267/rest/" /)
  ;dirs = (/"restarts/base/", "restarts/rest/" /)
-  time = "2021-03-22-65520."
+  time = "2021-03-22-65400."
   fsrc = "ufs.cpld.cpl.hi."
  ndirs = dimsizes(dirs)
    nts = dimsizes(time)
@@ -77,31 +78,34 @@
   palette="BlWhRe"
 
   ; atm fields
-  atmflds = (/ "atmImp_Faxa_rain",  \
-               "atmImp_Sa_pbot",    \
-               "atmImp_Sa_shum",    \
-               "atmImp_Sa_tbot",    \
-               "atmImp_Sa_z",       \
-               "atmImp_Faxa_lwnet"  \
-            /)
+  ;atmflds = (/ "atmImp_Faxa_rain",  \
+  ;             "atmImp_Sa_pbot",    \
+  ;             "atmImp_Sa_shum",    \
+  ;             "atmImp_Sa_tbot",    \
+  ;             "atmImp_Sa_z",       \
+  ;             "atmImp_Faxa_lwnet"  \
+  ;          /)
+  atmflds = (/ "atmImp_Faxa_lwnet"/)
   nflds = dimsizes(atmflds)
 
   ; easier plots 
-  atmwgts = (/1.e4, \
-              1.00, \
-              1.e4, \
-              1.00, \
-              1.00, \
-              1.00 \
-            /)
+  ;atmwgts = (/1.e4, \
+  ;            1.00, \
+  ;            1.e4, \
+  ;            1.00, \
+  ;            1.00, \
+  ;            1.00 \
+  ;          /)
+  atmwgts = (/1.00/)
 
   plotlevs = new((/nflds,3/), float)
-  plotlevs( 0,:) = (/  -0.02,  0.02, 0.002/) ; rain
-  plotlevs( 1,:) = (/  -0.02,  0.02, 0.002/) ; pbot
-  plotlevs( 2,:) = (/  -0.02,  0.02, 0.002/) ; shum
-  plotlevs( 3,:) = (/  -0.02,  0.02, 0.002/) ; tbot
-  plotlevs( 4,:) = (/  -0.02,  0.02, 0.002/) ; zbot
-  plotlevs( 5,:) = (/  -0.02,  0.02, 0.002/) ; lwnet
+  ;plotlevs( 0,:) = (/  -0.02,  0.02, 0.002/) ; rain
+  ;plotlevs( 1,:) = (/  -0.02,  0.02, 0.002/) ; pbot
+  ;plotlevs( 2,:) = (/  -0.02,  0.02, 0.002/) ; shum
+  ;plotlevs( 3,:) = (/  -0.02,  0.02, 0.002/) ; tbot
+  ;plotlevs( 4,:) = (/  -0.02,  0.02, 0.002/) ; zbot
+  ;plotlevs( 5,:) = (/  -0.02,  0.02, 0.002/) ; lwnet
+  plotlevs( 0,:) = (/  -0.02,  0.02, 0.002/) ; lwnet
 
   ; atm fields
   ;atmflds = (/"aod550",     \
@@ -223,9 +227,12 @@
     if(plottype .eq. "land")then 
      avar = lndonly
      msklab = "Land Points Only"
-    else
+    else if(plottype .eq. "ocean")then
      avar = ocnonly
      msklab = "Ocean Points Only"
+    else
+     msklab = "All Points Only"
+    end if
     end if
     levs = plotlevs(ii,:)
     avar@lon2d = files[0]->$tlonname$
@@ -260,8 +267,8 @@
 ; make the panel
 ;************************************************
 
-  gsn_panel(wks,plot,(/2,3/),resP)
-  ;gsn_panel(wks,plot,(/1,1/),resP)
+  ;gsn_panel(wks,plot,(/2,3/),resP)
+  gsn_panel(wks,plot,(/1,1/),resP)
 
   frame(wks)
 

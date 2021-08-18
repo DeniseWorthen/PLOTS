@@ -7,20 +7,20 @@
 ;**********************************************************
 begin
      RT = "/lustre/f2/scratch/Denise.Worthen/FV3_RT/"
-    res = 96
+ ;   res = 96
+    res = 192
   ntile = 6
 
-   dirs = (/"rt_730/rm_caglobal/" /)
-   ;dirs = (/"rt_730/base/", "rt_730/rest/" /)
+   dirs = (/"rt_38267/base/", "rt_38267/rest/" /)
    ;dirs = (/"test_cntrl/","test_2thrd/" /)
    ;dirs = (/"test_input/cpld_debugfrac/","test_input/test_seq/" /)
    ;dirs = (/"test_dev/cpld_debugfrac/" /)
   ;times = (/"2013-04-01-00450", "2013-04-01-00900"/)
-  times = (/"2021-03-22-65520"/)
+  times = (/"2021-03-22-65400"/)
   ;times = (/"2016-10-03-04500"/)
    ;fsrc = "ufs.s2s.cold.cpl.hi."
    ;fsrc = "ufs.s2s.cpl.r."
-   fsrc = "diff.ufs.cpld.cpl.hi."
+   fsrc = "ufs.cpld.cpl.hi."
   ndirs = dimsizes(dirs)
     nts = dimsizes(times)
 

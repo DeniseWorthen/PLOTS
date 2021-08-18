@@ -7,12 +7,12 @@
 ;**********************************************************
 begin
 
-     RT = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/datm_bilin/"
+     RT = "/lustre/f2/scratch/Denise.Worthen/FV3_RT/rt_38267/"
 
-   dirs = (/"mx025cfsr_bilin/"/)
+   dirs = (/"test/"/)
    ;dirs = (/"testmask/", "testmaskall/"/)
   ;   fsrc = "dststatus.atm.ocn.bilnr_nstod.nc"
-     fsrc = "dststatus.atm.ocn.bilnr.nc"
+     fsrc = "dststatus.atm.ocn.consf.nc"
   doffile = "dof.ocn.nc"
   ;   fsrc = "dststatus.atm.ice.bilnr.nc"
   ;doffile = "dof.ice.nc"
@@ -29,8 +29,11 @@ begin
   ;ni = 360
   ;nj = 320
   ; mx025
-  ni = 1440
-  nj = 1080
+  ;ni = 1440
+  ;nj = 1080
+  ; mx050
+  ni = 720
+  nj = 576
 
   ndirs = dimsizes(dirs)
 
