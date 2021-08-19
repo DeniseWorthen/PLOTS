@@ -7,12 +7,13 @@
 ;**********************************************************
 begin
 
-     RT = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/testruns/"
-   date = "2016-10-03-"
+     RT = "/lustre/f2/scratch/Denise.Worthen/FV3_RT/rt_38267/"
+   date = "2021-03-22-"
 
-    res = 96
-   cres = ""
-     dt = 900
+   ; res = 96
+    res = 192
+   cres = "_c192"
+     dt = 22200
 
   ;  res = 192
   ; cres = "_c192"
@@ -22,7 +23,7 @@ begin
  ;  cres = "_c384"
  ;    dt = 450
 
-   dirs = (/"testbilin/"/)
+   dirs = (/"test/"/)
    ;dirs = (/"testdev/", "testbilin/"/)
    fsrc = "dststatus.ocn.atm.consd.nc"
    ;fsrc = "unityone.ocn.atm.consf.nc"
@@ -37,7 +38,7 @@ begin
 ; retrieve lat/lon from first coupler history file
 ;**********************************************************
 
-  fname = RT+dirs(0)+"ufs.cpld.cpl.hi."+date+"00900.nc"
+  fname = RT+dirs(0)+"ufs.cpld.cpl.hi."+date+"22200.nc"
   print("input file "+fname)
   ff = addfile(fname,"r")
 

@@ -14,9 +14,9 @@
   ;hemi = "SH"
   ;hemi = "none"
 
-  plottype = "unmasked"
+  ;plottype = "unmasked"
   ;plottype = "land"
-  ;plottype = "ocean"
+  plottype = "ocean"
 
   rad2deg=180.d0/acos(-1.0d0)
   icemin = 1.0e-6
@@ -43,7 +43,7 @@
 
  wkstitle = "cpldcontrolc192"
   runlabs = (/"Control","Restart"/)
- dirs = (/"rt_38267/base/", "rt_38267/rest/" /)
+ dirs = (/"rt_38267/test1/base/", "rt_38267/test1/rest/" /)
  ;dirs = (/"restarts/base/", "restarts/rest/" /)
   time = "2021-03-22-65400."
   fsrc = "ufs.cpld.cpl.hi."
@@ -52,7 +52,7 @@
 
   ; add cpl history files on tile
   files=addfiles(RT+dirs+fsrc+time+tile+".nc","r")
-  print(files)
+  ;print(files)
 
   ; set plot limits if not polar
   tilecorners = tilegrid(files[0]->$tlonname$,files[0]->$tlatname$,tile)
@@ -218,6 +218,7 @@
    print("variable "+aname+"  weight "+wgt)
 
     avar = files[1]->$aname$(:,:)-files[0]->$aname$(:,:)
+    avar@_FillValue = default_fillvalue(typeof(avar)) 
 
     lndonly = avar
     lndonly = mask(avar*wgt,mskvar,1.0)  ; land only
@@ -231,9 +232,12 @@
      avar = ocnonly
      msklab = "Ocean Points Only"
     else
-     msklab = "All Points Only"
+     msklab = "All Points"
     end if
     end if
+    nvals = num(.not.ismissing(where(avar .ne. 0.0, 1, avar@_FillValue)))
+    ;print(msklab+"  "+num(.not.ismissing(where(avar .ne. 0.0, 1, avar@_FillValue))))
+
     levs = plotlevs(ii,:)
     avar@lon2d = files[0]->$tlonname$
     avar@lat2d = files[0]->$tlatname$
@@ -261,7 +265,7 @@
   resP@gsnPanelLabelBar      = False                 ; turn on a common labelbar for the entire panel plot
 
   resP@gsnPanelMainFontHeightF = 0.020           ; new resource added in NCL V6.4.0
-  resP@gsnPanelMainString = plottitle + ",  "+msklab
+  resP@gsnPanelMainString = plottitle + ",  "+msklab+"  "+sprinti("%d", nvals)
 
 ;************************************************
 ; make the panel

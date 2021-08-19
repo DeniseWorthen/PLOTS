@@ -4,15 +4,20 @@
 ;
 ; adapted from code originally written by
 ; Ufuk Turuncoglu turuncu@ucar.edu
+
+  load "dststatus_counts.ncl"
 ;**********************************************************
 begin
 
-     RT = "/lustre/f2/scratch/Denise.Worthen/FV3_RT/rt_38267/"
+   RT = "/lustre/f2/scratch/Denise.Worthen/FV3_RT/rt_38267/"
+
+   nl = str_get_nl()
+   nflags = 9
 
    dirs = (/"test/"/)
    ;dirs = (/"testmask/", "testmaskall/"/)
   ;   fsrc = "dststatus.atm.ocn.bilnr_nstod.nc"
-     fsrc = "dststatus.atm.ocn.consf.nc"
+     fsrc = "dststatus.atm.ocn.consf_aofrac.nc"
   doffile = "dof.ocn.nc"
   ;   fsrc = "dststatus.atm.ice.bilnr.nc"
   ;doffile = "dof.ice.nc"
@@ -50,7 +55,10 @@ do nd = 0,ndirs-1
   ff = addfile(fname,"r")
 
   var1d = ff->$vname$(:)
-  printVarSummary(var1d)
+  ;printVarSummary(var1d)
+  do i = 0,nflags-1
+   ret = dststatus_counts(var1d,i)
+  end do
 
   ; get the index seq to resort
   doff = addfile(dirsrc+doffile,"r")
