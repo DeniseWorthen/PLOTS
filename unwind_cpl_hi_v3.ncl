@@ -8,7 +8,7 @@
 begin
 
      ;RT = "/glade/scratch/worthen/FV3_RT/testnew/"
-     RT = "/glade/scratch/worthen/FV3_RT/rt_47146/"
+     RT = "/glade/scratch/worthen/FV3_RT/rt_14963/"
 
   ; date = "2016-10-03-"
    date = "2016-10-"
@@ -29,13 +29,14 @@ begin
      ;dir = "test_concur/"
      ;dir = "test_dev/test0/"
      ;dir = "test_nonorm/"
-     dir = "cpld_controlfrac_aofrac"+cres+"/"
+     dir = "cpld_control/"
+     ;dir = "cpld_controlfrac_aofrac"+cres+"/"
     ; dir = "cpld_control"+cres+"_prod/"
     fsrc = "ufs.cpld.cpl.hi."
   dirsrc = RT+dir
 
   nfbeg = 0
-  nfend = 20
+  nfend = 26
   nfiles= (nfend-nfbeg)
   ;filelist = systemfunc("ls "+dirsrc+fsrc+date+"0*.nc")
   filelist = systemfunc("ls "+dirsrc+fsrc+date+"*.nc")
