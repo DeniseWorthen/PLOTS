@@ -8,11 +8,15 @@
 ;************************************************
 
   ; gaea
-  RT = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/"
+  RT = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/REST192/"
 
   hemi = "NH"
- ; hemi = "SH"
- ; hemi = "none"
+  ;hemi = "SH"
+  ;hemi = "none"
+
+ ;plottype = "unmasked"
+ ;plottype = "land"
+  plottype = "ocean"
 
   rad2deg=180.d0/acos(-1.0d0)
 
@@ -33,24 +37,24 @@
  end if
 
  ; in coupler history files
-    tlonname = "grid_xt"
-    tlatname = "grid_yt"
+    tlonname = "ocnExp_lon"
+    tlatname = "ocnExp_lat"
 
- wkstitle = "cpldcontrol"
+ wkstitle = "c192_p7"
   runlabs = (/"Control","Restart"/)
- dirs = (/"restarts/ca_on/base/", "restarts/ca_on/rest/" /)
+ dirs = (/"base/", "rest/" /)
  ;dirs = (/"restarts/base/", "restarts/rest/" /)
-  time = "2021-03-22-32700."
+  time = "2021-03-22-65400."
   fsrc = "ufs.cpld.cpl.hi."
  ndirs = dimsizes(dirs)
    nts = dimsizes(time)
 
   ; add cpl history files on tile
-  files=addfiles(RT+dirs+fsrc+time+tile+".nc","r")
+  files=addfiles(RT+dirs+fsrc+time+"nc","r")
   print(files)
 
   ; set plot limits if not polar
-  tilecorners = tilegrid(files[0]->$tlonname$,files[0]->$tlatname$,tile)
+  tilecorners = tilegrid(files[0]->$tlonname$(0,:,:),files[0]->$tlatname$(0,:,:),tile)
   if(hemi .eq. "none")then
    minlon = tilecorners[0]
    minlat = tilecorners[1]
@@ -61,10 +65,11 @@
    print(minlon+"   "+maxlon+"  "+midlon+"  "+0.5*(maxlon - minlon))
   else
    if(hemi .eq. "NH")then
-    minlat =  50.0
+    ;minlat =  50.0
+    minlat =  34.0
     midlon = -45.0
    else
-    maxlat = -50.0
+    maxlat = -34.0
     midlon =   0.0
    end if
   end if
@@ -72,26 +77,26 @@
   ;palette="BlueWhiteOrangeRed"
   palette="BlWhRe"
 
-  ; atm fields
-  ;atmflds = (/ "atmImp_Faxa_rain",  \
-  ;             "atmImp_Sa_pbot",    \
-  ;             "atmImp_Sa_shum",    \
-  ;             "atmImp_Sa_tbot",    \
-  ;             "atmImp_Sa_z",       \
-  ;             "atmImp_Faxa_lwnet"  \
+  ; ocn fields
+  ;ocnflds = (/ "ocnExp_Faxa_rain",  \
+  ;             "ocnExp_Sa_pbot",    \
+  ;             "ocnExp_Sa_shum",    \
+  ;             "ocnExp_Sa_tbot",    \
+  ;             "ocnExp_Sa_z",       \
+  ;             "ocnExp_Faxa_lwnet"  \
   ;          /)
-  atmflds = (/ "atmImp_Faxa_lwnet" /)
-  nflds = dimsizes(atmflds)
+  ocnflds = (/ "ocnExp_Faxa_lwnet"/)
+  nflds = dimsizes(ocnflds)
 
   ; easier plots
-  ;atmwgts = (/1.e4, \
+  ;ocnwgts = (/1.e4, \
   ;            1.00, \
   ;            1.e4, \
   ;            1.00, \
   ;            1.00, \
   ;            1.00 \
   ;          /)
-  atmwgts = (/1.e12/)
+  ocnwgts = (/1.0e8/)
 
   plotlevs = new((/nflds,3/), float)
   ;plotlevs( 0,:) = (/  -0.02,  0.02, 0.002/) ; rain
@@ -102,32 +107,13 @@
   ;plotlevs( 5,:) = (/  -0.02,  0.02, 0.002/) ; lwnet
   plotlevs( 0,:) = (/  -0.02,  0.02, 0.002/) ; lwnet
 
-  ; atm fields
-  ;atmflds = (/"aod550",     \
-  ;            "bc_aod550",  \
-  ;            "du_aod550",  \
-  ;            "oc_aod550",  \
-  ;            "ss_aod550",  \
-  ;            "su_aod550"   \
-  ;            /)
-  ;nflds = dimsizes(atmflds)
-
-  ;plotlevs = new((/nflds,3/), float)
-  ;plotlevs( 0,:) = (/  0.0,  1.00, 0.100/)
-  ;plotlevs( 1,:) = (/  0.0,  0.02, 0.001/)  ; bc
-  ;plotlevs( 2,:) = (/  0.0,  1.00, 0.100/)  ; du
-  ;plotlevs( 3,:) = (/  0.0,  0.20, 0.010/)  ; oc
-  ;plotlevs( 4,:) = (/  0.0,  0.20, 0.010/)  ; ss
-  ;plotlevs( 5,:) = (/  0.0,  0.20, 0.010/)  ; su
-  
-  ; retrieve orodata file from INPUT directory for masking
-  ofile = addfile(RT+dirs(0)+"INPUT/oro_data."+tile+".nc","r")
-  mskname = "slmsk"
-  msklonname = "geolon"
-  msklatname = "geolat"
-  mskvar = ofile->$mskname$(:,:)
-  mskvar@lon2d = ofile->$msklonname$
-  mskvar@lat2d = ofile->$msklatname$
+  ; retrieve masking
+  mskname = "ocnImp_So_omask"
+  msklonname = "ocnExp_lon"
+  msklatname = "ocnExp_lat"
+  mskvar = files[1]->$mskname$(0,:,:)
+  mskvar@lon2d = files[1]->$msklonname$(0,:,:)
+  mskvar@lat2d = files[1]->$msklatname$(0,:,:)
 
   plottitle=runlabs(1)+" - "+runlabs(0)+"  "+tile
 
@@ -208,27 +194,31 @@
 ;************************************************
 
   do ii = 0,nflds-1
-   aname = atmflds(ii)
-     wgt = atmwgts(ii)
+   aname = ocnflds(ii)
+     wgt = ocnwgts(ii)
    print("variable "+aname+"  weight "+wgt)
-
-    avar = files[1]->$aname$(:,:)-files[0]->$aname$(:,:)
+    avar = files[1]->$aname$(0,:,:)-files[0]->$aname$(0,:,:)
+    printVarSummary(avar)
 
     lndonly = avar
-    lndonly = mask(avar*wgt,mskvar,1.0)  ; land only
+    lndonly = mask(avar*wgt,mskvar,0.0)  ; land only
     ocnonly = avar
-    ocnonly = mask(avar*wgt,mskvar,0.0)  ; ocean only
+    ocnonly = mask(avar*wgt,mskvar,1.0)  ; ocean only
 
     if(plottype .eq. "land")then
      avar = lndonly
      msklab = "Land Points Only"
-    else
+    else if(plottype .eq. "ocean")then
      avar = ocnonly
      msklab = "Ocean Points Only"
+    else
+     avar = avar*wgt
+     msklab = "All Points"
+    end if
     end if
     levs = plotlevs(ii,:)
-    avar@lon2d = files[0]->$tlonname$
-    avar@lat2d = files[0]->$tlatname$
+    avar@lon2d = files[0]->$tlonname$(0,:,:)
+    avar@lat2d = files[0]->$tlatname$(0,:,:)
 
     res@cnLevelSelectionMode = "ManualLevels"     ; set the contour levels with the following 3 resources
     res@cnMinLevelValF  = levs(0)                      ; set the minimum contour level
@@ -236,11 +226,11 @@
     res@cnLevelSpacingF = levs(2)                      ; set the interval between contours
 
     res@gsnCenterString                 = aname
-    if(hemi .eq. "none")then
+    ;if(hemi .eq. "none")then
       plot(ii) = gsn_csm_contour_map(wks,avar,res)    ; create the plot
-    else
-      plot(ii) = gsn_csm_contour_map(wks,avar,res)    ; create the plot
-    end if
+    ;else
+    ;  plot(ii) = gsn_csm_contour_map(wks,avar,res)    ; create the plot
+    ;end if
  end do
 
 ; ***************************************************

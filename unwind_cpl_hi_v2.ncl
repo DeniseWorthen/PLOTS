@@ -6,20 +6,21 @@
 ; Ufuk Turuncoglu turuncu@ucar.edu
 ;**********************************************************
 begin
-     RT = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/restarts/ca_on/"
+     RT = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/REST192/"
+    ; RT = "/scratch1/NCEPDEV/stmp2/Jun.Wang/TEST_noahmp_ICsTilefix/"
+
     ;res = 96
-    res = 384
+    res = 192
+    ;res = 384
   ntile = 6
 
    dirs = (/"base/","rest/"/)
-  ; dirs = (/"test3_300/"/)
-   ;dirs = (/"cpld_debugfrac_dt_na/"/)
-  ;times = (/"2013-04-01-00450", "2013-04-01-00900"/)
-  times = (/"2021-03-22-32700"/)
-  ;times = (/"2011-05-01-00225"/)
-  ;times = (/"2011-05-01-00300"/)
-   ;fsrc = "ufs.s2s.cold.cpl.hi."
-   ;fsrc = "ufs.s2s.cpl.r."
+  ; C96
+  ;times = (/"2021-03-22-65520"/)
+  ; C192
+  times = (/"2021-03-22-65400"/)
+  ; C384
+  ;times = (/"2021-03-22-32700"/)
    fsrc = "ufs.cpld.cpl.hi."
   ndirs = dimsizes(dirs)
     nts = dimsizes(times)
@@ -28,8 +29,8 @@ do nd = 0,ndirs-1
  do nt = 0,nts-1
     time = times(nt)
   dirsrc = RT+dirs(nd)
-  ;dirout = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/"
   dirout = dirsrc
+  ;dirout = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/JUN_test/"+dirs(nd)
    ifile = fsrc
 
   fname = dirsrc+ifile+time+".nc"
@@ -147,7 +148,6 @@ do nd = 0,ndirs-1
      end do
 
      do i = 0, ntile-1
-      ;ofile = dirsrc+fsrc+time+".tile"+sprinti("%d", i+1)+".nc"
       ofile = dirout+fsrc+time+".tile"+sprinti("%d", i+1)+".nc"
        fout = addfile(ofile, "w")
        fout->$vname$ = (/ var3d(i,:,:) /)

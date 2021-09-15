@@ -1,7 +1,7 @@
 ;************************************************
 ; These files are loaded by default in NCL V6.2.0 and newer
 ; load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_code.ncl"
-; load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl" 
+; load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl"
 
   load "$NCARG_ROOT/lib/ncarg/nclscripts/contrib/cd_string.ncl"
 ;************************************************
@@ -31,16 +31,16 @@ begin
 ;************************************************
 
    idate = "2012010100"
-   cyear = "2012"
-    cmon = "01"
-    cday = "03"
+   cyear = "2021"
+    cmon = "03"
+    cday = "23"
    cdate = cyear+"-"+cmon+"-"+cday
-   rtsrc = RT4+"NEMS_mvert/"+idate+"_2d/tmp/cpld_fv3_384_mom6_cice_2d_bmark/"
+   rtsrc = RT2+"FV3_RT/rt_3654/test/"
 
    ; use one file for grid
    ;gf =addfile(rtsrc+"iceic"+idate+"00.01."+idate+"00.nc","r")
-   gf =addfile(rtsrc+"history/iceh_ic."+cyear+"-"+cmon+"-01-00000.nc","r")
-   ;print(gf)
+   gf =addfile(rtsrc+"history/iceh_06h."+cyear+"-"+cmon+"-23-00000.nc","r")
+   print(gf)
    tlatname="TLAT"
    tlonname="TLON"
    rfactor=1.0
@@ -55,7 +55,7 @@ begin
   print("cdate = "+cdate)
 
   ; ice field
-  ;varname="aice_h"
+  varname="aice_h"
   ;levs=(/0.97,1.0,0.001/)
   ;levs=(/0.87,0.95,0.0010/)
   ;levs=(/0.50,1.00,0.010/)
@@ -63,8 +63,8 @@ begin
   ;varname="hi_h"
   ;levs=(/0.0,3.0,0.1/)
   ;levs=(/0.0,2.0,0.1/)
-  varname="Tsfc_h"
-  levs=(/-40.0,5.0,1.0/)
+  ;varname="Tsfc_h"
+  ;levs=(/-40.0,5.0,1.0/)
   ;varname="hi_h"
   ;levs=(/0.0,4.0,0.2/)
   ;varname="sst_h"
@@ -97,7 +97,7 @@ begin
   ;icevar = icevar/100.0
   icevar@lon2d=gf->$tlonname$*rfactor
   icevar@lat2d=gf->$tlatname$*rfactor
-  ;printVarSummary(icevar)
+  printVarSummary(icevar)
   icevar@units=""
   icevar@long_name=""
 
@@ -142,20 +142,20 @@ begin
 
   ;res@cnFillMode = "MeshFill"
   res@cnFillMode = "RasterFill"
-  res@mpFillOn   = True
-  ;res@mpOutlineOn   = False
+  res@mpFillOn   = False
+  res@mpOutlineOn   = False
 
   res@gsnStringFontHeightF = 0.05
 
-  res@gsnPolar   =  hemi                         ; specify the hemisphere
-  if(hemi .eq. "NH")then
-   res@mpMinLatF    =  minlat                          ; minimum lat to plot
-   res@mpCenterLonF = -45
-  end if
-  if(hemi .eq. "SH")then
-   res@mpMaxLatF    = -50                            ; minimum lat to plot
-   res@mpCenterLonF = 0.0
-  end if
+ ; res@gsnPolar   =  hemi                         ; specify the hemisphere
+;  if(hemi .eq. "NH")then
+;   res@mpMinLatF    =  minlat                          ; minimum lat to plot
+;   res@mpCenterLonF = -45
+;  end if
+;  if(hemi .eq. "SH")then
+;   res@mpMaxLatF    = -50                            ; minimum lat to plot
+;   res@mpCenterLonF = 0.0
+;  end if
 
   ; Near Yenisei
   ;res@mpMinLatF            =  70      ; range to zoom in on
@@ -171,10 +171,10 @@ begin
   
   ;res@cnFillOn          = False                  ; color fill
 
-  res@cnLevelSelectionMode = "ManualLevels"     ; set the contour levels with the following 3 resources
-  res@cnMinLevelValF  = levs(0)                      ; set the minimum contour level
-  res@cnMaxLevelValF  = levs(1)                      ; set the maximum contour level
-  res@cnLevelSpacingF = levs(2)                      ; set the interval between contours
+  ;res@cnLevelSelectionMode = "ManualLevels"     ; set the contour levels with the following 3 resources
+  ;res@cnMinLevelValF  = levs(0)                      ; set the minimum contour level
+  ;res@cnMaxLevelValF  = levs(1)                      ; set the maximum contour level
+  ;res@cnLevelSpacingF = levs(2)                      ; set the interval between contours
 
   ; res@cnLevelSelectionMode        = "ExplicitLevels"
   ; res@cnLevels                    = (/     0.15,0.50,0.7,0.8,0.85,0.9,0.950/)
@@ -209,9 +209,9 @@ begin
 ;
 ;************************************************
 
-  plot = gsn_csm_contour_map_polar(wks,icevar,res)    ; create the plot
-  ;plot = gsn_csm_contour_map(wks,icevar,res)    ; create the plot
-  dum= gsn_add_polyline(wks,plot,(/lon1, lon2/) , (/lat1, lat2/) ,pres)
+  ;plot = gsn_csm_contour_map_polar(wks,icevar,res)    ; create the plot
+  plot = gsn_csm_contour_map(wks,icevar,res)    ; create the plot
+  ;dum= gsn_add_polyline(wks,plot,(/lon1, lon2/) , (/lat1, lat2/) ,pres)
   ;pum= gsn_add_polymarker(wks,plot,center_xlon,center_xlat,mkres)
 
   draw(plot)

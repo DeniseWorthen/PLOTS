@@ -8,13 +8,18 @@
 ;************************************************
 
   ; gaea
-  RT = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/"
+  RT = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/REST192/"
 
   hemi = "NH"
  ; hemi = "SH"
  ; hemi = "none"
 
+  plottype = "land"
+  ;plottype = "not land"
+  ;plottype = "all"
+
   rad2deg=180.d0/acos(-1.0d0)
+  icemin = 1.0e-6
 
 ;************************************************
 ;
@@ -22,7 +27,7 @@
 
   lstep=0
   if(hemi .eq. "none")then
-    tile = "tile4"
+    tile = "tile2"
   else
    if(hemi .eq. "NH")then
     tile = "tile3"
@@ -38,9 +43,9 @@
 
  wkstitle = "cpldcontrol"
   runlabs = (/"Control","Restart"/)
- dirs = (/"restarts/ca_on/base/", "restarts/ca_on/rest/" /)
- ;dirs = (/"restarts/base/", "restarts/rest/" /)
-  time = "2021-03-22-32700."
+ dirs = (/"base/", "rest/" /)
+  ;time = "2021-03-22-32700."
+  time = "2021-03-22-65400."
   fsrc = "ufs.cpld.cpl.hi."
  ndirs = dimsizes(dirs)
    nts = dimsizes(time)
@@ -61,10 +66,12 @@
    print(minlon+"   "+maxlon+"  "+midlon+"  "+0.5*(maxlon - minlon))
   else
    if(hemi .eq. "NH")then
-    minlat =  50.0
+    ;minlat =  50.0
+    minlat =  34.0
     midlon = -45.0
    else
-    maxlat = -50.0
+    ;maxlat = -50.0
+    maxlat = -34.0
     midlon =   0.0
    end if
   end if
@@ -84,11 +91,11 @@
   nflds = dimsizes(atmflds)
 
   ; easier plots
-  ;atmwgts = (/1.e4, \
+  ;atmwgts = (/1.e2, \
   ;            1.00, \
   ;            1.e4, \
-  ;            1.00, \
-  ;            1.00, \
+  ;            1.e0, \
+  ;            1.e2, \
   ;            1.00 \
   ;          /)
   atmwgts = (/1.e12/)
@@ -217,14 +224,19 @@
     lndonly = avar
     lndonly = mask(avar*wgt,mskvar,1.0)  ; land only
     ocnonly = avar
-    ocnonly = mask(avar*wgt,mskvar,0.0)  ; ocean only
+    ocnonly = mask(avar*wgt,mskvar,0.0)  ; not land only
 
     if(plottype .eq. "land")then
      avar = lndonly
      msklab = "Land Points Only"
-    else
+    end if
+    if(plottype .eq. "not land")then
      avar = ocnonly
-     msklab = "Ocean Points Only"
+     msklab = "Non-Land Points Only"
+    end if
+    if(plottype .eq. "all")then
+     avar = avar*wgt
+     msklab = "All points"
     end if
     levs = plotlevs(ii,:)
     avar@lon2d = files[0]->$tlonname$
