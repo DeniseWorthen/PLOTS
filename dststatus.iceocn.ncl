@@ -10,11 +10,11 @@
 ;**********************************************************
 begin
 
-     RT = "/glade/scratch/worthen/FV3_RT/bilintest/"
+     RT = "/glade/scratch/worthen/FV3_RT/wave_test/"
 
    nl = str_get_nl()
    nflags = 9
-   dirs = (/"cpld_controlfrac_biln/"/)
+   dirs = (/"base/"/)
    ;dirs = (/"cpld_controlfrac/", "cpld_controlfrac_biln/"/)
   ;   fsrc = "dststatus.atm.ocn.bilnr.nc"
  ; doffile = "dof.ocn.nc"
@@ -24,12 +24,21 @@ begin
     ;fsrc = "dststatus.atm.ocn.consf_fnorm.nc"
    ; fsrc = "dststatus.atm.ocn.consf.nc"
   ;   fsrc = "unityone.atm.ocn.consf.nc"
-     fsrc = "dststatus.atm.ocn.bilnr_nstod.nc"
-  doffile = "dof.ocn.nc"
+  ;   fsrc = "dststatus.atm.ocn.bilnr_nstod.nc"
+  ;doffile = "dof.ocn.nc"
+     fsrc = "dststatus.ocn.wav.nstod_consf_2.nc"
+  ;   fsrc = "dststatus.ice.wav.nstod_consf.nc"
+  doffile = "dof.wav.nc"
 
   ;vname = "unity"
   vname = "dststatus"
 
+  ; wt0.66  wave
+  ;ni = 540
+  ;nj = 458
+  ; glo 1deg wave
+  ;ni = 360
+ ; nj = 171
   ; mx100
   ni = 360
   nj = 320

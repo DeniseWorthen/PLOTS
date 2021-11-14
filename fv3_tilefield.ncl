@@ -7,12 +7,12 @@
 
 ;************************************************
 
-  RT4 = "/glade/scratch/worthen/initTests/"
+  RT4 = "/glade/scratch/worthen/FV3_RT/wav_test/"
 
   ;hemi="NH"
   ;hemi="SH"
   ;hemi="none"
-  hemi="wedge"
+  ;hemi="wedge"
 
 ;************************************************
 ;
@@ -137,7 +137,7 @@
   res@cnLevelSpacingF = levs(2)                      ; set the interval between contours
 
   res@cnMissingValPerimOn     = False            ; turn on the missing value perimeter
-  res@cnMissingValFillPattern = 0               ; choose fill pattern 0 (solid fill) 
+  res@cnMissingValFillPattern = 0               ; choose fill pattern 0 (solid fill)
   res@cnMissingValFillColor   = "gray"          ; color fill missing areas blue
 
   res@tiMainFontHeightF = .010

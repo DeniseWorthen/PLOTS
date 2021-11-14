@@ -4,50 +4,55 @@
 ;
 ; adapted from code originally written by
 ; Ufuk Turuncoglu turuncu@ucar.edu
- 
-  load "dststatus_counts.ncl"
-
 ;**********************************************************
 begin
 
-   nl = str_get_nl()
-   nflags = 9
-     RT = "/glade/scratch/worthen/FV3_RT/wave_test/"
+     ;RT = "/glade/scratch/worthen/lwnet/"
+     RT = "/glade/scratch/worthen/FV3_RT/wave_test/test.pass.12/"
+
    date = "2021-03-22-"
+  ntile = 6
 
     res = 96
    cres = ""
      dt = 720
 
- ;   res = 192
- ;  cres = "_c192"
- ;   dt = 900
+  ;  res = 192
+  ; cres = "_c192"
+  ;   dt = 720
 
- ;   res = 384
- ;  cres = "_c384"
- ;    dt = 450
+  ;  res = 384
+  ; cres = "_c384"
+  ;   dt = 450
 
-
-   ;dirs = (/"test/"/)
-   dirs = (/"cpld_control_wave_p7/"/)
-   ;dirs = (/"cpld_control_p7/", "cpld_control_p7_biln/"/)
-
-   vname = "dststatus"
-   fsrc = vname+".wav.atm.nstod_consf"
-   ;fsrc = vname+".ocn.atm.consd"
-   ;fsrc = vname+".ocn.atm.consf"
-   ;vname = "meshmask"
-   ;fsrc = "mask.ocn.atm.consf"
-
-  ntile = 6
+   times = (/64800/)
+  ;times = ispan(900,3600,900)
+  ;times = (/dt, 2*dt, 3*dt/)
+  ;print(times)
+  ; dirs = (/"c96meshoff_compice/" \
+  ;         ,"c96meshoff_compocn/" /)
+   ;dirs = (/"c192meshoff_compice/" \
+   ;        ,"c192meshoff_compocn/" /)
+   ;dirs = (/"testdev/", "testbilin/"/)
+   ;fsrc = "ufs.cpld.cpl.hi."
+   ;dirs = (/"test2/","test3/"/)
+   ;dirs = (/"testdev/","testbilin/"/)
+   ;dirs = (/"cpld_control_c384/"/)
+   dirs = (/"base/", "rest/"/)
+   ;dirs = (/"cpld_control_wave_p7/"/)
+   fsrc = "ufs.cpld.cpl.hi.atm."
+    
   ndirs = dimsizes(dirs)
+    nts = dimsizes(times)
 
-;**********************************************************
-; retrieve lat/lon from first coupler history file
-;**********************************************************
+do nd = 0,ndirs-1
+ do nt = 0,nts-1
+    time = times(nt)
+   ctime = sprinti("%0.5i", time)
+  dirsrc = RT+dirs(nd)
+   ifile = fsrc + date+ ctime
 
-  fname = RT+dirs(0)+"ufs.cpld.cpl.hi."+date+"22320.nc"
-  ;fname = RT+dirs(0)+"RESTART/ufs.cpld.cpl.r.2016-10-04-00000.nc"
+  fname = dirsrc+ifile+".nc"
   print("input file "+fname)
   ff = addfile(fname,"r")
 
@@ -70,39 +75,38 @@ begin
    lat3d(i,:,:) = onedtond(lat1d(istr:iend), (/ res, res /))
    lon3d(i,:,:) = onedtond(lon1d(istr:iend), (/ res, res /))
   end do
-
-  delete(ff)
-  delete(fname)
+   ;printVarSummary(lat3d)
+   ;printVarSummary(lon3d)
 
 ;**********************************************************
-;
+; subset variables
 ;**********************************************************
 
-do nd = 0,ndirs-1
-  print(" "+nl)
-  dirsrc = RT+dirs(nd)
+  vnames = getfilevarnames (ff)
+  nvars = dimsizes(vnames)
+  valid = new((/nvars/), logical)
 
-  ; get the index seq to resort
-  doffile = dirsrc+"dof.atm.nc"
-  doff = addfile(doffile,"r")
-  dof = doff->dof(:)
-
-  fname = dirsrc+fsrc+".nc"
-  print("input file "+fname)
-  ff = addfile(fname,"r")
-
-  var1d = ff->$vname$(:)
-  ;printVarSummary(var1d)
- 
-   total = 0
-  do i = 0,nflags-1
-   total = total+dststatus_counts(var1d,i)
+  do ii = 0,nvars-1
+   tf = isStrSubset(vnames(ii), "atmImp") .or. \
+        isStrSubset(vnames(ii), "atmExp") .or. \
+        isStrSubset(vnames(ii), "Med_frac_atm")
+    valid(ii) = tf
   end do
-   print("total count of all dststatus types = "+total+" size of var1d = "+dimsizes(var1d))
-
-  ip = dim_pqsort(dof,1)
-  var1d_sort=var1d
-  var1d_sort=var1d(ip)
+  do ii = 0,nvars-1
+   vname = vnames(ii)
+   if(vname .eq. "atmImp_lat"       .or. \
+      vname .eq. "atmImp_lon"       .or. \
+      vname .eq. "Med_frac_atm_lat" .or. \
+      vname .eq. "Med_frac_atm_lon" .or. \
+      vname .eq. "atmExp_lat"       .or. \
+      vname .eq. "atmExp_lon")then
+    valid(ii) = False
+   end if
+  end do
+  do ii = 0,nvars-1
+   vname = vnames(ii)
+   ;print(ii+" "+vnames(ii)+"  "+valid(ii))
+  end do
 
 ;**********************************************************
 ; pre-define the output file
@@ -110,7 +114,7 @@ do nd = 0,ndirs-1
 
   do i = 0, ntile-1
 
-    ofile = dirsrc+fsrc+".tile"+sprinti("%d", i+1)+".nc"
+    ofile = dirsrc+fsrc+time+".tile"+sprinti("%d", i+1)+".nc"
     print("output file "+ofile)
     system("rm -f "+ofile)
     fout = addfile(ofile, "c")
@@ -131,8 +135,15 @@ do nd = 0,ndirs-1
     ;filevarattdef(fout,  "grid_xt",  lon3d)
 
     ;--- create variable ---
-
-     filevardef(fout, vname, typeof(var1d), (/ "grid_yt", "grid_xt" /))
+    do ii = 0,nvars-1
+     if(valid(ii)) then
+      vname = vnames(ii)
+      ;printVarSummary(ff->$vname$(0,0,:))
+      var1d = (/ff->$vname$(0,0,:)/)
+      ;printVarSummary(var1d)
+      filevardef(fout, vname, typeof(var1d), (/ "grid_yt", "grid_xt" /))
+     end if
+    end do
     setfileoption(fout, "DefineMode", False)
 
     fout->grid_xt = (/ lon3d(i,:,:) /)
@@ -143,26 +154,30 @@ do nd = 0,ndirs-1
 ; add variables
 ;**********************************************************
 
+  do ii = 0,nvars-1
+   if(valid(ii)) then
+    vname = vnames(ii)
+     var1d = (/ff->$vname$(0,0,:)/)
      var3d = new((/ ntile, res, res /), typeof(var1d), default_fillvalue(typeof(var1d)) )
-     ;printVarSummary(var3d)
 
      do i = 0, ntile-1
       istr = (i*res*res)
       iend = istr+res*res-1
-      ;var3d(i,:,:) = onedtond(var1d(istr:iend), (/ res, res /))
-      var3d(i,:,:) = onedtond(var1d_sort(istr:iend), (/ res, res /))
-      ;print("tile number = "+i+" "+istr+" "+iend)
+      var3d(i,:,:) = onedtond(var1d(istr:iend), (/ res, res /))
      end do
 
      do i = 0, ntile-1
-      ofile = dirsrc+fsrc+".tile"+sprinti("%d", i+1)+".nc"
+      ofile = dirsrc+fsrc+time+".tile"+sprinti("%d", i+1)+".nc"
        fout = addfile(ofile, "w")
-       ;fout->$vname$ = (/ var3d(i,:,:) /)
-       fout->$vname$ = var3d(i,:,:)
-       delete(fout)
+       fout->$vname$ = (/ var3d(i,:,:) /)
      end do
     delete(var1d)
     delete(var3d)
+   end if
+  end do
+  delete(vnames)
+  delete(valid)
+end do  ; nts
 end do  ; ndirs
 
 exit

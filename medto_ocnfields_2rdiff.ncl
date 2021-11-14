@@ -1,7 +1,7 @@
 ;************************************************
 ; These files are loaded by default in NCL V6.2.0 and newer
 ; load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_code.ncl"
-; load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl" 
+; load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl"
 
   load "$NCARG_ROOT/lib/ncarg/nclscripts/contrib/cd_string.ncl"
   load "tilegrid.ncl"
@@ -95,7 +95,7 @@
               "mean_evap_rate",       \
               "mean_zonal_moment_flx",\
               "mean_merid_moment_flx",\
-              "mean_net_lw_flx"/) 
+              "mean_net_lw_flx"/)
 
   ; plot levels
   plotlevs = new((/5,3/), float)

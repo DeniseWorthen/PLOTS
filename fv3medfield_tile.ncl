@@ -1,7 +1,7 @@
 ;************************************************
 ; These files are loaded by default in NCL V6.2.0 and newer
 ; load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_code.ncl"
-; load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl" 
+; load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl"
 
   load "$NCARG_ROOT/lib/ncarg/nclscripts/contrib/cd_string.ncl"
   load "tilegrid.ncl"
@@ -10,18 +10,13 @@
 ; read in netCDF file
 ;************************************************
 
-  RT1 = "/scratch2/NCEPDEV/stmp1/Denise.Worthen/"
-  RT2 = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/"
-  RT3 = "/scratch2/NCEPDEV/stmp3/Denise.Worthen/"
-  RT4 = "/scratch1/NCEPDEV/stmp4/Denise.Worthen/"
+  RT1 = "/glade/scratch/worthen/FV3_RT/wave_test/"
 
-  ;rtname = "S2S_tod"
-  rtname = "S2S_names"
-  rtsrc = rtname+"/2012010100_12hr/tmp/cpld_fv3_384_mom6_cice_2d_bmark/"
+  rtname = "cpld_control_wave_p7"
 
-  hemi = "NH"
+  ;hemi = "NH"
   ;hemi = "SH"
-  ;hemi = "none"
+  hemi = "none"
 
  rad2deg=180.d0/acos(-1.0d0)
   icemin = 1.0e-6
@@ -43,7 +38,7 @@
  end if
 
  ; a file for the Atm lats/lons
-       gf = addfile(RT2+rtsrc+"phyf000."+tile+".nc","r")
+       gf = addfile(RT2+rtsrc+"sfcff000."+tile+".nc","r")
     tlonname = "grid_xt"
     tlatname = "grid_yt"
  atmlandname = "land"
@@ -104,7 +99,7 @@
   ocnfile = addfile (RT2+rtsrc+focn+"_"+ocnfld+".nc","r")
      ovar = ocnfile->$ocnfld$(ocnstp,:,:)
   ovar@lon2d = ocnlons
-  ovar@lat2d = ocnlats   
+  ovar@lat2d = ocnlats
   ovar = where(oland .eq. 0.0, default_fillvalue(typeof(ovar)), ovar)
   ovar@_FillValue = default_fillvalue(typeof(ovar))
 
