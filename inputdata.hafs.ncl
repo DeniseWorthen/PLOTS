@@ -5,64 +5,41 @@
 ; adapted from code originally written by
 ; Ufuk Turuncoglu turuncu@ucar.edu
 
-  load "dststatus_counts.ncl"
-
 ;**********************************************************
 begin
 
-     ;RT = "/glade/scratch/worthen/FV3_RT/wave_test/"
-     RT = "/glade/scratch/worthen/FV3_RT/rt_16042/"
+     ;RT = "/glade/scratch/worthen/FV3_RT/wave_hafs2/test/"
+     ;RT = "/glade/scratch/worthen/FV3_RT/hafs_newold/newcap/"
+     RT = "/glade/scratch/worthen/FV3_RT/wave_test/test/"
 
    nl = str_get_nl()
    nflags = 9
-   dirs = (/"test/"/)
-   ;dirs = (/"base/","test/"/)
-   ;dirs = (/"test.meshmask/","test.meshmaskreplace/"/)
-   ;dirs = (/"cpld_controlfrac/", "cpld_controlfrac_biln/"/)
-  ;   fsrc = "dststatus.atm.ocn.bilnr.nc"
- ; doffile = "dof.ocn.nc"
-     fsrc = "dststatus.atm.ice.consf.nc"
-  doffile = "dof.ice.nc"
-     ;fsrc = "dststatus.atm.ocn.nstod_consf.nc"
-    ;fsrc = "dststatus.atm.ocn.consf_fnorm.nc"
-   ; fsrc = "dststatus.atm.ocn.consf.nc"
-  ;   fsrc = "unityone.atm.ocn.consf.nc"
-  ;   fsrc = "dststatus.atm.ocn.bilnr_nstod.nc"
-  ;   fsrc = "dststatus.atm.ocn.bilnr_nstod.nc"
-  ;   fsrc = "dststatus.atm.ocn.fillv_bilnr.nc"
-  ;doffile = "dof.ocn.nc"
-   ;  fsrc = "dststatus.atm.wav.nstod_consf_2.nc"
-   ;  fsrc = "dststatus.atm.wav.consf.nc"
-   ;  fsrc = "dststatus.atm.wav.bilnr_nstod.nc"
-   ;  fsrc = "dststatus.atm.wav.fillv_bilnr.nc"
-   ;  fsrc = "meshmask.nc"
-  ;doffile = "dof.wav.nc"
+  ; vnames = (/"wxdata","wydata","wx0","wy0", "import_mask"/)
+   vnames = (/"wx0","wy0"/)
+  doffile = "dof.wav.nc"
+  ;doffile = "/glade/scratch/worthen/FV3_RT/wave_hafs/test/dof.wav.nc"
+  date = "2021-03-22-"
+  times = (/"25200"/)
+  ;times = (/"00360", "00720", "01080"/)
 
-  ;vname = "unity"
-  vname = "dststatus"
-  ;vname = "mask"
-
-  ; wt0.66  wave
-  ;ni = 540
-  ;nj = 458
-  ; glo 1deg wave
-  ;ni = 360
- ; nj = 171
-  ; mx100
+  ; waves
+  ;ni = 901
+  ;nj = 441
   ni = 360
   nj = 320
-  ; mx050
-  ;ni = 720
-  ;nj = 576
-  ndirs = dimsizes(dirs)
+
+  nfiles = dimsizes(vnames)
+  ntimes = dimsizes(times)
 
 ;**********************************************************
 ;
 ;**********************************************************
 
-do nd = 0,ndirs-1
-  dirsrc = RT+dirs(nd)
-   ifile = fsrc
+do nt = 0,ntimes-1
+do nf = 0,nfiles-1
+  dirsrc = RT
+   vname = vnames(nf)
+   ifile = vname+"."+date+times(nt)
 
   fname = dirsrc+ifile+".nc"
   print("input file "+fname)
@@ -70,13 +47,12 @@ do nd = 0,ndirs-1
 
   var1d = ff->$vname$(:)
   ;printVarSummary(var1d)
-  do i = 0,nflags-1
-   ret = dststatus_counts(var1d,i)
-  end do
 
   ; get the index seq to resort
   doff = addfile(dirsrc+doffile,"r")
+  ;doff = addfile(doffile,"r")
   dof = doff->dof(:)
+  delete(doff)
 
   ip = dim_pqsort(dof,1)
   var1d_sort=var1d
@@ -86,7 +62,7 @@ do nd = 0,ndirs-1
 ; pre-define the output file
 ;**********************************************************
 
-    ofile = dirsrc+"dst."+fsrc
+    ofile = dirsrc+"dst."+ifile+".nc"
     print("output file "+ofile)
     system("rm -f "+ofile)
     fout = addfile(ofile, "c")
@@ -123,8 +99,11 @@ do nd = 0,ndirs-1
       delete(fout)
 
     delete(var1d)
+    delete(var1d_sort)
     delete(var2d)
-end do  ; ndirs
+    delete(dof)
+end do  ; nfiles
+end do  ; ntimes
 
 
 exit

@@ -12,43 +12,26 @@ begin
 
    nl = str_get_nl()
    nflags = 9
-     RT = "/glade/scratch/worthen/FV3_RT/wave_test/"
-   ;  RT = "/glade/scratch/worthen/FV3_RT/rt_16042/"
-   date = "2021-03-22-"
+     RT = "/glade/scratch/worthen/FV3_RT/rt_47900/"
+   date = "2019-08-29-"
 
-    res = 96
-   cres = ""
-     dt = 720
-
- ;   res = 192
- ;  cres = "_c192"
- ;   dt = 900
-
- ;   res = 384
- ;  cres = "_c384"
- ;    dt = 450
-
-
-   dirs = (/"basebilin/"/)
-   ;dirs = (/"cpld_control_p7_biln/"/)
+     dt = 360
+   dirs = (/"hafs_regional_atm_ocn_wav/"/)
 
    vname = "dststatus"
-   ;fsrc = vname+".wav.atm.nstod_consf_2"
-   ;fsrc = vname+".ocn.atm.consd"
-   ;fsrc = vname+".ocn.atm.consf"
-   fsrc = vname+".wav.atm.bilnr_nstod"
-   ;vname = "meshmask"
-   ;fsrc = "mask.ocn.atm.consf"
+   fsrc = vname+".wav.atm.fillv_bilnr"
 
-  ntile = 6
+  ntile = 1
+  nax = 720
+  nay = 600
+
   ndirs = dimsizes(dirs)
 
 ;**********************************************************
 ; retrieve lat/lon from first coupler history file
 ;**********************************************************
 
-  fname = RT+dirs(0)+"ufs.cpld.cpl.hi.atm."+date+"22320.nc"
-  ;fname = RT+dirs(0)+"RESTART/ufs.cpld.cpl.r.2016-10-04-00000.nc"
+  fname = RT+dirs(0)+"ufs.hafs.cpl.hi.atm."+date+"00360.nc"
   print("input file "+fname)
   ff = addfile(fname,"r")
 
@@ -61,15 +44,15 @@ begin
   ;printVarSummary(lon1d)
 
   ;--- reshape variables---
-  lon3d = new((/ ntile, res, res /), typeof(lon1d))
-  lat3d = new((/ ntile, res, res /), typeof(lat1d))
+  lon3d = new((/ ntile, nay, nax /), typeof(lon1d))
+  lat3d = new((/ ntile, nay, nax /), typeof(lat1d))
   ;printVarSummary(lat3d)
 
   do i = 0, ntile-1
-   istr = (i*res*res)
-   iend = istr+res*res-1
-   lat3d(i,:,:) = onedtond(lat1d(istr:iend), (/ res, res /))
-   lon3d(i,:,:) = onedtond(lon1d(istr:iend), (/ res, res /))
+   istr = (i*nax*nay)
+   iend = istr+nax*nay-1
+   lat3d(i,:,:) = onedtond(lat1d(istr:iend), (/ nay, nax /))
+   lon3d(i,:,:) = onedtond(lon1d(istr:iend), (/ nay, nax /))
   end do
 
   delete(ff)
@@ -119,7 +102,7 @@ do nd = 0,ndirs-1
 
     ;--- create dimensions ---
     dimNames = (/ "grid_xt", "grid_yt" /)
-    dimSizes = (/ res, res /)
+    dimSizes = (/  nax, nay /)
     dimUnlim = (/ False, False /)
     filedimdef(fout, dimNames, dimSizes, dimUnlim)
 
@@ -144,14 +127,14 @@ do nd = 0,ndirs-1
 ; add variables
 ;**********************************************************
 
-     var3d = new((/ ntile, res, res /), typeof(var1d), default_fillvalue(typeof(var1d)) )
+     var3d = new((/ ntile, nay, nax /), typeof(var1d), default_fillvalue(typeof(var1d)) )
      ;printVarSummary(var3d)
 
      do i = 0, ntile-1
-      istr = (i*res*res)
-      iend = istr+res*res-1
+      istr = (i*nay*nax)
+      iend = istr+nay*nax-1
       ;var3d(i,:,:) = onedtond(var1d(istr:iend), (/ res, res /))
-      var3d(i,:,:) = onedtond(var1d_sort(istr:iend), (/ res, res /))
+      var3d(i,:,:) = onedtond(var1d_sort(istr:iend), (/ nay, nax /))
       ;print("tile number = "+i+" "+istr+" "+iend)
      end do
 

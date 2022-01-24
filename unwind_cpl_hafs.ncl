@@ -7,42 +7,19 @@
 ;**********************************************************
 begin
 
-     ;RT = "/glade/scratch/worthen/FV3_RT/hash_74c57f17/"
-     ;RT = "/glade/scratch/worthen/FV3_RT/hash_5a20ea4f/"
-     RT = "/glade/scratch/worthen/FV3_RT/wave_test/"
+     RT = "/glade/scratch/worthen/FV3_RT/wave_hafs/"
+   date = "2019-08-29-"
 
-   date = "2021-03-22-"
-  ntile = 6
+  ntile = 1
+  nax = 720
+  nay = 600
 
-    res = 96
-   cres = ""
-     dt = 720
+     dt = 360
+   dirs = (/"test2/"/)
 
-  ;  res = 192
-  ; cres = "_c192"
-  ;   dt = 720
-
-  ;  res = 384
-  ; cres = "_c384"
-  ;   dt = 450
-
-  time0=21600
-  ; times = (/25200/)
-  ;times = ispan(900,3600,900)
-  times = (/time0+dt, time0+2*dt, time0+3*dt/)
-  ;print(times)
-  ; dirs = (/"c96meshoff_compice/" \
-  ;         ,"c96meshoff_compocn/" /)
-   ;dirs = (/"c192meshoff_compice/" \
-   ;        ,"c192meshoff_compocn/" /)
-   ;dirs = (/"testdev/", "testbilin/"/)
-   ;fsrc = "ufs.cpld.cpl.hi."
-   ;dirs = (/"test2/","test3/"/)
-   ;dirs = (/"testdev/","testbilin/"/)
-   ;dirs = (/"cpld_control_c384/"/)
-   dirs = (/"base/", "basetest/"/)
-   ;dirs = (/"cpld_control_p7/"/)
-   fsrc = "ufs.cpld.cpl.hi.atm."
+  ;times = 1440
+  times = ispan(dt,3*dt,dt)
+   fsrc = "ufs.hafs.cpl.hi."
     
   ndirs = dimsizes(dirs)
     nts = dimsizes(times)
@@ -67,15 +44,15 @@ do nd = 0,ndirs-1
   ;printVarSummary(lon1d)
 
   ;--- reshape variables---
-  lon3d = new((/ ntile, res, res /), typeof(lon1d))
-  lat3d = new((/ ntile, res, res /), typeof(lat1d))
+  lon3d = new((/ ntile, nay, nax /), typeof(lon1d))
+  lat3d = new((/ ntile, nay, nax /), typeof(lat1d))
   ;printVarSummary(lat3d)
 
   do i = 0, ntile-1
-   istr = (i*res*res)
-   iend = istr+res*res-1
-   lat3d(i,:,:) = onedtond(lat1d(istr:iend), (/ res, res /))
-   lon3d(i,:,:) = onedtond(lon1d(istr:iend), (/ res, res /))
+   istr = (i*nay*nax)
+   iend = istr+nay*nax-1
+   lat3d(i,:,:) = onedtond(lat1d(istr:iend), (/ nay, nax /))
+   lon3d(i,:,:) = onedtond(lon1d(istr:iend), (/ nay, nax /))
   end do
    ;printVarSummary(lat3d)
    ;printVarSummary(lon3d)
@@ -124,7 +101,7 @@ do nd = 0,ndirs-1
 
     ;--- create dimensions ---
     dimNames = (/ "grid_xt", "grid_yt" /)
-    dimSizes = (/ res, res /)
+    dimSizes = (/ nax, nay /)
     dimUnlim = (/ False, False /)
     filedimdef(fout, dimNames, dimSizes, dimUnlim)
 
@@ -160,12 +137,12 @@ do nd = 0,ndirs-1
    if(valid(ii)) then
     vname = vnames(ii)
      var1d = (/ff->$vname$(0,0,:)/)
-     var3d = new((/ ntile, res, res /), typeof(var1d), default_fillvalue(typeof(var1d)) )
+     var3d = new((/ ntile, nay, nax /), typeof(var1d), default_fillvalue(typeof(var1d)) )
 
      do i = 0, ntile-1
-      istr = (i*res*res)
-      iend = istr+res*res-1
-      var3d(i,:,:) = onedtond(var1d(istr:iend), (/ res, res /))
+      istr = (i*nay*nax)
+      iend = istr+nay*nax-1
+      var3d(i,:,:) = onedtond(var1d(istr:iend), (/ nay, nax /))
      end do
 
      do i = 0, ntile-1

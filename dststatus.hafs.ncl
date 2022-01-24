@@ -10,50 +10,32 @@
 ;**********************************************************
 begin
 
-     ;RT = "/glade/scratch/worthen/FV3_RT/wave_test/"
-     RT = "/glade/scratch/worthen/FV3_RT/rt_16042/"
+     RT = "/glade/scratch/worthen/FV3_RT/rt_63201/"
+     ;RT = "/glade/scratch/worthen/FV3_RT/wave_hafs2/"
+     ;RT = "/glade/scratch/worthen/FV3_RT/hafs_newold/"
 
    nl = str_get_nl()
    nflags = 9
-   dirs = (/"test/"/)
-   ;dirs = (/"base/","test/"/)
-   ;dirs = (/"test.meshmask/","test.meshmaskreplace/"/)
-   ;dirs = (/"cpld_controlfrac/", "cpld_controlfrac_biln/"/)
-  ;   fsrc = "dststatus.atm.ocn.bilnr.nc"
- ; doffile = "dof.ocn.nc"
-     fsrc = "dststatus.atm.ice.consf.nc"
-  doffile = "dof.ice.nc"
-     ;fsrc = "dststatus.atm.ocn.nstod_consf.nc"
-    ;fsrc = "dststatus.atm.ocn.consf_fnorm.nc"
-   ; fsrc = "dststatus.atm.ocn.consf.nc"
-  ;   fsrc = "unityone.atm.ocn.consf.nc"
-  ;   fsrc = "dststatus.atm.ocn.bilnr_nstod.nc"
-  ;   fsrc = "dststatus.atm.ocn.bilnr_nstod.nc"
-  ;   fsrc = "dststatus.atm.ocn.fillv_bilnr.nc"
+   ;dirs = (/"test3/"/)
+   dirs = (/"hafs_regional_atm_ocn_wav/"/)
+   ;dirs = (/"oldcap/","newcap/"/)
+     fsrc = "dststatus.atm.wav.fillv_bilnr.nc"
+     ;fsrc = "meshmask.nc"
+  doffile = "dof.wav.nc"
+     ;fsrc = "dststatus.atm.wav.fillv_bilnr.nc"
   ;doffile = "dof.ocn.nc"
-   ;  fsrc = "dststatus.atm.wav.nstod_consf_2.nc"
-   ;  fsrc = "dststatus.atm.wav.consf.nc"
-   ;  fsrc = "dststatus.atm.wav.bilnr_nstod.nc"
-   ;  fsrc = "dststatus.atm.wav.fillv_bilnr.nc"
-   ;  fsrc = "meshmask.nc"
-  ;doffile = "dof.wav.nc"
 
   ;vname = "unity"
   vname = "dststatus"
   ;vname = "mask"
 
-  ; wt0.66  wave
-  ;ni = 540
-  ;nj = 458
-  ; glo 1deg wave
-  ;ni = 360
- ; nj = 171
-  ; mx100
-  ni = 360
-  nj = 320
-  ; mx050
-  ;ni = 720
-  ;nj = 576
+  ; waves
+  ni = 901
+  nj = 441
+  ; ocean
+  ;ni = 1135
+  ;nj = 633
+
   ndirs = dimsizes(dirs)
 
 ;**********************************************************
