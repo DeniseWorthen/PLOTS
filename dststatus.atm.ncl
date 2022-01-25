@@ -1,6 +1,5 @@
 ;**********************************************************
-; re-write CMEPS coupler history fields for Atm
-; imports, exports and masks to tiled files for
+; re-write CMEPS dststatus files for atm
 ;
 ; adapted from code originally written by
 ; Ufuk Turuncoglu turuncu@ucar.edu
@@ -10,24 +9,16 @@
 ;**********************************************************
 begin
 
+   makeplot = "yes"
+
    nl = str_get_nl()
    nflags = 9
      RT = "/glade/scratch/worthen/FV3_RT/wave_test/"
-   ;  RT = "/glade/scratch/worthen/FV3_RT/rt_16042/"
    date = "2021-03-22-"
 
-    res = 96
-   cres = ""
-     dt = 720
-
- ;   res = 192
- ;  cres = "_c192"
- ;   dt = 900
-
- ;   res = 384
- ;  cres = "_c384"
- ;    dt = 450
-
+    atmres = 96
+ ;   atmres = 192
+ ;   atmres = 384
 
    dirs = (/"basebilin/"/)
    ;dirs = (/"cpld_control_p7_biln/"/)
@@ -35,14 +26,14 @@ begin
    vname = "dststatus"
    ;fsrc = vname+".wav.atm.nstod_consf_2"
    ;fsrc = vname+".ocn.atm.consd"
-   ;fsrc = vname+".ocn.atm.consf"
-   fsrc = vname+".wav.atm.bilnr_nstod"
+   fsrc = vname+".ocn.atm.consf"
+   ;fsrc = vname+".wav.atm.bilnr_nstod"
    ;vname = "meshmask"
    ;fsrc = "mask.ocn.atm.consf"
 
   ntile = 6
   ndirs = dimsizes(dirs)
-
+ 
 ;**********************************************************
 ; retrieve lat/lon from first coupler history file
 ;**********************************************************
@@ -73,15 +64,15 @@ begin
      ;printVarSummary(lon1d)
 
      ;--- reshape variables---
-     lon3d = new((/ ntile, res, res /), typeof(lon1d))
-     lat3d = new((/ ntile, res, res /), typeof(lat1d))
+     lon3d = new((/ ntile, atmres, atmres /), typeof(lon1d))
+     lat3d = new((/ ntile, atmres, atmres /), typeof(lat1d))
      ;printVarSummary(lat3d)
 
      do i = 0, ntile-1
-      istr = (i*res*res)
-      iend = istr+res*res-1
-      lat3d(i,:,:) = onedtond(lat1d(istr:iend), (/ res, res /))
-      lon3d(i,:,:) = onedtond(lon1d(istr:iend), (/ res, res /))
+      istr = (i*atmres*atmres)
+      iend = istr+atmres*atmres-1
+      lat3d(i,:,:) = onedtond(lat1d(istr:iend), (/ atmres, atmres /))
+      lon3d(i,:,:) = onedtond(lon1d(istr:iend), (/ atmres, atmres /))
      end do
   end if
   delete(ff)
@@ -121,67 +112,183 @@ do nd = 0,ndirs-1
 ; pre-define the output file
 ;**********************************************************
 
-  do i = 0, ntile-1
-
-    ofile = dirsrc+fsrc+".tile"+sprinti("%d", i+1)+".nc"
+    ofile = dirsrc+"dst."+fsrc+".nc"
     print("output file "+ofile)
     system("rm -f "+ofile)
     fout = addfile(ofile, "c")
     setfileoption(fout, "DefineMode", True)
 
     ;--- create dimensions ---
-    dimNames = (/ "grid_xt", "grid_yt" /)
-    dimSizes = (/ res, res /)
-    dimUnlim = (/ False, False /)
+    dimNames = (/ "ntiles", "grid_xt", "grid_yt" /)
+    dimSizes = (/ ntile, atmres, atmres /)
+    dimUnlim = (/ False,  False,  False /)
     filedimdef(fout, dimNames, dimSizes, dimUnlim)
 
-    if(ndims .ne. 4) then
-       filevardef(fout, "grid_xt", typeof(lon1d), (/ "grid_yt", "grid_xt" /))
-       filevardef(fout, "grid_yt", typeof(lat1d), (/ "grid_yt", "grid_xt" /))
-    else
-    ;--- create lat,lon variable ---
-       filevardef(fout, "grid_xt", typeof(lon3d(i,:,:)), (/ "grid_yt", "grid_xt" /))
-       filevardef(fout, "grid_yt", typeof(lat3d(i,:,:)), (/ "grid_yt", "grid_xt" /))
-    end if
-
-    ; Copy attributes associated with each variable to the file
-    ;filevarattdef(fout,  "grid_yt",  lat3d)
-    ;filevarattdef(fout,  "grid_xt",  lon3d)
+    filevardef(fout, "grid_xt", typeof(lon3d(:,:,:)), (/"ntiles", "grid_yt", "grid_xt" /))
+    filevardef(fout, "grid_yt", typeof(lat3d(:,:,:)), (/"ntiles", "grid_yt", "grid_xt" /))
 
     ;--- create variable ---
-
-     filevardef(fout, vname, typeof(var1d), (/ "grid_yt", "grid_xt" /))
+     filevardef(fout, vname, typeof(var1d), (/"ntiles", "grid_yt", "grid_xt" /))
     setfileoption(fout, "DefineMode", False)
 
-    fout->grid_xt = (/ lon3d(i,:,:) /)
-    fout->grid_yt = (/ lat3d(i,:,:) /)
-  end do
+    ;--- write grid variables ---
+    fout->grid_xt = (/ lon3d(:,:,:) /)
+    fout->grid_yt = (/ lat3d(:,:,:) /)
 
 ;**********************************************************
 ; add variables
 ;**********************************************************
 
-     var3d = new((/ ntile, res, res /), typeof(var1d), default_fillvalue(typeof(var1d)) )
+     var3d = new((/ ntile, atmres, atmres /), typeof(var1d), default_fillvalue(typeof(var1d)) )
      ;printVarSummary(var3d)
 
      do i = 0, ntile-1
-      istr = (i*res*res)
-      iend = istr+res*res-1
+      istr = (i*atmres*atmres)
+      iend = istr+atmres*atmres-1
       ;var3d(i,:,:) = onedtond(var1d(istr:iend), (/ res, res /))
-      var3d(i,:,:) = onedtond(var1d_sort(istr:iend), (/ res, res /))
+      var3d(i,:,:) = onedtond(var1d_sort(istr:iend), (/ atmres, atmres /))
       ;print("tile number = "+i+" "+istr+" "+iend)
      end do
 
-     do i = 0, ntile-1
-      ofile = dirsrc+fsrc+".tile"+sprinti("%d", i+1)+".nc"
-       fout = addfile(ofile, "w")
-       ;fout->$vname$ = (/ var3d(i,:,:) /)
-       fout->$vname$ = var3d(i,:,:)
-       delete(fout)
-     end do
+     fout->$vname$ = var3d(:,:,:)
+    delete(fout)
     delete(var1d)
     delete(var3d)
 end do  ; ndirs
 
+if(makeplot .eq. "yes") then
+;************************************************
+; create spatchcock plot of dststatus on atm tiles
+;************************************************
+  
+  dirsrc = RT+dirs(0)
+    ofile = dirsrc+"dst."+fsrc+".nc"
+       ff = addfile(ofile, "r")
+     data = ff->dststatus
+     ;printVarSummary(data)
+
+     ; re-arrange tiles that are on their side
+     do kk = 0,ntile-1
+       if any((kk .eq. (/ 3, 4 /))) then
+         data(kk,:,:) = (/ transpose(data(kk,:,:)) /)
+         data(kk,:,:) = data(kk,::-1,:)
+       end if
+       if any((kk .eq. (/ 2 /))) then
+         data(kk,:,:) = (/ transpose(data(kk,:,:)) /)
+         data(kk,:,:) = data(kk,:,::-1)
+       end if
+    end do
+
+    ;palette = "ncv_roullet"
+    palette = "amwg"
+    levs = (/0,9,1/)
+
+;************************************************
+; define the map
+;************************************************
+
+     wkstype="X11"
+     ;wkstype="png"
+     wkstype@wkWidth=1200
+     wkstype@wkHeight=1200
+     wks   = gsn_open_wks (wkstype,fsrc)              ; send graphics to X11 window
+
+     res                      = True        ; plot mods desired
+     res@gsnDraw              = False       ; do not draw until the end
+     res@gsnFrame             = False       ; do not automatically advance 'frame'
+
+     ;res@cnFillMode = "MeshFill"
+     res@cnFillMode = "RasterFill"
+
+     plot = new(ntile,graphic)
+
+     size = 0.22
+     res@vpWidthF = size
+     res@vpHeightF = size
+
+     res@cnFillDrawOrder   = "PreDraw"             ; draw contours first
+     res@cnFillOn          = True                  ; color fill
+     res@cnLinesOn         = False                 ; no contour lines
+     res@cnLineLabelsOn    = False
+     res@cnInfoLabelOn     = False
+     res@cnFillPalette     = palette
+ 
+     res@cnMissingValFillPattern = 0               ; choose fill pattern 0 (solid fill)
+     res@cnMissingValFillColor   = "gray"          ; color fill missing areas blue
+
+     res@cnLevelSelectionMode = "ManualLevels"     ; set the contour levels with the following 3 resources
+     res@cnMinLevelValF  = levs(0)                      ; set the minimum contour level
+     res@cnMaxLevelValF  = levs(1)                      ; set the maximum contour level
+     res@cnLevelSpacingF = levs(2)                      ; set the interval between contours
+
+     res@tmYROn = False
+     res@tmXTOn = False
+     res@tmYLOn = False
+     res@tmXBOn = False
+
+     res@gsnStringFont = 22
+     res@gsnStringFontHeightF = 0.010
+
+     ; text resources
+     txres = True
+     txres@gsnFrame = False
+     txres@txJust = "CenterCenter"
+
+;************************************************
+;
+;************************************************
+
+     ;--- tile order ---
+     ;   2
+     ; 4 0 1 3
+     ;   5
+     xpos = tofloat((/ 1, 2, 1, 3, 0, 1 /))*size+0.05
+     ypos = 0.9-tofloat((/ 1, 1, 0, 1, 1, 2 /))*size
+
+     do kk = 0, ntile-1
+       ;--- set position ---
+       res@vpXF = xpos(kk)
+       res@vpYF = ypos(kk)
+       ;print(kk+" "+res@vpXF+" "+res@vpYF)
+
+       if (kk .eq. 1) then
+        res@lbLabelBarOn = True
+        res@pmLabelBarWidthF = size*1.8
+        res@pmLabelBarHeightF = 0.03
+        res@pmLabelBarParallelPosF = 0.97
+        res@cnLabelBarEndStyle = "ExcludeOuterBoxes"
+        res@lbLabelAlignment = "BoxCenters"
+       else
+        res@lbLabelBarOn = False
+       end if
+       if( kk .eq. 2) then
+        res@gsnLeftString = fsrc
+       else
+        res@gsnLeftString = ""
+       end if
+       plot1 = gsn_csm_contour(wks, data(kk,:,:), res)
+       draw(plot1)
+
+       txres@txPosXF = xpos(kk)+0.01
+       txres@txPosYF = ypos(kk)-0.01
+       txres@txAngleF = 0
+       txres@txFont = 22
+       txres@txFontHeightF = 0.015
+       text = gsn_create_text(wks, sprinti("%d", kk+1), txres)
+       draw(text)
+     end do
+
+     frame(wks)
+
+;************************************************
+;
+;************************************************
+
+  if(wkstype .eq. "png")then
+   imcmd = "convert -trim "+wkstitle+".png "+wkstitle+".jpg"
+   system(imcmd)
+  end if
+
+end if
 exit
 end
