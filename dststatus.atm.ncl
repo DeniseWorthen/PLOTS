@@ -52,26 +52,38 @@ begin
   print("input file "+fname)
   ff = addfile(fname,"r")
 
+  ;--- query the number of dims in case the history file is written
+  ;    on the tiles
+  ndims = dimsizes(dimsizes(ff->atmImp_lat))
+  print("file containing dimensions contains ndims = "+ndims)
+
   ;--- read coordinate variables ---
-  lat1d = ff->atmImp_lat(0,0,:)
-  lon1d = ff->atmImp_lon(0,0,:)
-  lat1d@units = "degrees_N"
-  lon1d@units = "degrees_E"
-  ;printVarSummary(lat1d)
-  ;printVarSummary(lon1d)
+  if(ndims .eq. 4)then
+    lat3d = ff->atmImp_lat(0,:,:,:)
+    lon3d = ff->atmImp_lon(0,:,:,:)
+    lat3d@units = "degrees_N"
+    lon3d@units = "degrees_E"
+  else
+  ;--- read coordinate variables ---
+     lat1d = ff->atmImp_lat(0,0,:)
+     lon1d = ff->atmImp_lon(0,0,:)
+     lat1d@units = "degrees_N"
+     lon1d@units = "degrees_E"
+     ;printVarSummary(lat1d)
+     ;printVarSummary(lon1d)
 
-  ;--- reshape variables---
-  lon3d = new((/ ntile, res, res /), typeof(lon1d))
-  lat3d = new((/ ntile, res, res /), typeof(lat1d))
-  ;printVarSummary(lat3d)
+     ;--- reshape variables---
+     lon3d = new((/ ntile, res, res /), typeof(lon1d))
+     lat3d = new((/ ntile, res, res /), typeof(lat1d))
+     ;printVarSummary(lat3d)
 
-  do i = 0, ntile-1
-   istr = (i*res*res)
-   iend = istr+res*res-1
-   lat3d(i,:,:) = onedtond(lat1d(istr:iend), (/ res, res /))
-   lon3d(i,:,:) = onedtond(lon1d(istr:iend), (/ res, res /))
-  end do
-
+     do i = 0, ntile-1
+      istr = (i*res*res)
+      iend = istr+res*res-1
+      lat3d(i,:,:) = onedtond(lat1d(istr:iend), (/ res, res /))
+      lon3d(i,:,:) = onedtond(lon1d(istr:iend), (/ res, res /))
+     end do
+  end if
   delete(ff)
   delete(fname)
 
@@ -123,9 +135,14 @@ do nd = 0,ndirs-1
     dimUnlim = (/ False, False /)
     filedimdef(fout, dimNames, dimSizes, dimUnlim)
 
+    if(ndims .ne. 4) then
+       filevardef(fout, "grid_xt", typeof(lon1d), (/ "grid_yt", "grid_xt" /))
+       filevardef(fout, "grid_yt", typeof(lat1d), (/ "grid_yt", "grid_xt" /))
+    else
     ;--- create lat,lon variable ---
-    filevardef(fout, "grid_xt", typeof(lon1d), (/ "grid_yt", "grid_xt" /))
-    filevardef(fout, "grid_yt", typeof(lat1d), (/ "grid_yt", "grid_xt" /))
+       filevardef(fout, "grid_xt", typeof(lon3d(i,:,:)), (/ "grid_yt", "grid_xt" /))
+       filevardef(fout, "grid_yt", typeof(lat3d(i,:,:)), (/ "grid_yt", "grid_xt" /))
+    end if
 
     ; Copy attributes associated with each variable to the file
     ;filevarattdef(fout,  "grid_yt",  lat3d)
