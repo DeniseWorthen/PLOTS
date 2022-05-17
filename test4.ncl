@@ -9,7 +9,7 @@
 ;************************************************
 
   ; gaea
-  RT = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/DECOMP96/dflt/"
+  RT = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/DECOMP96_ATM/tst0/"
 
   ;plottype = "land"
   ;plottype = "not land"
@@ -25,15 +25,15 @@
   lstep=0
   ntiles=6
 
- ; in coupler history files
+ ; in forecast history files
     tlonname = "grid_xt"
     tlatname = "grid_yt"
 
- wkstitle = "cpldcontrol"
+ wkstitle = "control_p7"
   runlabs = (/"Control","Decomp"/)
  dirs = (/"base/", "decomp/" /)
-  time = "2021-03-22-22320."
-  fsrc = "ufs.cpld.cpl.hi."
+  time = "f000."
+  fsrc = "sfc"
  ndirs = dimsizes(dirs)
    nts = dimsizes(time)
 
@@ -42,43 +42,39 @@
   palette="BlWhRe"
 
   ; atm fields
-  atmflds = (/ "atmImp_Faxa_rain",  \
-               "atmImp_Sa_pbot",    \
-               "atmImp_Sa_shum",    \
-               "atmImp_Sa_tbot",    \
-               "atmImp_Sa_z",       \
-               "atmImp_Faxa_lwnet"  \
+  atmflds = (/ "u-gwd_ave",    \
+               "v-gwd_ave",    \
+               "tprcp",        \
+               "pwatclm",      \
+               "prateb_ave",   \
+               "prate_ave",    \
+               "cwork_aveclm", \
+               "cpratb_ave",   \
+               "cprat_ave"     \
             /)
-  ;atmflds = (/ "atmImp_Faxa_lwnet" /)
-
-  ; from sfc file
-  ;atmflds = (/ "shtfl",  \
-  ;             "dlwrf_ave",    \
-  ;             "ulwrf_ave",    \
-  ;             "lhtfl",    \
-  ;             "tmpsfc",       \
-  ;             "spfh2m"  \
-  ;          /)
   nflds = dimsizes(atmflds)
 
   ; easier plots
   atmwgts = (/1.e2, \
-              1.00, \
+              1.e2, \
               1.e4, \
               1.e3, \
               1.e2, \
-              1.00 \
+              1.00, \
+              1.00, \
+              1.00  \
             /)
-  ;atmwgts = (/1.e12/)
 
   plotlevs = new((/nflds,3/), float)
-  plotlevs( 0,:) = (/  -0.02,  0.02, 0.002/) ; rain
-  plotlevs( 1,:) = (/  -0.02,  0.02, 0.002/) ; pbot
-  plotlevs( 2,:) = (/  -0.02,  0.02, 0.002/) ; shum
-  plotlevs( 3,:) = (/  -0.02,  0.02, 0.002/) ; tbot
-  plotlevs( 4,:) = (/  -0.02,  0.02, 0.002/) ; zbot
-  plotlevs( 5,:) = (/  -0.02,  0.02, 0.002/) ; lwnet
-  ;plotlevs( 0,:) = (/  -0.02,  0.02, 0.002/) ; lwnet
+  plotlevs( 0,:) = (/  -0.02,  0.02, 0.002/) ; u-gwd_ave
+  plotlevs( 1,:) = (/  -0.02,  0.02, 0.002/) ; v-gwd_ave
+  plotlevs( 2,:) = (/  -0.02,  0.02, 0.002/) ; tprcp
+  plotlevs( 3,:) = (/  -0.02,  0.02, 0.002/) ; pwatclm
+  plotlevs( 4,:) = (/  -0.02,  0.02, 0.002/) ; prateb_ave
+  plotlevs( 5,:) = (/  -0.02,  0.02, 0.002/) ; prate_ave
+  plotlevs( 6,:) = (/  -0.02,  0.02, 0.002/) ; cwork_aveclm
+  plotlevs( 7,:) = (/  -0.02,  0.02, 0.002/) ; cpratb_ave
+  plotlevs( 8,:) = (/  -0.02,  0.02, 0.002/) ; cprat_ave
 
   ; atm fields
   ;atmflds = (/"aod550",     \
@@ -116,12 +112,12 @@
 ;************************************************
 
   ; make 6 tiled plot of given field diff
-  ii = 3
+  ii = 1
      data = new((/ ntiles, ny, nx/), "double")
   mskdata = new((/ ntiles, ny, nx/), "double")
 
   do kk = 0,ntiles-1
-  ; add cpl history files on tile
+  ; add history files on tile
    tile="tile"+sprinti("%d",kk+1)
    files=addfiles(RT+dirs+fsrc+time+tile+".nc","r")
    print(files)
@@ -139,8 +135,7 @@
      wgt = atmwgts(ii)
    print("variable "+aname+"  weight "+wgt)
 
-    ;avar = files[1]->$aname$(0,:,:)-files[0]->$aname$(0,:,:)
-    avar = files[1]->$aname$(:,:)-files[0]->$aname$(:,:)
+    avar = files[1]->$aname$(0,:,:)-files[0]->$aname$(0,:,:)
     avar@lon2d = files[0]->$tlonname$
     avar@lat2d = files[0]->$tlatname$
 
@@ -166,22 +161,22 @@
     mskdata(kk,:,:) = (/mskvar(:,:)/)
 
     ;--- special care for following tiles ---
-    if any((kk .eq. (/ 3, 4 /))) then
-         data(kk,:,:) = (/ transpose(data(kk,:,:)) /)
-         data(kk,:,:) = data(kk,::-1,:)
-      mskdata(kk,:,:) = (/ transpose(mskdata(kk,:,:)) /)
-      mskdata(kk,:,:) = mskdata(kk,::-1,:)
+   ; if any((kk .eq. (/ 3, 4 /))) then
+   ;      data(kk,:,:) = (/ transpose(data(kk,:,:)) /)
+   ;      data(kk,:,:) = data(kk,::-1,:)
+   ;   mskdata(kk,:,:) = (/ transpose(mskdata(kk,:,:)) /)
+   ;   mskdata(kk,:,:) = mskdata(kk,::-1,:)
 
-    end if
-    if any((kk .eq. (/ 2 /))) then
-         data(kk,:,:) = (/ transpose(data(kk,:,:)) /)
-         data(kk,:,:) = data(kk,:,::-1)
-      mskdata(kk,:,:) = (/ transpose(mskdata(kk,:,:)) /)
-      mskdata(kk,:,:) = mskdata(kk,:,::-1)
-    end if
+   ; end if
+   ; if any((kk .eq. (/ 2 /))) then
+   ;      data(kk,:,:) = (/ transpose(data(kk,:,:)) /)
+   ;      data(kk,:,:) = data(kk,:,::-1)
+   ;   mskdata(kk,:,:) = (/ transpose(mskdata(kk,:,:)) /)
+   ;   mskdata(kk,:,:) = mskdata(kk,:,::-1)
+   ; end if
     delete ([/avar,mskvar,lndonly,ocnonly/])
   end do  ; kk
-  plottitle=runlabs(1)+" - "+runlabs(0)+"  "+aname+",  "+msklab
+  plottitle=runlabs(1)+" - "+runlabs(0)+"  "+aname+",  "+msklab+",  "+time
 
   levs = plotlevs(ii,:)
 

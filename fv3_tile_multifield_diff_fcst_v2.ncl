@@ -9,7 +9,7 @@
 ;************************************************
 
   ; gaea
-  RT = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/DECOMP96/dflt/"
+  RT = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/DECOMP96/frac_grid_on/"
 
   ;plottype = "land"
   ;plottype = "not land"
@@ -25,15 +25,15 @@
   lstep=0
   ntiles=6
 
- ; in coupler history files
+ ; in forecast history files
     tlonname = "grid_xt"
     tlatname = "grid_yt"
 
- wkstitle = "cpldcontrol"
+ wkstitle = "control_p7"
   runlabs = (/"Control","Decomp"/)
  dirs = (/"base/", "decomp/" /)
-  time = "2021-03-22-22320."
-  fsrc = "ufs.cpld.cpl.hi."
+  time = "f000."
+  fsrc = "sfc"
  ndirs = dimsizes(dirs)
    nts = dimsizes(time)
 
@@ -42,43 +42,37 @@
   palette="BlWhRe"
 
   ; atm fields
-  atmflds = (/ "atmImp_Faxa_rain",  \
-               "atmImp_Sa_pbot",    \
-               "atmImp_Sa_shum",    \
-               "atmImp_Sa_tbot",    \
-               "atmImp_Sa_z",       \
-               "atmImp_Faxa_lwnet"  \
+  atmflds = (/ "csulf",       \
+               "csulftoa",    \
+               "tprcp",       \
+               "prateb_ave",  \
+               "prate_ave",   \
+               "ulwrf",       \
+               "ulwrf_ave",   \
+               "ulwrf_avetoa" \
             /)
-  ;atmflds = (/ "atmImp_Faxa_lwnet" /)
-
-  ; from sfc file
-  ;atmflds = (/ "shtfl",  \
-  ;             "dlwrf_ave",    \
-  ;             "ulwrf_ave",    \
-  ;             "lhtfl",    \
-  ;             "tmpsfc",       \
-  ;             "spfh2m"  \
-  ;          /)
   nflds = dimsizes(atmflds)
 
   ; easier plots
-  atmwgts = (/1.e2, \
-              1.00, \
-              1.e4, \
+  atmwgts = (/1.e7, \
+              1.e2, \
+              1.e14, \
               1.e3, \
               1.e2, \
-              1.00 \
+              1.e3, \
+              1.00, \
+              1.00  \
             /)
-  ;atmwgts = (/1.e12/)
 
   plotlevs = new((/nflds,3/), float)
-  plotlevs( 0,:) = (/  -0.02,  0.02, 0.002/) ; rain
-  plotlevs( 1,:) = (/  -0.02,  0.02, 0.002/) ; pbot
-  plotlevs( 2,:) = (/  -0.02,  0.02, 0.002/) ; shum
-  plotlevs( 3,:) = (/  -0.02,  0.02, 0.002/) ; tbot
-  plotlevs( 4,:) = (/  -0.02,  0.02, 0.002/) ; zbot
-  plotlevs( 5,:) = (/  -0.02,  0.02, 0.002/) ; lwnet
-  ;plotlevs( 0,:) = (/  -0.02,  0.02, 0.002/) ; lwnet
+  plotlevs( 0,:) = (/  -0.02,  0.02, 0.002/) ; csulf
+  plotlevs( 1,:) = (/  -0.02,  0.02, 0.002/) ; csulftoa
+  plotlevs( 2,:) = (/  -0.02,  0.02, 0.002/) ; tprcp
+  plotlevs( 3,:) = (/  -0.02,  0.02, 0.002/) ; prateb_ave
+  plotlevs( 4,:) = (/  -0.02,  0.02, 0.002/) ; prate_ave
+  plotlevs( 5,:) = (/  -0.02,  0.02, 0.002/) ; ulwrf
+  plotlevs( 6,:) = (/  -0.02,  0.02, 0.002/) ; ulwrf_ave
+  plotlevs( 7,:) = (/  -0.02,  0.02, 0.002/) ; ulwrf_avetoa
 
   ; atm fields
   ;atmflds = (/"aod550",     \
@@ -116,12 +110,12 @@
 ;************************************************
 
   ; make 6 tiled plot of given field diff
-  ii = 3
+  ii = 0
      data = new((/ ntiles, ny, nx/), "double")
   mskdata = new((/ ntiles, ny, nx/), "double")
 
   do kk = 0,ntiles-1
-  ; add cpl history files on tile
+  ; add history files on tile
    tile="tile"+sprinti("%d",kk+1)
    files=addfiles(RT+dirs+fsrc+time+tile+".nc","r")
    print(files)
@@ -139,8 +133,7 @@
      wgt = atmwgts(ii)
    print("variable "+aname+"  weight "+wgt)
 
-    ;avar = files[1]->$aname$(0,:,:)-files[0]->$aname$(0,:,:)
-    avar = files[1]->$aname$(:,:)-files[0]->$aname$(:,:)
+    avar = files[1]->$aname$(0,:,:)-files[0]->$aname$(0,:,:)
     avar@lon2d = files[0]->$tlonname$
     avar@lat2d = files[0]->$tlatname$
 
@@ -181,7 +174,7 @@
     end if
     delete ([/avar,mskvar,lndonly,ocnonly/])
   end do  ; kk
-  plottitle=runlabs(1)+" - "+runlabs(0)+"  "+aname+",  "+msklab
+  plottitle=runlabs(1)+" - "+runlabs(0)+"  "+aname+",  "+msklab+",  "+time
 
   levs = plotlevs(ii,:)
 

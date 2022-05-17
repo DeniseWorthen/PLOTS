@@ -17,7 +17,7 @@
     hemi = "NH"
  ;   hemi = "SH"
  if(hemi .eq. "NH")then
-  minlat =  80.0
+  minlat =  86.0
   midlon = -45.0
  else
   maxlat = -50.0
@@ -26,8 +26,6 @@
 
   ; these are in degrees
     rfactor = 1.0
-   ;tlatname = "TLAT"
-   ;tlonname = "TLON"
    tlatname = "iceExp_lat"
    tlonname = "iceExp_lon"
 
@@ -40,12 +38,13 @@
       cmon = "03"
       cday = "22"
       csec = "22320"
+      ;csec = "23040"
      cdate = cyear+"-"+cmon+"-"+cday+"-"+csec
 
-  runname = (/"cice6-develop", "cice6-Cgrid"/)
-  ;    rts = (/"FV3_RT/devcice/test_tauxo0/","FV3_RT/Cgrid/testX2Y_tauxyo0/"/)
-      rts = (/"FV3_RT/devcice/test/","FV3_RT/Cgrid/test/"/)
-  ;   cset = "/test/"
+  runname = (/"cice6-develop", "cice6-Cgrid branch"/)
+      ;rts = (/"FV3_RT/devcice/base/","FV3_RT/Cgrid/base/"/)
+      ;rts = (/"FV3_RT/devcice/base/","FV3_RT/Cgrid/useF/"/)
+      rts = (/"FV3_RT/CICE/devcice/base/","FV3_RT/CICE/Cgrid/tarea/"/)
 
      ;files = addfiles(RT2+rts+cset+"history/iceh_06h."+cyear+"-"+cmon+"-"+cday+"-00000.nc","r")
      ;files = addfiles(RT2+rts+cset+"ufs.cpld.cpl.hi.ice."+cyear+"-"+cmon+"-"+cday+"-"+csec+".nc","r")
@@ -54,12 +53,30 @@
 
      print(rts(1)+" - "+rts(0))
      plottitle=runname(1)+" - "+runname(0)
-    ; printVarSummary(files[0]->iceImp_Fioi_melth)
-    ; print(fland)
 
-  ;       times = files[0]->time
-  ;   timeUnits = files[0]->time@units
-  ;timeCalendar = files[0]->time@calendar
+  ; ice fields
+  iceflds = (/"iceImp_Fioi_taux",   \
+              "iceImp_Fioi_tauy",   \
+              "iceImp_Fioi_melth",  \
+              "iceImp_Fioi_meltw"   \
+              /)
+  nflds = dimsizes(iceflds)
+
+  ; easier plots
+  icewgts = (/1.e14, \
+              1.e14, \
+              1.e11, \
+              1.e16  \
+              /)
+
+  plotlevs = new((/nflds,3/), float)
+  plotlevs( 0,:) = (/  -1.0,  1.0, 0.1/) ;
+  plotlevs( 1,:) = (/  -1.0,  1.0, 0.1/) ;
+  plotlevs( 2,:) = (/  -1.0,  1.0, 0.1/) ;
+  plotlevs( 3,:) = (/  -1.0,  1.0, 0.1/) ;
+
+  imask = tofloat(fland->kmt)
+  colormap = "BlueDarkRed18"
 
 ;************************************************
 ; add a poly line showing the polar seem along
@@ -83,8 +100,8 @@
   wks   = gsn_open_wks (wkstype,wkstitle)
 
   ;drawNDCGrid(wks)
-   plot = new(2,graphic)
-    dum = new(2,graphic)
+   plot = new(nflds,graphic)
+    dum = new(nflds,graphic)
  
   res                      = True        ; plot mods desired
   res@gsnDraw              = False       ; do not draw until the end
@@ -166,91 +183,33 @@ end
   ;resP@gsnPanelMainString = plottitle+": "+cd_string(times(lstep),"%Y%N%D")+"@ "+csec+" secs "
   resP@gsnPanelMainString = plottitle
 
+    ;labelstrings = new((/2/),string)
 ;************************************************
 ;
 ;************************************************
  
-         pltlevs = new((/3/),float)
-    labelstrings = new((/2/),string)
-    colormap = "BlueDarkRed18"
-    ;colormap = "amwg256"
+  do ii = 0,nflds-1
+   iname = iceflds(ii)
+     wgt = icewgts(ii)
+    levs = plotlevs(ii,:)
+   res@gsnCenterString  = iname
+   print("variable "+iname+"  weight "+wgt)
 
-        ii = 0
-    vname = "iceImp_Fioi_taux"
-    ;vname = "iceImp_Faii_taux"
-    ; vname = "iceImp_Fioi_melth"
-   pltlevs = (/-1,1,.1/)
-  ;   vname = "congel_h"
-  ;   vname = "aice_h"
-  ; pltlevs = (/-.5,.5,.05/)
-  ;   vname = "sst_h"
-  ; pltlevs = (/-.2,.2,.02/)
-  res@gsnCenterString  = vname
-  ivar = files[1]->$vname$(lstep,:,:)-files[0]->$vname$(lstep,:,:)
-  ivar = ivar*1.0e14
-  imask = tofloat(fland->kmt)
-  ivar = mask(ivar, (imask .eq. 1.0), default_fillvalue(typeof(files[0]->$vname$)))
-  printVarSummary(ivar)
-  ivar@lon2d = files[0]->$tlonname$(lstep,:,:)*rfactor
-  ivar@lat2d = files[0]->$tlatname$(lstep,:,:)*rfactor
+    ivar = files[1]->$iname$(lstep,:,:)-files[0]->$iname$(lstep,:,:)
+    ivar = ivar*wgt
+    ivar = mask(ivar, (imask .eq. 1.0), default_fillvalue(typeof(files[0]->$iname$)))
+    ivar@lon2d = files[0]->$tlonname$(lstep,:,:)*rfactor
+    ivar@lat2d = files[0]->$tlatname$(lstep,:,:)*rfactor
 
-  plot(ii) = subplot(ii,vname,ivar(:,:),pltlevs,colormap)
-   dum(ii) = gsn_add_polyline(wks,plot(ii),(/lon1, lon2/) , (/lat1, lat2/) ,pres)
-
-        ii = 1
-    vname = "iceImp_Fioi_tauy"
-  ;  vname = "iceImp_Faii_tauy"
-  ;   vname = "iceImp_Fioi_melthw"
-  res@gsnCenterString  = vname
-  ivar = files[1]->$vname$(lstep,:,:)-files[0]->$vname$(lstep,:,:)
-  ;ivar = ivar*1.0e17
-  ivar = ivar*1.0e14
-  imask = tofloat(fland->kmt)
-  ivar = mask(ivar, (imask .eq. 1.0), default_fillvalue(typeof(files[0]->$vname$)))
-  printVarSummary(ivar)
-  ivar@lon2d = files[0]->$tlonname$(lstep,:,:)*rfactor
-  ivar@lat2d = files[0]->$tlatname$(lstep,:,:)*rfactor
-
-  plot(ii) = subplot(ii,vname,ivar(:,:),pltlevs,colormap)
-   dum(ii) = gsn_add_polyline(wks,plot(ii),(/lon1, lon2/) , (/lat1, lat2/) ,pres)
-
-if(1 .eq. 0)then
-        ii = 1
-     vname = "hi_h"
-   pltlevs = (/-2.0,2.0,.2/)
- ;    vname = "fhocn_h"
- ;  pltlevs = (/-10.0,10.0,1.0/)
- ;    vname = "meltb_h"
- ;  pltlevs = (/-1.0,1.0,0.1/)
-     vname = "sss_h"
-   pltlevs = (/-0.5,0.5,0.05/)
-
-  ;ivar = files[1]->$vname$(lstep,:,:)-files[0]->$vname$(lstep,:,:)
-  ;ivar = ivar*100.0   ; in cm
-  ; error in assuming constant Tf
-   mfrz = -0.054
-  ivar0 = files[0]->$vname$(lstep,:,:)
-  ivar0 = ivar0*0.0 + 34.0*mfrz
-  ivar1 = files[1]->$vname$(lstep,:,:)
-  ivar1 = ivar1*mfrz
-  ivar = ivar1
-  ivar = ivar1 - ivar0
-  ivar@units = " "
-  ivar@long_name = " "
-  res@gsnCenterString  = "Tfreeze"
-  ;ivar = files[1]->$vname$(lstep,:,:)-files[0]->$vname$(lstep,:,:)
-
-  ivar@lon2d = files[0]->$tlonname$*rfactor
-  ivar@lat2d = files[0]->$tlatname$*rfactor
-  plot(ii) = subplot(ii,vname,ivar(:,:),pltlevs,colormap)
-   dum(ii) = gsn_add_polyline(wks,plot(ii),(/lon1, lon2/) , (/lat1, lat2/) ,pres)
-end if
+    plot(ii) = subplot(ii,iname,ivar(:,:),levs,colormap)
+     dum(ii) = gsn_add_polyline(wks,plot(ii),(/lon1, lon2/) , (/lat1, lat2/) ,pres)
+  end do
 
 ;************************************************
 ; make the panel
 ;************************************************
 
-  gsn_panel(wks,plot,(/1,2/),resP)
+  gsn_panel(wks,plot,(/2,2/),resP)
 
   frame(wks)
 

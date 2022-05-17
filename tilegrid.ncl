@@ -22,5 +22,15 @@ begin
    minlon = maxlon - 360.0
    maxlon = tmplon
   end if
+  if(tile .eq. "tile3")then
+   minlon = 0.0
+   maxlon = 360.0
+   maxlat =  90.0
+  end if
+  if(tile .eq. "tile6")then
+   minlon = 0.0
+   maxlon = 360.0
+   minlat = -90.0
+  end if
   return( [/minlon,minlat,maxlon,maxlat/])
 end

@@ -6,36 +6,54 @@
 ; Ufuk Turuncoglu turuncu@ucar.edu
 ;**********************************************************
 begin
-    ; RT = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/REST192/"
-     RT = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/DECOMP96/dflt/"
-    ; RT = "/scratch1/NCEPDEV/stmp2/Jun.Wang/TEST_noahmp_ICsTilefix/"
 
-    res = 96
-    ;res = 192
-    ;res = 384
+     RT = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/REST96/"
+     ;RT = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/rt_14171/"
+
+   date = "2021-03-22-"
   ntile = 6
 
-   ;dirs = (/"base/","rest/"/)
-   dirs = (/"base/","decomp/"/)
-  ; C96
-  times = (/"2021-03-22-22320"/)
-  ; C192
-  ;times = (/"2021-03-22-65400"/)
-  ; C384
-  ;times = (/"2021-03-22-32700"/)
+    res = 96
+   cres = ""
+     dt = 720
+
+  ;  res = 192
+  ; cres = "_c192"
+  ;   dt = 720
+
+  ;  res = 384
+  ; cres = "_c384"
+  ;   dt = 450
+
+  ; times = (/64800/)
+  times = ispan(22320,83520,dt)
+  ;times = (/dt, 2*dt, 3*dt/)
+  ;print(times)
+  ; dirs = (/"c96meshoff_compice/" \
+  ;         ,"c96meshoff_compocn/" /)
+   ;dirs = (/"c192meshoff_compice/" \
+   ;        ,"c192meshoff_compocn/" /)
+   ;dirs = (/"testdev/", "testbilin/"/)
+   ;fsrc = "ufs.cpld.cpl.hi."
+   ;dirs = (/"test2/","test3/"/)
+   ;dirs = (/"testdev/","testbilin/"/)
+   ;dirs = (/"cpld_control_c384/"/)
+   ;dirs = (/"cpld_control_c96_p7/", "restart_test/"/)
+   dirs = (/"base/"/)
+   ;dirs = (/"cpld_control_c96_p7/"/)
    fsrc = "ufs.cpld.cpl.hi."
+    
   ndirs = dimsizes(dirs)
     nts = dimsizes(times)
 
 do nd = 0,ndirs-1
  do nt = 0,nts-1
     time = times(nt)
+   ctime = sprinti("%0.5i", time)
   dirsrc = RT+dirs(nd)
-  dirout = dirsrc
-  ;dirout = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/JUN_test/"+dirs(nd)
-   ifile = fsrc
+   ifile = fsrc + date+ ctime
 
-  fname = dirsrc+ifile+time+".nc"
+  fname = dirsrc+ifile+".nc"
   print("input file "+fname)
   ff = addfile(fname,"r")
 
@@ -50,6 +68,7 @@ do nd = 0,ndirs-1
   ;--- reshape variables---
   lon3d = new((/ ntile, res, res /), typeof(lon1d))
   lat3d = new((/ ntile, res, res /), typeof(lat1d))
+  ;printVarSummary(lat3d)
 
   do i = 0, ntile-1
    istr = (i*res*res)
@@ -96,8 +115,7 @@ do nd = 0,ndirs-1
 
   do i = 0, ntile-1
 
-    ;ofile = dirsrc+fsrc+time+".tile"+sprinti("%d", i+1)+".nc"
-    ofile = dirout+fsrc+time+".tile"+sprinti("%d", i+1)+".nc"
+    ofile = dirsrc+fsrc+time+".tile"+sprinti("%d", i+1)+".nc"
     print("output file "+ofile)
     system("rm -f "+ofile)
     fout = addfile(ofile, "c")
@@ -150,7 +168,7 @@ do nd = 0,ndirs-1
      end do
 
      do i = 0, ntile-1
-      ofile = dirout+fsrc+time+".tile"+sprinti("%d", i+1)+".nc"
+      ofile = dirsrc+fsrc+time+".tile"+sprinti("%d", i+1)+".nc"
        fout = addfile(ofile, "w")
        fout->$vname$ = (/ var3d(i,:,:) /)
      end do
@@ -158,39 +176,8 @@ do nd = 0,ndirs-1
     delete(var3d)
    end if
   end do
-
-if(1 .eq. 0)then
-  do i = 0, ntile-1
-      ofile = dirout+fsrc+time+".tile"+sprinti("%d", i+1)+".nc"
-       fout = addfile(ofile, "r")
-       lats = fout->grid_yt
-       lons = fout->grid_xt
-       zbot = fout->atmImp_Sa_z
-      ofrac = fout->Med_frac_atm_ofrac
-      ;printVarSummary(zbot)
-
-      ;zbot = mask(zbot,(zbot .lt. 0.0 .and. ofrac .gt. 0.0), True)
-      zbot = mask(zbot,(zbot .lt. 0.0 ), True)
-      zbot1 = ndtooned(zbot)
-      ;printVarSummary(zbot1)
-      print(ofile+"  "+num(.not.ismissing(zbot1)))
-      nvals = num(.not.ismissing(zbot1))
-
-      if(nvals .gt. 0)then
-       ijlocs = ind_resolve(ind(zbot1), (/res,res/) )
-       ;print(lats(ijlocs(:,0),ijlocs(:,1)) +"  "+lons(ijlocs(:,0),ijlocs(:,1)) )
-
-       do n = 0,nvals-1
-        nn = n+1
-        jj = ijlocs(n,0)+1
-        ii = ijlocs(n,1)+1
-        print("n = "+nn+" i,j "+ii+"  "+jj+"  lat,lon = "+lats(jj-1,ii-1)+", "+lons(jj-1,ii-1)+"  zbot = "+zbot(jj-1,ii-1))
-       end do
-       delete(ijlocs)
-      end if
-  end do
-end if
-
+  delete(vnames)
+  delete(valid)
 end do  ; nts
 end do  ; ndirs
 
