@@ -11,41 +11,35 @@ begin
 
    makefile = "yes"
    makeplot = "yes"
+   RT="/glade/work/worthen/rhtest/"
 
    nl = str_get_nl()
    nflags = 9
-     ;RT = "/glade/scratch/worthen/FV3_RT/wave_test/"
-     ;RT = "/glade/scratch/worthen/XGRID/"
-     RT = "/glade/scratch/worthen/FV3_RT/atmwav_1deg/"
    date = "2021-03-22-"
 
     atmres = 96
  ;   atmres = 192
  ;   atmres = 384
 
-   dirs = (/"newcap/"/)
+   dirs = (/""/)
    plotlab = (/"no bilinear mapping"/)
    wkstitle="base"
 
-   ;dirs = (/"testdst/"/)
-   ;plotlab = (/"no bilinear mapping"/)
-   ;wkstitle="base"
-
    ;dirs = (/"test/"/)
    ;plotlab = (/"Sa_pslv bilinear mapping, dstMaskValue = ispval_mask"/)
+   ;plotlab = (/"atm meshmask"/)
    ;wkstitle="bilin"
 
    ;plotlab = (/"atm meshmask"/)
    ;vname = "mask"
    ; levs = (/0,2,1/)
    ;fsrc = "dststatus.meshmask.atm.nc"
-   ;fsrc = "fv3.meshmask.nc"
 
    vname = "dststatus"
    levs = (/0,9,1/)
-   fsrc = vname+".wav.atm.nstod_consf"
+   ;fsrc = vname+".wav.atm.nstod_consf_2"
    ;fsrc = vname+".ocn.atm.consd"
-   ;fsrc = vname+".ocn.atm.consf"
+   fsrc = vname+".ocn.atm.consf"
    ;fsrc = vname+".wav.atm.bilnr_nstod"
 
   ntile = 6
@@ -56,10 +50,7 @@ begin
 ; retrieve lat/lon from first coupler history file
 ;**********************************************************
 
-  ;fname = "/glade/scratch/worthen/FV3_RT/wave_test/base/ufs.cpld.cpl.hi.atm."+date+"22320.nc"
-  ;fname = RT+dirs(0)+"ufs.cpld.cpl.hi.atm."+date+"22320.nc"
-  fname = RT+dirs(0)+"ufs.atmw.cpl.hi.atm."+date+"22200.nc"
-  ;fname = RT+dirs(0)+"RESTART/ufs.cpld.cpl.r.2016-10-04-00000.nc"
+  fname = RT+"data/ufs.cpld.cpl.hi.atm."+date+"22320.nc"
   print("input file "+fname)
   ff = addfile(fname,"r")
 
@@ -108,7 +99,6 @@ do nd = 0,ndirs-1
 
   ; get the index seq to resort
   doffile = dirsrc+"dof.atm.nc"
-  ;doffile = dirsrc+"dof.nc"
   doff = addfile(doffile,"r")
   dof = doff->dof(:)
 

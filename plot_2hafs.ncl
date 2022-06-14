@@ -8,82 +8,48 @@
 ;************************************************
 
   ; cheyenne
-  ;RT1 = "/glade/scratch/worthen/FV3_RT/wave_test/test/"
-  ;cres = "mx100"
+  ;RT1 = "/glade/scratch/worthen/FV3_RT/hafs_newold/"
+  ;RT1 = "/glade/scratch/worthen/FV3_RT/wave_hafs3/"
+  RT1 = "/glade/scratch/worthen/FV3_RT/rt_39580/"
 
-  ;RT1 = "/glade/scratch/worthen/FV3_RT/wave_c192/base/"
-  ;cres = "mx050"
+ ;plotlabs = (/"new Cap", "current Cap"/)
+ ;plotlabs = (/"new Cap", "new Cap test"/)
+ ;plotlabs = (/"new Cap", ""/)
+ ;     rts = (/"test/", "testnsea/"/)
+ plotlabs = (/"hafs_regional_atm_ocn_wav"/)
+      rts = (/"hafs_regional_atm_ocn_wav/"/)
 
-  ;RT1 = "/glade/scratch/worthen/FV3_RT/wave_c384/base/"
-  ;cres = "mx025"
-
-  ;rundir="cpld_control_p8"
-  ;RT1 = "/glade/scratch/worthen/FV3_RT/rt_39580/cpld_control_p8/"
-  ;cres = "mx100"
-  ;cdate = "2021-03-23-21600"
-
-  ;rundir="cpld_control_c192_p8"
-  ;RT1 = "/glade/scratch/worthen/FV3_RT/rt_39580/cpld_control_c192_p8/"
-  ;cres = "mx050"
-  ;cdate = "2021-03-23-64800"
-
-  ;rundir="cpld_bmark_p8"
-  ;RT1 = "/glade/scratch/worthen/FV3_RT/rt_39580/cpld_bmark_p8/"
-  ;cres = "mx025"
-  ;cdate = "2013-04-01-21600"
-
-  rundir="hafs_regional_atm_ocn_wav"
-  RT1 = "/glade/scratch/worthen/FV3_RT/rt_39580/cpld_bmark_p8/"
-  cdate = "2019-08-29-21600"
-  
-  ;cdate = "2021-03-22-28800"
-  ;cdate = "2021-03-22-43200"
-  ;cdate = "2021-03-22-64800"
-  ;cdate = "2021-03-22-25200"
-
-  ;files = addfile(RT1+"ufs.cpld.cpl.hi.wav."+cdate+".nc","r")
-  ; to add land
-  ;files2 = addfile(RT1+"kmtu_cice_NEMS_"+cres+".nc","r")
-
+  date = "2019-08-29-21600"
+  ;date = "2019-08-29-00360"
+  files1 = addfile(RT1+rts(0)+"ufs.hafs.cpl.hi.wav."+date+".nc","r")
+  ;files2 = addfile(RT1+rts(1)+"ufs.hafs.cpl.hi.wav."+date+".nc","r")
   ; coupler fields
-  cmepsflds = (/"wavImp_Sw_ustokes1",   \
-                "wavImp_Sw_ustokes2",   \
-                "wavImp_Sw_ustokes3",   \
-                "wavImp_Sw_vstokes1",   \
-                "wavImp_Sw_vstokes2",   \
-                "wavImp_Sw_vstokes3",   \
-                "wavImp_Sw_z0"          \
-               /)
-
-  nflds = dimsizes(cmepsflds)
+  flds = (/"wavImp_Sw_z0"/)
+  nflds = dimsizes(flds)
 
   ; easier plots
-  fldwgts = (/1.e0, \
-              1.e0, \
-              1.e0, \
-              1.e0, \
-              1.e0, \
-              1.e0, \
-              1.e3  \
-            /)
+  fldwgts = (/1.e3/)
 
   ; plot levels
   plotlevs = new((/nflds,3/), float)
-  plotlevs( 0,:) = (/  -0.05,    0.05,  0.005/)   ; u1
-  plotlevs( 1,:) = (/  -0.05,    0.05,  0.005/)   ; u2
-  plotlevs( 2,:) = (/  -0.05,    0.05,  0.005/)   ; u3
-  plotlevs( 3,:) = (/  -0.05,    0.05,  0.005/)   ; v1
-  plotlevs( 4,:) = (/  -0.05,    0.05,  0.005/)   ; v2
-  plotlevs( 5,:) = (/  -0.05,    0.05,  0.005/)   ; v3
-  plotlevs( 6,:) = (/   0.00,    1.00,  0.050/)   ; z0
+  plotlevs( 0,:) = (/   0.0,    0.5,  0.01/)   ; z0
 
-  ;cmap="BlueWhiteOrangeRed"
-  cmap="BlueYellowRed"
+  cmap="BlueWhiteOrangeRed"
+  
+;************************************************
+;
+;************************************************
 
-  ;fland = files2->kmt
-  ;wkstitle="wave_"+cres
-  wkstitle="wave_hafs"
-  plottitle=rundir
+  ; pick a field to plot
+  fldtoplot = 0
+       levs = plotlevs(fldtoplot,:)
+        wgt = fldwgts(fldtoplot)
+   ;wkstitle = flds(fldtoplot)+"_"+date
+   wkstitle = plotlabs(0)
+
+   cmap = "WhiteBlueGreenYellowRed"
+   plottitle="Exported "+flds(fldtoplot)+"(*"+sprintf("%5.0e", wgt)+")"
+   ;plottitle=plotlabs(0)
 
 ;************************************************
 ; define the map
@@ -91,13 +57,13 @@
 
   ;wkstype="X11"
   wkstype="png"
-  wkstype@wkWidth=800
-  wkstype@wkHeight=800
+  wkstype@wkWidth=1200
+  wkstype@wkHeight=1200
   wks   = gsn_open_wks (wkstype,wkstitle)              ; send graphics to X11 window
 
   ;drawNDCGrid(wks)
-  plot = new(nflds,graphic)
-  oplot = new(nflds,graphic)
+  plot = new(2,graphic)
+  oplot = new(3,graphic)
 
   res                      = True        ; plot mods desired
   res@gsnDraw              = False       ; do not draw until the end
@@ -109,7 +75,7 @@
   res@cnFillOn           = True                  ; color fill
   res@cnLinesOn          = False                 ; no contour lines
   res@cnLineLabelsOn     = False                 ; no contour lines
-  res@lbLabelBarOn       = True                 ; turn off individual colorbars
+  res@lbLabelBarOn       = False                 ; turn off individual colorbars
   res@cnInfoLabelOn       = False           ; turn off cn info label
 
  res@vpWidthF          = 0.70
@@ -151,7 +117,7 @@ begin
 
   res@gsnCenterStringFontHeightF      = 0.020
   res@gsnCenterString                 = name
-  res@gsnCenterStringOrthogonalPosF   = 0.15
+  ;res@gsnCenterStringOrthogonalPosF   = -.05
 
    splot = gsn_csm_contour(wks,pltvar,res)    ; create the plot
   ;delete(res@cnLevels)
@@ -167,45 +133,36 @@ end
   resP@gsnFrame              = False                ; don't advance frame yet
   resP@gsnPanelYWhiteSpacePercent = 5
   resP@gsnPanelYWhiteSpacePercent = 5
-  resP@gsnPanelLabelBar      = False                  ; turn on a common labelbar for the entire panel plot
+  resP@gsnPanelLabelBar      = True                  ; turn on a common labelbar for the entire panel plot
 
   resP@gsnPanelMainFontHeightF = 0.015           ; new resource added in NCL V6.4.0
   resP@gsnPanelMainString = plottitle
   resP@gsnMaximize        = True                   ; use full page
 
+  resP@gsnPanelFigureStrings = (/date,date/)
+  resP@amJust = "TopLeft"
+  resP@gsnPanelFigureStringsFontHeightF = 0.01
 ; ***************************************************
 ;
 ; ***************************************************
-  ; wkstitle = cmepsflds(fldtoplot)
-  ;plottitle="6-hour "+connflds(fldtoplot)
-   ;plottitle="6-hour "+connflds(fldtoplot)+"(*"+sprintf("%5.0e", wgt)+")"
 
-  do ii = 0,nflds-1
-  ; pick a field to plot
-       levs = plotlevs(ii,:)
-        wgt = fldwgts(ii)
+  ii = 0
+  name = flds(fldtoplot)
+  f1 = files1->$name$(0,:,:)
+  plot(ii) = subplot(ii,"",wgt*f1,levs,cmap)
 
-    if(ii .eq. 6)then
-     cmap = "WhiteBlueGreenYellowRed"
-    end if
-
-    name = cmepsflds(ii)
-    f1 = files->$name$(0,:,:)
-    if(wgt .ne. 1.0)then
-     plotlab = name+"(*"+sprintf("%5.0e", wgt)+")"
-    else
-     plotlab = name
-    end if
-    plot(ii) = subplot(ii,plotlab,wgt*f1,levs,cmap)
-    ;oplot(ii) = gsn_csm_contour(wks,fland,ores)
-    ;overlay(plot(ii),oplot(ii))
-  end do
+  ;ii = 1
+  ;ii = 0
+  ;plotlabs(ii) = ""
+  ;f2 = files2->$name$(0,:,:)
+  ;plot(ii) = subplot(ii,plotlabs(ii),wgt*f2,levs,cmap)
 
 ;************************************************
 ; make the panel
 ;************************************************
 
-  gsn_panel(wks,plot,(/3,3/),resP)
+  ;gsn_panel(wks,plot,(/2,1/),resP)
+  gsn_panel(wks,plot,(/1,1/),resP)
 
   frame(wks)
 

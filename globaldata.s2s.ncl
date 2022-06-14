@@ -8,22 +8,25 @@
 ;**********************************************************
 begin
 
-     RT = "/glade/scratch/worthen/FV3_RT/wave_hafs3/testnsea/"
+     ;RT = "/glade/scratch/worthen/FV3_RT/wave_hafs2/test/"
      ;RT = "/glade/scratch/worthen/FV3_RT/hafs_newold/newcap/"
+     RT = "/glade/scratch/worthen/FV3_RT/wave_test/test/"
 
    nl = str_get_nl()
    nflags = 9
-   vnames = (/"wxdata","wydata","wx0","wy0", "import_mask"/)
-  ; vnames = (/"wx0","wy0"/)
+  ; vnames = (/"wxdata","wydata","wx0","wy0", "import_mask"/)
+   vnames = (/"So_t"/)
   doffile = "dof.wav.nc"
   ;doffile = "/glade/scratch/worthen/FV3_RT/wave_hafs/test/dof.wav.nc"
-  date = "2019-08-29-"
-  ;times = (/"25200"/)
-  times = (/"00360", "00720", "01080"/)
+  date = "2021-03-22-"
+  times = (/"25200"/)
+  ;times = (/"00360", "00720", "01080"/)
 
   ; waves
-  ni = 901
-  nj = 441
+  ;ni = 901
+  ;nj = 441
+  ni = 360
+  nj = 320
 
   nfiles = dimsizes(vnames)
   ntimes = dimsizes(times)

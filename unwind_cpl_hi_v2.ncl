@@ -9,9 +9,10 @@ begin
 
      ;RT = "/glade/scratch/worthen/FV3_RT/hash_74c57f17/"
      ;RT = "/glade/scratch/worthen/FV3_RT/hash_5a20ea4f/"
-     RT = "/glade/scratch/worthen/FV3_RT/wave_test/"
+     RT = "/glade/scratch/worthen/FV3_RT/hash_4ff260ab/"
 
-   date = "2021-03-22-"
+   ;date = "2021-03-22-"
+   date = "2016-10-03-"
   ntile = 6
 
     res = 96
@@ -26,10 +27,10 @@ begin
   ; cres = "_c384"
   ;   dt = 450
 
-  time0=21600
-  ; times = (/25200/)
+  ;time0=43200
+   times = (/33300/)
   ;times = ispan(900,3600,900)
-  times = (/time0+dt, time0+2*dt, time0+3*dt/)
+  ;times = (/time0+dt, time0+2*dt, time0+3*dt/)
   ;print(times)
   ; dirs = (/"c96meshoff_compice/" \
   ;         ,"c96meshoff_compocn/" /)
@@ -40,9 +41,9 @@ begin
    ;dirs = (/"test2/","test3/"/)
    ;dirs = (/"testdev/","testbilin/"/)
    ;dirs = (/"cpld_control_c384/"/)
-   dirs = (/"base/", "basetest/"/)
-   ;dirs = (/"cpld_control_p7/"/)
-   fsrc = "ufs.cpld.cpl.hi.atm."
+   ;dirs = (/"base/", "basetest/"/)
+   dirs = (/"cpld_control/"/)
+   fsrc = "ufs.cpld.cpl.hi."
     
   ndirs = dimsizes(dirs)
     nts = dimsizes(times)
