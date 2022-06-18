@@ -10,56 +10,34 @@
 ;**********************************************************
 begin
 
-     RT = "/glade/scratch/worthen/FV3_RT/rt_22529/"
+     RT = "/glade/scratch/worthen/FV3_RT/waveRH/"
     ; RT = "/glade/scratch/worthen/FV3_RT/wave_test/"
     ; RT = "/glade/scratch/worthen/XGRID/"
 
    nl = str_get_nl()
    nflags = 9
-   dirs = (/"bmark_glo30m/"/)
-  ; dirs = (/"./"/)
-  ;   fsrc = "dststatus.atm.ocn.bilnr.nc"
-  ;doffile = "dof.ocn.nc"
-  ;   fsrc = "dststatus.atm.ice.consf.nc"
-     ;fsrc = "dststatus.atm.ocn.nstod_consf.nc"
-    ;fsrc = "dststatus.atm.ocn.consf_fnorm.nc"
-   ; fsrc = "dststatus.atm.ocn.consf.nc"
-  ;   fsrc = "unityone.atm.ocn.consf.nc"
-  ;   fsrc = "dststatus.atm.ocn.bilnr_nstod.nc"
-  ;   fsrc = "dststatus.atm.ocn.fillv_bilnr.nc"
-   ;  fsrc = "dststatus.atm.wav.nstod_consf_2.nc"
-   ;  fsrc = "dststatus.atm.wav.consf.nc"
-     fsrc = "dststatus.ice.wav.bilnr_nstod.nc"
-   ;  fsrc = "dststatus.atm.wav.fillv_bilnr.nc"
-   ;  vname = "mask"
-   ;   levs = (/0,2,1/)
-   ;  fsrc = "meshmask.nc"
-  doffile = "dof.wav.nc"
+   ;dirs = (/"c192/gl30m/"/)
+   dirs = (/"c384/gl30m/"/)
+
+   ; vname = "mask"
+   ; levs = (/0,2,1/)
+   ; fsrc = "meshmask.nc"
 
     vname = "dststatus"
      levs = (/0,9,1/)
-  ;   fsrc = "dststatus.atm.ocn.bilnr_nstod.nc"
-  ;   fsrc = "dststatus.atm.ocn.consf.nc"
-  ;   fsrc = "dststatus.atm.wav.nstod_consf.nc"
-     ;fsrc = "dststatus.atm.wav.nstod_consf_2.nc"
+
+     fsrc = "dststatus.ocn.wav.bilnr_nstod.nc"
+  doffile = "dof.wav.nc"
   ;   fsrc = "dststatus.wav.ocn.bilnr_nstod.nc"
   ;doffile = "dof.ocn.nc"
 
-  ;   vname = "mask"
-  ;    levs = (/0,2,1/)
-  ;    fsrc = "dststatus.meshmask.ice.nc"
-  ; doffile = "dof.ice.nc"
-
-
-  ; wt0.66  wave
-  ;ni = 540
-  ;nj = 458
+  ; This is the destination grid
   ; glo 1deg wave
   ;ni = 360
   ;nj = 171
   ; glo 0.5deg wave
-  ;ni = 720
-  ;nj = 321
+  ni = 720
+  nj = 321
   ; mx100
   ;ni = 360
   ;nj = 320
@@ -67,8 +45,8 @@ begin
   ;ni = 720
   ;nj = 576
   ; mx025
-  ni = 1440
-  nj = 1080
+  ;ni = 1440
+  ;nj = 1080
   ndirs = dimsizes(dirs)
 
 ;**********************************************************
@@ -149,7 +127,17 @@ do nd = 0,ndirs-1
        ff = addfile(ofile, "r")
      data = ff->$vname$
      ;printVarSummary(data)
-     
+ 
+    gfile=RT+"glo_30m.SCRIP.nc"
+    ;gfile=RT+"Ct.mx025_SCRIP.nc"
+    gf = addfile(gfile,"r")
+
+    lon1d=gf->grid_center_lon
+    lat1d=gf->grid_center_lat
+    lat2d=onedtond(lat1d, (/nj,ni/))
+    lon2d=onedtond(lon1d, (/nj,ni/))
+    
+
 ;************************************************
 ; define the map
 ;************************************************
@@ -160,6 +148,7 @@ do nd = 0,ndirs-1
   wkstype@wkWidth=1200
   wkstype@wkHeight=1200
   wks   = gsn_open_wks (wkstype,wkstitle)              ; send graphics to X11 window
+  plot = new(2,graphic)
 
   res                      = True        ; plot mods desired
   res@gsnDraw              = False       ; do not draw until the end
@@ -168,20 +157,20 @@ do nd = 0,ndirs-1
   ;res@cnFillMode = "MeshFill"
   res@cnFillMode = "RasterFill"
 
-  res@vpWidthF          = 0.70
-  res@vpHeightF         = 0.40
-
+  res@mpFillOn             = False
+  res@mpOutlineOn          = False
   res@gsnStringFontHeightF = 0.01
-  res@cnMissingValPerimOn     = False            ; turn on the missing value perimeter
+  ;res@cnMissingValPerimOn     = False            ; turn on the missing value perimeter
   ;res@cnMissingValPerimColor  = "black"           ; outline the perimeter red
-  res@cnMissingValFillPattern = 0               ; choose fill pattern 0 (solid fill)
-  res@cnMissingValFillColor   = "gray"          ; color fill missing areas blue
+  ;res@cnMissingValFillPattern = 0               ; choose fill pattern 0 (solid fill)
+  ;res@cnMissingValFillColor   = "gray"          ; color fill missing areas blue
+  res@cnInfoLabelOn       = False           ; turn off cn info label
 
   res@cnFillDrawOrder   = "PreDraw"             ; draw contours first
   res@cnFillOn          = True                  ; color fill
   res@cnLinesOn         = False                 ; no contour lines
   res@cnLineLabelsOn    = False
-  res@lbLabelBarOn      = True
+  res@lbLabelBarOn      = False
   res@cnLabelBarEndStyle = "ExcludeOuterBoxes"
   res@lbLabelAlignment = "BoxCenters"
 
@@ -194,17 +183,51 @@ do nd = 0,ndirs-1
   res@tiMainFontHeightF = .010
   res@tiMainString = fsrc
 
-   res@mpMinLatF    =  66.0                          ; minimum lat to plot
-   res@mpCenterLonF = -45.0
+; ***************************************************
+; panel resources
+; **************************************************
+
+  resP                       = True                 ; modify the panel plot
+  resP@gsnMaximize           = True                 ; maximize in frame
+  resP@gsnFrame              = False                ; don't advance frame yet
+  resP@gsnPanelYWhiteSpacePercent = 5
+  resP@gsnPanelYWhiteSpacePercent = 5
+  resP@gsnPanelLabelBar      = True                  ; turn on a common labelbar for the entire panel plot
+
+  resP@gsnPanelMainFontHeightF = 0.015           ; new resource added in NCL V6.4.0
+  ;resP@gsnPanelMainString = plottitle
+  resP@gsnMaximize        = True                   ; use full page
+
+  ;resP@gsnPanelFigureStrings = (/date,date/)
+  resP@amJust = "TopLeft"
+  resP@gsnPanelFigureStringsFontHeightF = 0.01
+
 ;************************************************
 ;
 ;************************************************
 
-   plot = gsn_csm_contour(wks,data,res)    ; create the plot
-   ;plot = gsn_csm_contour_map_polar(wks,data,res)    ; create the plot
+   ii = 0
+   plot(ii) = gsn_csm_contour(wks,data,res)    ; create the plot
 
-  draw(plot)
+   ii = 1
+   data@lat2d = lat2d
+   data@lon2d = lon2d
+   res@gsnPolar     = "NH"
+   res@mpMinLatF    =  66.0                          ; minimum lat to plot
+   res@mpCenterLonF = -45.0
+   plot(ii) = gsn_csm_contour_map_polar(wks,data,res)    ; create the plot
+
+;************************************************
+; make the panel
+;************************************************
+
+  gsn_panel(wks,plot,(/2,1/),resP)
+
   frame(wks)
+
+;************************************************
+;
+;************************************************
 
   if(wkstype .eq. "png")then
    imcmd = "convert -trim "+wkstitle+".png "+wkstitle+".jpg"

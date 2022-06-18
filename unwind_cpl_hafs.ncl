@@ -7,7 +7,7 @@
 ;**********************************************************
 begin
 
-     RT = "/glade/scratch/worthen/FV3_RT/wave_hafs/"
+     RT = "/glade/scratch/worthen/FV3_RT/hafs_wav/atmwav/"
    date = "2019-08-29-"
 
   ntile = 1
@@ -15,11 +15,11 @@ begin
   nay = 600
 
      dt = 360
-   dirs = (/"test2/"/)
+   dirs = (/"base/","wavrh/"/)
 
   ;times = 1440
   times = ispan(dt,3*dt,dt)
-   fsrc = "ufs.hafs.cpl.hi."
+   fsrc = "ufs.hafs.cpl.hi.atm."
     
   ndirs = dimsizes(dirs)
     nts = dimsizes(times)

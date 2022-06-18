@@ -16,28 +16,28 @@
   ; cheyenne
   RT2 = "/glade/scratch/worthen/FV3_RT/rt_27488/"
 
- ;   hemi = "NH"
+    hemi = "NH"
  ;   hemi = "SH"
-    hemi = "wedge"
+ if(hemi .eq. "NH")then
+  minlat =  76.0
+  midlon = -45.0
+ else
+  maxlat = -50.0
+  midlon =   0.0
+ end if
 
-  if(hemi .eq. "wedge")then
-   minlat =  62.0
-   maxlat =  88.0
-   minlon = 230.0
-   maxlon = 320.0
-   midlon = minlon + (maxlon - minlon)/2.0
-  else
-    if(hemi .eq. "NH")then
-     minlat =  66.0
-     midlon = -45.0
-    else
-     maxlat = -50.0
-     midlon =   0.0
-    end if
-  end if
+   rad2deg = 180.d0/acos(-1.0d0)
+   ;rfactor = rad2deg
+   rfactor = 1.0
 
-  ; these are in degrees
-    rfactor = 1.0
+   vmag = 0.05
+   vthn = 0.01
+
+   uicename = "uvel_h"
+   vicename = "vvel_h"
+   iceulonname="ULON"
+   iceulatname="ULAT"
+   icemaskname="UMASK"
    tlatname = "TLAT"
    tlonname = "TLON"
 
@@ -48,8 +48,8 @@
      lstep = 1-1
      cyear = "2021"
       cmon = "03"
-      cday = "26"
-      csec = "00000"
+      cday = "27"
+      csec = "21600"
      cdate = cyear+"-"+cmon+"-"+cday+"-"+csec
 
       rts = (/"bgrid","cgrid"/)
@@ -63,6 +63,8 @@
          times = files[0]->time
      timeUnits = files[0]->time@units
   timeCalendar = files[0]->time@calendar
+
+   rotang = files[0]->ANGLE
 
 ;************************************************
 ; add a poly line showing the polar seem along
@@ -92,45 +94,33 @@
   res@gsnDraw              = False       ; do not draw until the end
   res@gsnFrame             = False       ; do not automatically advance 'frame'
 
-  ;res@cnFillMode = "MeshFill"
-  res@cnFillMode = "RasterFill"
-  res@mpFillOn   = False
-  res@mpOutlineOn          = False
-
-  res@cnFillOn           = True                  ; color fill
-  res@cnLinesOn          = False                 ; no contour lines
-  res@cnLineLabelsOn     = False                 ; no contour lines
   res@lbLabelBarOn       = True                 ; turn off individual colorbars
+  res@lbLabelFontHeightF = 0.010
 
-  if(hemi .eq. "wedge")then
-   res@mpMinLatF          =  minlat      ; range to zoom in on
-   res@mpMaxLatF          =  maxlat
-   res@mpMinLonF          =  minlon
-   res@mpMaxLonF          =  maxlon
-   res@mpCenterLonF       =  midlon
-  else
-     res@gsnPolar   =  hemi                         ; specify the hemisphere
-     if(hemi .eq. "NH")then
-      res@mpMinLatF    =  minlat                    ; minimum lat to plot
-      res@mpCenterLonF = -45
-     end if
-     if(hemi .eq. "SH")then
-      res@mpMaxLatF    = maxlat
-      res@mpCenterLonF = 0.0
-     end if
-   end if
+  res@vcRefMagnitudeF       = vmag              ; vec magnitude
+  res@vcRefLengthF          = 0.10              ; size of ref vector
+  ;res@vcMonoLineArrowColor  = True             ; multiple colors desired
+  res@vcMinDistanceF        = vthn              ; thins arrows near pole
+  ;res@vcLineArrowThicknessF = 1.5
+  res@vcGlyphStyle          = "CurlyVector"
+  ;res@vcPositionMode = "ArrowTail"
 
-  ;res@gsnRightString        = ""
-  ;res@gsnCenterString       = ""
+  res@gsnPolar   =  hemi                         ; specify the hemisphere
+  if(hemi .eq. "NH")then
+   res@mpMinLatF    =  minlat                          ; minimum lat to plot
+   res@mpCenterLonF = -45
+  end if
+  if(hemi .eq. "SH")then
+   res@mpMaxLatF    = -50                            ; minimum lat to plot
+   res@mpCenterLonF = 0.0
+  end if
 
   res@gsnPolarLabelFontHeightF   = 0.020           ; change font height of labels
   res@gsnCenterStringFontHeightF = 0.020
   res@lbLabelFontHeightF         = 0.020
 
-  ;res@cnMissingValPerimOn     = False            ; turn on the missing value perimeter
-  ;res@cnMissingValPerimColor  = "black"           ; outline the perimeter red
-  res@cnMissingValFillPattern = 0               ; choose fill pattern 0 (solid fill)
-  res@cnMissingValFillColor   = "gray"          ; color fill missing areas blue
+  ;res@cnMissingValFillPattern = 0               ; choose fill pattern 0 (solid fill)
+  ;res@cnMissingValFillColor   = "gray"          ; color fill missing areas blue
 
 ;************************************************
 ; Resources for the polyline
@@ -156,11 +146,7 @@ begin
   ;print(pltlevs)
   ;print(palette)
 
-  if(hemi .eq. "wedge")then
-     splot = gsn_csm_contour_map(wks,pltvar,res)    ; create the plot
-  else
-     splot = gsn_csm_contour_map_polar(wks,pltvar,res)    ; create the plot
-  end if
+  splot = gsn_csm_contour_map_polar(wks,pltvar,res)    ; create the plot
   ;delete(res@cnLevels)
   ;delete(res@lbLabelStrings)
   return(splot)
@@ -183,55 +169,57 @@ end
 ;
 ;************************************************
  
-    varname = "icespd"
-      uname = "uvel_h"
-      vname = "vvel_h"
-    uvar = files[1]->$uname$(lstep,:,:)-files[0]->$uname$(lstep,:,:)
-    vvar = files[1]->$vname$(lstep,:,:)-files[0]->$vname$(lstep,:,:)
-    ivar = (uvar^2 + vvar^2)^0.5
-    ivar = ivar*1e1
-    ivar@units = "mm/s"
-    ivar@long_name = "Ice speed"
-    labelstring = ivar@long_name+" ("+ivar@units+") "
-
-         pltlevs = new((/3/),float)
     labelstrings = new((/2/),string)
-    ;colormap = "BlueDarkRed18"
-    ;colormap = "BlueWhiteOrangeRed"
-    ;colormap = "amwg256"
-    colormap = "cmp_flux"
 
-        ii = 0
-     vname = "ice speed"
-  ; pltlevs = (/-0.1,0.1,0.01/)
-  pltlevs = (/-0.2,0.2,0.02/)
-  res@gsnCenterString  = vname
-  ivar@lon2d = files[0]->$tlonname$*rfactor
-  ivar@lat2d = files[0]->$tlatname$*rfactor
-  plot(ii) = subplot(ii,vname,ivar(:,:),pltlevs,colormap)
+     ii = 0
+   uvar = files[ii]->$uicename$(lstep,:,:)
+   vvar = files[ii]->$vicename$(lstep,:,:)
+   uvar@lon2d=files[ii]->$iceulonname$*rfactor
+   uvar@lat2d=files[ii]->$iceulatname$*rfactor
+   vvar@lon2d=files[ii]->$iceulonname$*rfactor
+   vvar@lat2d=files[ii]->$iceulatname$*rfactor
+   printVarSummary(uvar)
+
+   ; copy metadata
+   urot = uvar
+   vrot = vvar
+   urot = cos(rotang)*uvar - sin(rotang)*vvar
+   vrot = sin(rotang)*uvar + cos(rotang)*vvar
+   urot = where(urot@lat2d .ge. minlat, urot, uvar@_FillValue)
+   vrot = where(vrot@lat2d .ge. minlat, vrot, vvar@_FillValue)
+   print("urot min = "+min(urot)+" urot max = "+max(urot))
+   print("vrot min = "+min(vrot)+" vrot max = "+max(vrot))
+
+  plot(ii) = gsn_csm_vector_map_polar(wks,urot,vrot,res)    ; create the plot
    dum(ii) = gsn_add_polyline(wks,plot(ii),(/lon1, lon2/) , (/lat1, lat2/) ,pres)
 
-        ii = 1
-     vname = "aice_h"
-    ivar@units = "nd"
-    ivar@long_name = "Ice concentration"
-   pltlevs = (/-0.1,0.1,.01/)
-  ;pltlevs = (/-0.5,0.5,0.05/)
-  res@gsnCenterString  = vname
 
-  ivar = files[1]->$vname$(lstep,:,:)-files[0]->$vname$(lstep,:,:)
-  ;ivar = ivar*100.0   ; in cm
-  ivar@lon2d = files[0]->$tlonname$*rfactor
-  ivar@lat2d = files[0]->$tlatname$*rfactor
-  plot(ii) = subplot(ii,vname,ivar(:,:),pltlevs,colormap)
+   ii = 1
+   uvar = files[ii]->$uicename$(lstep,:,:)
+   vvar = files[ii]->$vicename$(lstep,:,:)
+   uvar@lon2d=files[ii]->$iceulonname$*rfactor
+   uvar@lat2d=files[ii]->$iceulatname$*rfactor
+   vvar@lon2d=files[ii]->$iceulonname$*rfactor
+   vvar@lat2d=files[ii]->$iceulatname$*rfactor
+
+   ; copy metadata
+   urot = uvar
+   vrot = vvar
+   urot = cos(rotang)*uvar - sin(rotang)*vvar
+   vrot = sin(rotang)*uvar + cos(rotang)*vvar
+   urot = where(urot@lat2d .ge. minlat, urot, uvar@_FillValue)
+   vrot = where(vrot@lat2d .ge. minlat, vrot, vvar@_FillValue)
+   print("urot min = "+min(urot)+" urot max = "+max(urot))
+   print("vrot min = "+min(vrot)+" vrot max = "+max(vrot))
+
+  plot(ii) = gsn_csm_vector_map_polar(wks,urot,vrot,res)    ; create the plot
    dum(ii) = gsn_add_polyline(wks,plot(ii),(/lon1, lon2/) , (/lat1, lat2/) ,pres)
 
 ;************************************************
 ; make the panel
 ;************************************************
 
-  ;gsn_panel(wks,plot,(/1,2/),resP)
-  gsn_panel(wks,plot,(/2,1/),resP)
+  gsn_panel(wks,plot,(/1,2/),resP)
 
   frame(wks)
 exit

@@ -1,69 +1,125 @@
-; ***********************************************
-; These files are loaded by default in NCL V6.2.0 and newer
-; load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_code.ncl"
-; load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl"
-
-  load "tilegrid.ncl"
-
-;************************************************
-
-  ; cheyenne
-  ;RT1 = "/glade/scratch/worthen/FV3_RT/hafs_newold/"
-  ;RT1 = "/glade/scratch/worthen/FV3_RT/wave_hafs3/"
-  RT1 = "/glade/scratch/worthen/FV3_RT/hafs_wav/"
-
- ;plotlabs = (/"new Cap", "current Cap"/)
- ;plotlabs = (/"new Cap", "new Cap test"/)
- ;plotlabs = (/"new Cap", ""/)
- ;     rts = (/"test/", "testnsea/"/)
- plotlabs = (/"hafs_regional_atm_wav","mapRH"/)
-      rts = (/"hafs_regional_atm_wav/","atmwav_wavrh/"/)
-
-  date = "2019-08-29-21600"
-  ;date = "2019-08-29-00360"
-  ;files1 = addfile(RT1+rts(0)+"ufs.hafs.cpl.hi.wav."+date+".nc","r")
-  ;files2 = addfile(RT1+rts(1)+"ufs.hafs.cpl.hi.wav."+date+".nc","r")
-  ; coupler fields
-  ;flds = (/"wavImp_Sw_z0"/)
-  
-  files1 = addfile(RT1+rts(0)+"dststatus.wav.atm.fillv_bilnr.tile1.nc","r")
-  files2 = addfile(RT1+rts(1)+"dststatus.wav.atm.fillv_bilnr.tile1.nc","r")
-  ; coupler fields
-  flds = (/"dststatus"/)
-
-  nflds = dimsizes(flds)
-
-  ; easier plots
-  ;fldwgts = (/1.e3/)
-  fldwgts = (/1./)
-
-  ; plot levels
-  plotlevs = new((/nflds,3/), float)
-  ;plotlevs( 0,:) = (/   0.0,    0.5,  0.01/)   ; z0
-  plotlevs( 0,:) = (/   0.0,    9,  1/)   ; dststatus
-
-  ;cmap="BlueWhiteOrangeRed"
-  cmap = "amwg"
-  
-;************************************************
+;**********************************************************
+; re-write CMEPS coupler history fields for Atm
+; imports, exports and masks to tiled files for
 ;
-;************************************************
+; adapted from code originally written by
+; Ufuk Turuncoglu turuncu@ucar.edu
 
-  ; pick a field to plot
-  fldtoplot = 0
-       levs = plotlevs(fldtoplot,:)
-        wgt = fldwgts(fldtoplot)
-   ;wkstitle = flds(fldtoplot)+"_"+date
-   wkstitle = plotlabs(0)
+  load "dststatus_counts.ncl"
 
-   cmap = "WhiteBlueGreenYellowRed"
-   plottitle="Exported "+flds(fldtoplot)+"(*"+sprintf("%5.0e", wgt)+")"
-   ;plottitle=plotlabs(0)
+;**********************************************************
+begin
 
+   makefile = "yes"
+   makeplot = "yes"
+
+     RT = "/glade/scratch/worthen/FV3_RT/hafs_wav/atmwav/"
+
+   nl = str_get_nl()
+   nflags = 9
+   ;dirs = (/"test3/"/)
+   dirs = (/"base/", "wavrh/"/)
+   ;dirs = (/"oldcap/","newcap/"/)
+     ;fsrc = "dststatus.atm.wav.fillv_bilnr.nc"
+     fsrc = "meshmask.nc"
+  doffile = "dof.wav.nc"
+     ;fsrc = "dststatus.atm.wav.fillv_bilnr.nc"
+  ;doffile = "dof.ocn.nc"
+
+  ;vname = "unity"
+  ;vname = "dststatus"
+  vname = "mask"
+   ;levs = (/0,9,1/)
+   levs = (/0,1,1/)
+
+  ; waves
+  ni = 901
+  nj = 441
+  ; ocean
+  ;ni = 1135
+  ;nj = 633
+
+  ndirs = dimsizes(dirs)
+  cmap = "amwg"
+
+ if (makefile .eq. "yes") then
+;**********************************************************
+;
+;**********************************************************
+
+do nd = 0,ndirs-1
+  dirsrc = RT+dirs(nd)
+   ifile = fsrc
+
+  fname = dirsrc+ifile+".nc"
+  print("input file "+fname)
+  ff = addfile(fname,"r")
+
+  var1d = ff->$vname$(:)
+  ;printVarSummary(var1d)
+  do i = 0,nflags-1
+   ret = dststatus_counts(var1d,i)
+  end do
+
+  ; get the index seq to resort
+  doff = addfile(dirsrc+doffile,"r")
+  dof = doff->dof(:)
+
+  ip = dim_pqsort(dof,1)
+  var1d_sort=var1d
+  var1d_sort=var1d(ip)
+
+;**********************************************************
+; pre-define the output file
+;**********************************************************
+
+    ofile = dirsrc+"dst."+fsrc
+    print("output file "+ofile)
+    system("rm -f "+ofile)
+    fout = addfile(ofile, "c")
+    setfileoption(fout, "DefineMode", True)
+
+    ;--- create dimensions ---
+    dimNames = (/ "grid_yt", "grid_xt" /)
+    dimSizes = (/    nj,      ni /)
+    dimUnlim = (/ False, False /)
+    filedimdef(fout, dimNames, dimSizes, dimUnlim)
+
+    ;--- create lat,lon variable ---
+    ;filevardef(fout, "grid_yt", "integer", (/ "grid_yt" /))
+    ;filevardef(fout, "grid_xt", "integer", (/ "grid_xt" /))
+
+    ;--- create variable ---
+
+    filevardef(fout, vname, typeof(var1d), (/ "grid_yt", "grid_xt" /))
+    setfileoption(fout, "DefineMode", False)
+
+    ;fout->grid_xt = ispan(1,ni,1)
+    ;fout->grid_yt = ispan(1,nj,1)
+
+;**********************************************************
+; add variables
+;**********************************************************
+
+     var2d = new((/ nj, ni /), typeof(var1d), default_fillvalue(typeof(var1d)) )
+     ;printVarSummary(var3d)
+
+      var2d(:,:) = onedtond(var1d_sort(:), (/ nj, ni /))
+
+      fout->$vname$ = var2d(:,:)
+      delete(fout)
+
+    delete(var1d)
+    delete(var2d)
+end do  ; ndirs
+end if ; make file
+
+if(makeplot .eq. "yes") then
 ;************************************************
 ; define the map
 ;************************************************
 
+  wkstitle="test"
   wkstype="X11"
   ;wkstype="png"
   wkstype@wkWidth=1200
@@ -72,7 +128,6 @@
 
   ;drawNDCGrid(wks)
   plot = new(2,graphic)
-  oplot = new(3,graphic)
 
   res                      = True        ; plot mods desired
   res@gsnDraw              = False       ; do not draw until the end
@@ -94,22 +149,6 @@
   ;res@cnMissingValPerimColor  = "black"           ; outline the perimeter red
   res@cnMissingValFillPattern = 0               ; choose fill pattern 0 (solid fill)
   res@cnMissingValFillColor   = "gray"          ; color fill missing areas blue
-
-;************************************************
-; resources for overlay
-;************************************************
-
-  ores                  = True
-  ores@cnLineThicknessF = 2.0            ; line thickness
-  ores@cnLineColor      = "black"        ; line color
-  ores@cnLineLabelsOn   = False
-  ores@cnInfoLabelOn    = False
-  ores@gsnDraw          = False ; don't draw
-  ores@gsnFrame         = False ; don't advance frame
-  ores@gsnLeftString    = ""    ; no titles
-  ores@gsnRightString   = ""
-  ores@cnLevelSelectionMode = "ExplicitLevels"     ; set the contour levels with the following 3 resources
-  ores@cnLevels         = (/0.1/)
 
 ;************************************************
 ; the subplot call
@@ -145,35 +184,31 @@ end
   resP@gsnPanelLabelBar      = True                  ; turn on a common labelbar for the entire panel plot
 
   resP@gsnPanelMainFontHeightF = 0.015           ; new resource added in NCL V6.4.0
-  resP@gsnPanelMainString = plottitle
+  ;resP@gsnPanelMainString = plottitle
   resP@gsnMaximize        = True                   ; use full page
 
-  resP@gsnPanelFigureStrings = (/date,date/)
+  ;resP@gsnPanelFigureStrings = (/date,date/)
   resP@amJust = "TopLeft"
   resP@gsnPanelFigureStringsFontHeightF = 0.01
 ; ***************************************************
 ;
 ; ***************************************************
 
-  ii = 0
-  name = flds(fldtoplot)
-  ;f1 = files1->$name$(0,:,:)
-  f1 = files1->$name$(:,:)
-  plot(ii) = subplot(ii,"",wgt*f1,levs,cmap)
+do nd = 0,ndirs-1
+  dirsrc = RT+dirs(nd)
+   ifile = "dst."+fsrc
+   fname = dirsrc+ifile+".nc"
+   ff = addfile(fname,"r")
 
-  ii = 1
-  ;ii = 0
-  plotlabs(ii) = ""
-  ;f2 = files2->$name$(0,:,:)
-  f2 = files2->$name$(:,:)
-  plot(ii) = subplot(ii,plotlabs(ii),wgt*f2,levs,cmap)
+   var=ff->$vname$
+   plot(nd) = subplot(nd,"",var,levs,cmap)
+end do
 
 ;************************************************
 ; make the panel
 ;************************************************
 
-  gsn_panel(wks,plot,(/2,1/),resP)
-  ;gsn_panel(wks,plot,(/1,1/),resP)
+  gsn_panel(wks,plot,(/2,2/),resP)
 
   frame(wks)
 
@@ -188,5 +223,6 @@ end
    system(imcmd)
   end if
 
+end if ; make plot
 exit
 end

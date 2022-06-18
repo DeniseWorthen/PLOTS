@@ -12,11 +12,11 @@ begin
 
    nl = str_get_nl()
    nflags = 9
-     RT = "/glade/scratch/worthen/FV3_RT/rt_47900/"
+     RT = "/glade/scratch/worthen/FV3_RT/hafs_wav/atmwav/"
    date = "2019-08-29-"
 
      dt = 360
-   dirs = (/"hafs_regional_atm_ocn_wav/"/)
+   dirs = (/"base/","wavrh/"/)
 
    vname = "dststatus"
    fsrc = vname+".wav.atm.fillv_bilnr"

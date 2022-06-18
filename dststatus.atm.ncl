@@ -16,16 +16,18 @@ begin
    nflags = 9
      ;RT = "/glade/scratch/worthen/FV3_RT/wave_test/"
      ;RT = "/glade/scratch/worthen/XGRID/"
-     RT = "/glade/scratch/worthen/FV3_RT/atmwav_1deg/"
+     RT = "/glade/scratch/worthen/FV3_RT/waveRH/"
    date = "2021-03-22-"
 
-    atmres = 96
- ;   atmres = 192
+ ;   atmres = 96
+    atmres = 192
  ;   atmres = 384
 
-   dirs = (/"newcap/"/)
-   plotlab = (/"no bilinear mapping"/)
-   wkstitle="base"
+   ;dirs = (/"devmx050/"/)
+   ;plotlab = (/"mx050"/)
+   dirs = (/"c192/gl30m/"/)
+   plotlab = (/"gl30m"/)
+   wkstitle="gl30m"
 
    ;dirs = (/"testdst/"/)
    ;plotlab = (/"no bilinear mapping"/)
@@ -58,7 +60,7 @@ begin
 
   ;fname = "/glade/scratch/worthen/FV3_RT/wave_test/base/ufs.cpld.cpl.hi.atm."+date+"22320.nc"
   ;fname = RT+dirs(0)+"ufs.cpld.cpl.hi.atm."+date+"22320.nc"
-  fname = RT+dirs(0)+"ufs.atmw.cpl.hi.atm."+date+"22200.nc"
+  fname = RT+dirs(0)+"ufs.cpld.cpl.hi.atm."+date+"22200.nc"
   ;fname = RT+dirs(0)+"RESTART/ufs.cpld.cpl.r.2016-10-04-00000.nc"
   print("input file "+fname)
   ff = addfile(fname,"r")
