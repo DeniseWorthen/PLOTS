@@ -3,7 +3,7 @@
 ;
 ; adapted from code originally written by
 ; Ufuk Turuncoglu turuncu@ucar.edu
- 
+
   load "dststatus_counts.ncl"
 
 ;**********************************************************
@@ -16,26 +16,20 @@ begin
    nflags = 9
      ;RT = "/glade/scratch/worthen/FV3_RT/wave_test/"
      ;RT = "/glade/scratch/worthen/XGRID/"
-     RT = "/glade/scratch/worthen/FV3_RT/waveRH/"
+     RT = "/glade/scratch/worthen/WaveUnstr/"
    date = "2021-03-22-"
 
- ;   atmres = 96
-    atmres = 192
+    atmres = 96
+ ;   atmres = 192
  ;   atmres = 384
 
-   ;dirs = (/"devmx050/"/)
-   ;plotlab = (/"mx050"/)
-   dirs = (/"c192/gl30m/"/)
-   plotlab = (/"gl30m"/)
-   wkstitle="gl30m"
+   plotlab="unstr 1deg"
+   dirs=(/"unstr_noland/"/)
 
-   ;dirs = (/"testdst/"/)
-   ;plotlab = (/"no bilinear mapping"/)
-   ;wkstitle="base"
-
-   ;dirs = (/"test/"/)
-   ;plotlab = (/"Sa_pslv bilinear mapping, dstMaskValue = ispval_mask"/)
-   ;wkstitle="bilin"
+   ;plotlab="mx050"
+   ;plotlab="mx025"
+   ;dirs = (/"c384/"+plotlab+"/"/)
+   wkstitle="c96"+plotlab
 
    ;plotlab = (/"atm meshmask"/)
    ;vname = "mask"
@@ -45,14 +39,14 @@ begin
 
    vname = "dststatus"
    levs = (/0,9,1/)
-   fsrc = vname+".wav.atm.nstod_consf"
+   ;fsrc = vname+".wav.atm.nstod_consf"
    ;fsrc = vname+".ocn.atm.consd"
    ;fsrc = vname+".ocn.atm.consf"
-   ;fsrc = vname+".wav.atm.bilnr_nstod"
+   fsrc = vname+".wav.atm.bilnr_nstod"
 
   ntile = 6
   ndirs = dimsizes(dirs)
- 
+
   if (makefile .eq. "yes") then
 ;**********************************************************
 ; retrieve lat/lon from first coupler history file
@@ -60,8 +54,8 @@ begin
 
   ;fname = "/glade/scratch/worthen/FV3_RT/wave_test/base/ufs.cpld.cpl.hi.atm."+date+"22320.nc"
   ;fname = RT+dirs(0)+"ufs.cpld.cpl.hi.atm."+date+"22320.nc"
-  fname = RT+dirs(0)+"ufs.cpld.cpl.hi.atm."+date+"22200.nc"
-  ;fname = RT+dirs(0)+"RESTART/ufs.cpld.cpl.r.2016-10-04-00000.nc"
+  ;fname = RT+dirs(0)+"ufs.cpld.cpl.hi.atm."+date+"22200.nc"
+  fname = RT+dirs(0)+"ufs.atmw.cpl.hi.atm."+date+"22320.nc"
   print("input file "+fname)
   ff = addfile(fname,"r")
 
@@ -120,7 +114,7 @@ do nd = 0,ndirs-1
 
   var1d = ff->$vname$(:)
   ;printVarSummary(var1d)
- 
+
    total = 0
   do i = 0,nflags-1
    total = total+dststatus_counts(var1d,i)
@@ -184,12 +178,11 @@ if(makeplot .eq. "yes") then
 ;************************************************
 ; create spatchcock plot of dststatus on atm tiles
 ;************************************************
-  
+
   dirsrc = RT+dirs(0)
     ofile = dirsrc+"dst."+fsrc+".nc"
        ff = addfile(ofile, "r")
      data = ff->$vname$
-     ;printVarSummary(data)
 
     ;if(1.eq.0)then
      ; re-arrange tiles that are on their side
@@ -205,8 +198,12 @@ if(makeplot .eq. "yes") then
     end do
     ;end if
 
-    ;palette = "ncv_roullet"
+    ;palette = "seaice_2"
     palette = "amwg"
+
+    cmap = read_colormap_file(palette)
+    ;cmap(1,:) = namedcolor2rgba("white")
+    cmap(2,:) = namedcolor2rgba("white")
 
 ;************************************************
 ; define the map
@@ -214,9 +211,10 @@ if(makeplot .eq. "yes") then
 
      wkstype="X11"
      ;wkstype="png"
-     wkstype@wkWidth=1200
-     wkstype@wkHeight=1200
+     wkstype@wkWidth=1600
+     wkstype@wkHeight=1600
      wks   = gsn_open_wks (wkstype,wkstitle)              ; send graphics to X11 window
+     gsn_define_colormap(wks,palette)
 
      res                      = True        ; plot mods desired
      res@gsnDraw              = False       ; do not draw until the end
@@ -236,8 +234,10 @@ if(makeplot .eq. "yes") then
      res@cnLinesOn         = False                 ; no contour lines
      res@cnLineLabelsOn    = False
      res@cnInfoLabelOn     = False
-     res@cnFillPalette     = palette
- 
+     res@cnFillPalette     = cmap
+     ;res@cnFillColors     = (/2,4,6,7,8,9,12,13,14,15,16,17/)
+    ; res@cnFillColors     = (/2,4,9,12,15,16,17,20,23/)
+
      res@cnMissingValFillPattern = 0               ; choose fill pattern 0 (solid fill)
      res@cnMissingValFillColor   = "gray"          ; color fill missing areas blue
 

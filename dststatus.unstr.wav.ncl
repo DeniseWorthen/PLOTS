@@ -31,7 +31,7 @@ begin
    ;  fsrc = "dststatus.atm.wav.consf.nc"
    ;  fsrc = "dststatus.ice.wav.bilnr_nstod.nc"
    ;  fsrc = "dststatus.atm.wav.fillv_bilnr.nc"
-     fsrc = "dststatus.atm.wav.bilinr_nstod.nc"
+     fsrc = "dststatus.atm.wav.bilnr_nstod.nc"
    ;  vname = "mask"
    ;   levs = (/0,2,1/)
    ;  fsrc = "meshmask.nc"
@@ -52,24 +52,6 @@ begin
   ; doffile = "dof.ice.nc"
 
 
-  ; wt0.66  wave
-  ;ni = 540
-  ;nj = 458
-  ; glo 1deg wave
-  ;ni = 360
-  ;nj = 171
-  ; glo 0.5deg wave
-  ;ni = 720
-  ;nj = 321
-  ; mx100
-  ;ni = 360
-  ;nj = 320
-  ; mx050
-  ;ni = 720
-  ;nj = 576
-  ; mx025
-  ;ni = 1440
-  ;nj = 1080
   ndirs = dimsizes(dirs)
 
 ;**********************************************************
@@ -98,57 +80,18 @@ do nd = 0,ndirs-1
   var1d_sort=var1d
   var1d_sort=var1d(ip)
 
-;**********************************************************
-; pre-define the output file
-;**********************************************************
-
-    ofile = dirsrc+"dst."+fsrc
-    print("output file "+ofile)
-    system("rm -f "+ofile)
-    fout = addfile(ofile, "c")
-    setfileoption(fout, "DefineMode", True)
-
-    ;--- create dimensions ---
-    dimNames = (/ "grid_yt", "grid_xt" /)
-    dimSizes = (/    nj,      ni /)
-    dimUnlim = (/ False, False /)
-    filedimdef(fout, dimNames, dimSizes, dimUnlim)
-
-    ;--- create lat,lon variable ---
-    ;filevardef(fout, "grid_yt", "integer", (/ "grid_yt" /))
-    ;filevardef(fout, "grid_xt", "integer", (/ "grid_xt" /))
-
-    ;--- create variable ---
-
-    filevardef(fout, vname, typeof(var1d), (/ "grid_yt", "grid_xt" /))
-    setfileoption(fout, "DefineMode", False)
-
-    ;fout->grid_xt = ispan(1,ni,1)
-    ;fout->grid_yt = ispan(1,nj,1)
-
-;**********************************************************
-; add variables
-;**********************************************************
-
-     var2d = new((/ nj, ni /), typeof(var1d), default_fillvalue(typeof(var1d)) )
-     ;printVarSummary(var3d)
-
-      var2d(:,:) = onedtond(var1d_sort(:), (/ nj, ni /))
-
-      fout->$vname$ = var2d(:,:)
-      delete(fout)
-
-    delete(var1d)
-    delete(var2d)
-
 ;************************************************
 ; create plot of dststatus
 ;************************************************
 
    dirsrc = RT+dirs(nd)
-    ofile = dirsrc+"dst."+fsrc+".nc"
+    ofile = dirsrc+fsrc
        ff = addfile(ofile, "r")
      data = ff->$vname$
+     flon = addfile(dirsrc+"emesh.x.nc","r")
+     flat = addfile(dirsrc+"emesh.y.nc","r")
+     data@lon1d = flon->coordx
+     data@lat1d = flat->coordy
      ;printVarSummary(data)
 
 ;************************************************
@@ -195,14 +138,15 @@ do nd = 0,ndirs-1
   res@tiMainFontHeightF = .010
   res@tiMainString = fsrc
 
-   res@mpMinLatF    =  66.0                          ; minimum lat to plot
-   res@mpCenterLonF = -45.0
+  res@mpOutlineOn          = True
+  res@mpFillOn             = False
+  res@gsnAddCyclic         = True
+
 ;************************************************
 ;
 ;************************************************
 
-   plot = gsn_csm_contour(wks,data,res)    ; create the plot
-   ;plot = gsn_csm_contour_map_polar(wks,data,res)    ; create the plot
+   plot = gsn_csm_contour_map(wks,data,res)    ; create the plot
 
   draw(plot)
   frame(wks)

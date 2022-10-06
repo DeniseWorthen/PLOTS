@@ -16,12 +16,13 @@ begin
 
    nl = str_get_nl()
    nflags = 9
+   dirs = (/"c96/base/"/)
    ;dirs = (/"c192/gl30m/"/)
-   dirs = (/"c384/gl30m/"/)
+   ;dirs = (/"c384/gl30m/"/)
 
-   ; vname = "mask"
-   ; levs = (/0,2,1/)
-   ; fsrc = "meshmask.nc"
+    ;vname = "mask"
+    ;levs = (/0,2,1/)
+    ;fsrc = "meshmask.nc"
 
     vname = "dststatus"
      levs = (/0,9,1/)
@@ -33,11 +34,11 @@ begin
 
   ; This is the destination grid
   ; glo 1deg wave
-  ;ni = 360
-  ;nj = 171
+  ni = 360
+  nj = 171
   ; glo 0.5deg wave
-  ni = 720
-  nj = 321
+  ;ni = 720
+  ;nj = 321
   ; mx100
   ;ni = 360
   ;nj = 320
@@ -126,9 +127,16 @@ do nd = 0,ndirs-1
     ofile = dirsrc+"dst."+fsrc+".nc"
        ff = addfile(ofile, "r")
      data = ff->$vname$
-     ;printVarSummary(data)
+     printVarSummary(data)
  
-    gfile=RT+"glo_30m.SCRIP.nc"
+    bindata = data
+    bindata = 0
+    ; bin the three cons mult points into one new value
+    bindata = where(data .ge. 5 .and. data .le. 7, 6, data)
+    ;data = bindata
+
+    gfile=RT+"glo_1deg.SCRIP.nc"
+    ;gfile=RT+"glo_30m.SCRIP.nc"
     ;gfile=RT+"Ct.mx025_SCRIP.nc"
     gf = addfile(gfile,"r")
 
