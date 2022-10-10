@@ -27,7 +27,7 @@ begin
      ;ip = dim_pqsort(dof,1)
 
      if (filetype .eq. "wave history") then
-        time="25200"
+        time="23040"
         f = addfile(RT+"ufs.atmw.ww3.hi.2021-03-22-"+time+".nc","r")
         print(RT+"ufs.atmw.ww3.hi.2021-03-22-"+time+".nc")
         ;vname = "UAX"
@@ -37,7 +37,7 @@ begin
         ;levs = (/0,8000.0,500.0/)
 
         vname = "HS"
-        levs = (/0,.50,.02/)
+        levs = (/0,.30,.02/)
 
         data = f->$vname$(0,0,:)
         ;lons = f->lon(0,:)
@@ -79,17 +79,17 @@ begin
      end if
 
      if (filetype .eq. "meshmask")then
-        mskfile = "meshmask.nc"
+        mskfile = "emesh.fld.nc.nc"
         fmsk = addfile(RT+mskfile,"r")
-        vname="mask"
+        vname="dummy"
         data = fmsk->$vname$
-        fcx= addfile(RT+"testx.nc","r")
+        fcx= addfile(RT+"emesh.x.nc","r")
         vname="coordx"
-        lons = fcx->$vname$
-        fcy= addfile(RT+"testy.nc","r")
+        data@lon1d = fcx->$vname$
+        fcy= addfile(RT+"emesh.y.nc","r")
         vname="coordy"
-        lats = fcy->$vname$
-        levs = (/0,2,1/)
+        data@lat1d = fcy->$vname$
+        levs = (/0,6,1/)
     end if
 
 ;************************************************
@@ -120,9 +120,10 @@ begin
   ;res@cnMissingValFillColor   = "gray"          ; color fill missing areas blue
 
   res@cnFillDrawOrder   = "PreDraw"             ; draw contours first
-  res@cnFillOn          = True                  ; color fill
+  res@cnFillOn          = True                 ; color fill
   res@cnLinesOn         = False                 ; no contour lines
   res@cnLineLabelsOn    = False
+  res@cnMonoLineColor  = False
   res@lbLabelBarOn      = True
   res@cnLabelBarEndStyle = "ExcludeOuterBoxes"
   res@lbLabelAlignment = "BoxCenters"
