@@ -10,21 +10,21 @@
 
  ;makediff = "yes"
  makediff = "no"
- plotlabs = (/"Unstr CardDeck 2PE","Unstr CardDeck 3PE"/)
-      rts = (/"unstr2PE/","unstr3PE/"/)
- ;plotlabs = (/"Unstr land DD 2PE","Unstr no land DD 2PE"/)
- ;     rts = (/"pdlib2PE/","pdlibnoland2PE/"/)
+ ;plotlabs = (/"Unstr CardDeck 2PE","Unstr CardDeck 3PE"/)
+ ;     rts = (/"unstr2PE/","unstr3PE/"/)
+ plotlabs = (/"Unstr land DD 2PE","Unstr no land DD 2PE"/)
+      rts = (/"pdlib2PE/","pdlibnoland2PE/"/)
  ;plotlabs = (/"Unstr CardDeck 3PE","Str CardDeck 3PE"/)
  ;     rts = (/"unstr3PE/","str3PE/"/)
 
-  ; structured grid (nx,ny,t)
+  ; structured grid
   ;ndims = 3
-  ; unstructured meshes (nx,ny=1,t)
+  ; unstructured meshes
   ndims = 2
 
   date = "2021-03-22-"
   time = "25200"
-  fsrc = "ufs.atmw.ww3.hi."
+  fsrc = "ufs.atmw.cpl.hi.wav."
 
   fname0 = RT1+rts(0)+fsrc+date+time+".nc"
   fname1 = RT1+rts(1)+fsrc+date+time+".nc"
@@ -33,34 +33,21 @@
   print(fname0)
   print(fname1)
 
-  flds = (/"HS" , \
-           "UAX", \
-           "UAY"/)
-  fldwgts = (/1., \
-              1., \
-              1./)
-  lonname = "lon"
-  latname = "lat"
+  flds = (/"wavImp_Sw_z0"/)
+  fldwgts = (/1.e3/)
+  lonname = "wavImp_lon"
+  latname = "wavImp_lat"
 
   nflds = dimsizes(flds)
 
   ; plot levels
   plotlevs = new((/nflds,3/), float)
-  plotlevs( 0,:) = (/   0.0,    0.5,  0.01/)   ; hs
-  plotlevs( 1,:) = (/ -20.0,   20.0,  0.50/)   ; uax
-  plotlevs( 2,:) = (/ -20.0,   20.0,  0.50/)   ; vax
 
-  ; get the decomp
-  ;mskfile = "emesh.fld.nc.nc"
-  ;fmsk = addfile(RT1+rts(0)+mskfile,"r")
-  ;vname="dummy"
-  ;fdecomp = fmsk->$vname$
-  ;fcx= addfile(RT1+rts(0)+"emesh.x.nc","r")
-  ;vname="coordx"
-  ;fdecomp@lon1d = fcx->$vname$
-  ;fcy= addfile(RT1+rts(0)+"emesh.y.nc","r")
-  ;vname="coordy"
-  ;fdecomp@lat1d = fcy->$vname$
+  if (makediff .eq. "yes") then
+    plotlevs( 0,:) = (/   -1.0,    1.0,  0.01/)   ; z0 diff
+  else
+    plotlevs( 0,:) = (/   0.0,    0.5,  0.005/)   ; z0
+  end if
 
 ;************************************************
 ;
@@ -153,8 +140,6 @@ begin
   ;res@gsnCenterStringOrthogonalPosF   = -.05
 
   splot = gsn_csm_contour_map(wks,pltvar,res)    ; create the plot
-  ;delete(res@cnLevels)
-  ;delete(res@lbLabelStrings)
   return(splot)
 end
 ;************************************************
@@ -203,7 +188,7 @@ end
         f3@lon1d =  files1->$lonname$(0,0,:)
         f3@lat1d =  files1->$latname$(0,0,:)
       end if
-      plot(ii) = subplot(ii,plotlabs(1)+" - "+plotlabs(0),f3,levs,cmap)
+      plot(ii) = subplot(ii,plotlabs(1)+" - "+plotlabs(0),wgt*f3,levs,cmap)
 
       oplot(ii) = gsn_csm_contour(wks,fdecomp,ores)
       overlay(plot(ii),oplot(ii))
@@ -213,26 +198,32 @@ end
       print("variable "+name+" containing dimensions contains ndims = "+ndims)
       if (ndims .eq. 3) then
         f0 = files0->$name$(0,:,:)
+        f0 = f0*wgt
         f0@lon2d = files0->$lonname$(:,:)
         f0@lat2d = files0->$latname$(:,:)
       else
         f0 = files0->$name$(0,0,:)
-        f0@lon1d = files0->$lonname$(0,:)
-        f0@lat1d = files0->$latname$(0,:)
+        f0 = f0*wgt
+        f0@lon1d = files0->$lonname$(0,0,:)
+        f0@lat1d = files0->$latname$(0,0,:)
       end if
+      ;printVarSummary(files0->lat)
       plot(ii) = subplot(ii,plotlabs(ii),f0,levs,cmap)
 
       ii = 1
+      dims = dimsizes(files1->$name$)
       print("variable "+name+" containing dimensions contains ndims = "+ndims)
       if (ndims .eq. 3) then
         f1 = files1->$name$(0,:,:)
+        f1 = f1*wgt
         f1@lon2d = files1->$lonname$(:,:)
         f1@lat2d = files1->$latname$(:,:)
       ;printVarSummary(files1->lat)
       else
         f1 = files1->$name$(0,0,:)
-        f1@lon1d = files1->$lonname$(0,:)
-        f1@lat1d = files1->$latname$(0,:)
+        f1 = f1*wgt
+        f1@lon1d = files1->$lonname$(0,0,:)
+        f1@lat1d = files1->$latname$(0,0,:)
       end if
       plot(ii) = subplot(ii,plotlabs(ii),f1,levs,cmap)
     end if

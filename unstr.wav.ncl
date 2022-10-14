@@ -9,35 +9,30 @@
 
 ;**********************************************************
 begin
+     ;RT = "/glade/scratch/worthen/WaveUnstr/str3PE/"
+     ;RT = "/glade/scratch/worthen/WaveUnstr/unstr2PE/"
+     ;RT = "/glade/scratch/worthen/WaveUnstr/pdlib2PE/"
+     RT = "/glade/scratch/worthen/WaveUnstr/pdlibnoland2PE/"
 
-     ;RT = "/glade/scratch/worthen/WaveUnstr/unstr3PE/"
-     ;RT = "/glade/scratch/worthen/WaveUnstr/unstr_noland/"
-     ;RT = "/glade/scratch/worthen/WaveUnstr/unstr/"
-     RT = "/glade/scratch/worthen/WaveUnstr/pdlib5PE/"
-
-     filetype="wave history"
-     ;filetype="wave coupler"
-     ;filetype="meshmask"
-
-     ;len = 61731
-     ;doffile = "dof.wav.mesh.nc"
-     ; get the index seq to resort
-     ;doff = addfile(RT+doffile,"r")
-     ;dof = doff->dof(:)
-     ;ip = dim_pqsort(dof,1)
+     ;filetype="wave history"
+     filetype="wave coupler"
+     ;filetype="meshdecomp"
 
      if (filetype .eq. "wave history") then
-        time="23040"
+        time="22320"
         f = addfile(RT+"ufs.atmw.ww3.hi.2021-03-22-"+time+".nc","r")
         print(RT+"ufs.atmw.ww3.hi.2021-03-22-"+time+".nc")
         ;vname = "UAX"
-        ;levs = (/-20,20,1./)
+        ;levs = (/-20,20,1.0/)
 
         ;vname = "DW"
         ;levs = (/0,8000.0,500.0/)
 
-        vname = "HS"
-        levs = (/0,.30,.02/)
+        ;vname = "HS"
+        ;levs = (/0,.30,.02/)
+
+        vname = "USTX"
+        levs = (/-1.,1.,0.1/)
 
         data = f->$vname$(0,0,:)
         ;lons = f->lon(0,:)
@@ -69,27 +64,23 @@ begin
 
         vname="wavImp_Sw_z0"
         data = f->$vname$(0,0,:)
+        data = where(data .lt. 0.0 .or. data .gt. 1.0e3, default_fillvalue(typeof(data)), data*1.0e3)
+        ;data = where(abs(data) .ge. 2.0, data@_FillValue, data)
+        ;data = data*1.0e3
+        levs = (/0.0, 1.0, 0.05/)
+
         data@lon1d = f->wavImp_lon(0,0,:)
         data@lat1d = f->wavImp_lat(0,0,:)
-        ;data = where(data .lt. 0.0 .or. data .gt. 1.0e3, default_fillvalue(typeof(data)), data*1.0e3)
-        data = where(abs(data) .ge. 2.0, data@_FillValue, data)
-        data = data*1.0e3
-        levs = (/0.0, 0.5, 0.05/)
-
      end if
 
-     if (filetype .eq. "meshmask")then
-        mskfile = "emesh.fld.nc.nc"
-        fmsk = addfile(RT+mskfile,"r")
-        vname="dummy"
-        data = fmsk->$vname$
-        fcx= addfile(RT+"emesh.x.nc","r")
-        vname="coordx"
-        data@lon1d = fcx->$vname$
-        fcy= addfile(RT+"emesh.y.nc","r")
-        vname="coordy"
-        data@lat1d = fcy->$vname$
-        levs = (/0,6,1/)
+     if (filetype .eq. "meshdecomp")then
+       mskfile = "emesh.decomp.nc"
+       fmsk = addfile(RT+mskfile,"r")
+       vname="decomp"
+       data = fmsk->$vname$
+       data@lon1d = fmsk->coordx
+       data@lat1d = fmsk->coordy
+       levs = (/0,4,1/)
     end if
 
 ;************************************************
@@ -145,6 +136,12 @@ begin
   ;res@sfElementNodes = f2->elementConn(1::2,:)
   ;res@sfFirstNodeIndex = 1
   res@mpFillOn             = False
+
+  ;res@mpMinLatF            = -30      ; range to zoom in on
+  ;res@mpMaxLatF            = -20.
+  ;res@mpMinLonF            = 30.
+  ;res@mpMaxLonF            = 40.
+
 ;************************************************
 ;
 ;************************************************

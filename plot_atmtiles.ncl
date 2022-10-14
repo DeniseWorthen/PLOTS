@@ -9,8 +9,8 @@
 ;**********************************************************
 begin
 
-   ;RT="/glade/scratch/worthen/WaveUnstr/unstr3PE/"
-   RT="/glade/scratch/worthen/WaveUnstr/pdlib5PE/"
+   RT="/glade/scratch/worthen/WaveUnstr/unstr3PE/"
+   ;RT="/glade/scratch/worthen/WaveUnstr/pdlib5PE/"
 
    nl = str_get_nl()
    nflags = 9
@@ -27,6 +27,18 @@ begin
   ntile = 6
   ndirs = dimsizes(dirs)
 
+  ; retrieve orodata file from INPUT directory for masking
+  filelist = systemfunc("ls "+RT+dirs(0)+"INPUT/oro_data.tile*.nc")
+  print(filelist)
+  ofiles = addfiles(filelist,"r")
+  ListSetType(ofiles,"join")
+  mskname = "slmsk"
+  msklonname = "geolon"
+  msklatname = "geolat"
+  mskvar = ofiles[:]->$mskname$
+  mskvar@lon2d = ofiles[0]->$msklonname$
+  mskvar@lat2d = ofiles[0]->$msklatname$
+  printVarSummary(mskvar)
 ;************************************************
 ; create spatchcock plot of a field on atm tiles
 ;************************************************
@@ -35,13 +47,20 @@ begin
     fname=dirsrc+"ufs.atmw.cpl.hi.atm."+date+time+".nc"
     print(fname)
        ff = addfile(fname, "r")
-     vname="atmExp_Sw_z0"
-     data = ff->$vname$(0,:,:,:)
-     dtmp = data
-     data = where(abs(dtmp) .gt. 1.0e3, dtmp@_FillValue, dtmp*1.0e3)
+     ;vname="atmExp_Sw_z0"
+     ;data = ff->$vname$(0,:,:,:)
+     ;dtmp = data
+     ;data = where(abs(dtmp) .gt. 1.0e3, dtmp@_FillValue, dtmp*1.0e3)
      ;data = where(dtmp .lt. 0.0 .or. dtmp .gt. 1.0e3, default_fillvalue(typeof(dtmp)), dtmp*1.0e3)
-     levs=(/0,0.5,.05/)
+     ;levs=(/0,0.5,.05/)
      ;printVarSummary(data)
+
+     vname="atmImp_Sa_u10m"
+     data = ff->$vname$(0,:,:,:)
+     levs = (/-20.0, 20.0, 1.0/)
+     ocnonly = data
+     ocnonly = mask(data,mskvar,0.0)
+     data = ocnonly
 
     ;if(1.eq.0)then
      ; re-arrange tiles that are on their side
@@ -59,7 +78,8 @@ begin
 
     ;palette = "ncv_roullet"
     ;palette = "amwg"
-    palette="WhBlGrYeRe"
+    ;palette="WhBlGrYeRe"
+    palette="NCV_jet"
    plotlab = vname
 
 ;************************************************

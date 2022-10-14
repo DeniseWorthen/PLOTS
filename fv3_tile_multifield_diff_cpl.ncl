@@ -88,7 +88,7 @@
   atmflds = (/ "atmImp_Faxa_lwnet"/)
   nflds = dimsizes(atmflds)
 
-  ; easier plots 
+  ; easier plots
   ;atmwgts = (/1.e4, \
   ;            1.00, \
   ;            1.e4, \
@@ -124,7 +124,7 @@
   ;plotlevs( 3,:) = (/  0.0,  0.20, 0.010/)  ; oc
   ;plotlevs( 4,:) = (/  0.0,  0.20, 0.010/)  ; ss
   ;plotlevs( 5,:) = (/  0.0,  0.20, 0.010/)  ; su
-  
+
   ; retrieve orodata file from INPUT directory for masking
   ofile = addfile(RT+dirs(0)+"INPUT/oro_data."+tile+".nc","r")
   mskname = "slmsk"
@@ -161,7 +161,7 @@
    res@gsnPolar   =  hemi                         ; specify the hemisphere
    if(hemi .eq. "NH")then
     res@mpMinLatF    =  minlat                          ; minimum lat to plot
-    res@mpCenterLonF =  midlon  
+    res@mpCenterLonF =  midlon
    end if
    if(hemi .eq. "SH")then
     res@mpMaxLatF    = maxlat                            ; minimum lat to plot
@@ -181,7 +181,7 @@
   res@cnLineLabelsOn    = False
   res@lbLabelBarOn      = True
   res@cnFillPalette     = palette
- 
+
   res@cnMissingValFillPattern = 0               ; choose fill pattern 0 (solid fill)
   res@cnMissingValFillColor   = "gray"          ; color fill missing areas blue
 
@@ -218,14 +218,14 @@
    print("variable "+aname+"  weight "+wgt)
 
     avar = files[1]->$aname$(:,:)-files[0]->$aname$(:,:)
-    avar@_FillValue = default_fillvalue(typeof(avar)) 
+    avar@_FillValue = default_fillvalue(typeof(avar))
 
     lndonly = avar
     lndonly = mask(avar*wgt,mskvar,1.0)  ; land only
     ocnonly = avar
     ocnonly = mask(avar*wgt,mskvar,0.0)  ; ocean only
 
-    if(plottype .eq. "land")then 
+    if(plottype .eq. "land")then
      avar = lndonly
      msklab = "Land Points Only"
     else if(plottype .eq. "ocean")then
