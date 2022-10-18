@@ -14,10 +14,10 @@
   RT3 = "/scratch2/NCEPDEV/stmp3/Denise.Worthen/"
   RT4 = "/scratch1/NCEPDEV/stmp4/Denise.Worthen/"
 
-    hemi = "NH"
- ;   hemi = "SH"
+ ;   hemi = "NH"
+    hemi = "SH"
  if(hemi .eq. "NH")then
-  minlat =  80.0
+  minlat =  66.0
   midlon = -45.0
  else
   maxlat = -50.0
@@ -26,10 +26,10 @@
 
   ; these are in degrees
     rfactor = 1.0
-   ;tlatname = "TLAT"
-   ;tlonname = "TLON"
-   tlatname = "iceExp_lat"
-   tlonname = "iceExp_lon"
+   tlatname = "TLAT"
+   tlonname = "TLON"
+   ;tlatname = "iceExp_lat"
+   ;tlonname = "iceExp_lon"
 
 ;************************************************
 ; read in netCDF file
@@ -37,19 +37,19 @@
 
      lstep = 1-1
      cyear = "2021"
-      cmon = "03"
-      cday = "22"
-      csec = "22320"
+      cmon = "04"
+      cday = "01"
+      csec = "21600"
      cdate = cyear+"-"+cmon+"-"+cday+"-"+csec
 
-  runname = (/"cice6-develop", "cice6-Cgrid"/)
+  runname = (/"cice6-dev", "cice6-waveice"/)
   ;    rts = (/"FV3_RT/devcice/test_tauxo0/","FV3_RT/Cgrid/testX2Y_tauxyo0/"/)
-      rts = (/"FV3_RT/devcice/test/","FV3_RT/Cgrid/test/"/)
+      rts = (/"WAVEICE/waveice.10d/","WAVEICE/nowaveice.10d/"/)
   ;   cset = "/test/"
 
-     ;files = addfiles(RT2+rts+cset+"history/iceh_06h."+cyear+"-"+cmon+"-"+cday+"-00000.nc","r")
+     files = addfiles(RT2+rts+"history/iceh_06h."+cyear+"-"+cmon+"-"+cday+"-00000.nc","r")
      ;files = addfiles(RT2+rts+cset+"ufs.cpld.cpl.hi.ice."+cyear+"-"+cmon+"-"+cday+"-"+csec+".nc","r")
-     files = addfiles(RT2+rts+"ufs.cpld.cpl.hi.ice."+cyear+"-"+cmon+"-"+cday+"-"+csec+".nc","r")
+     ;files = addfiles(RT2+rts+"ufs.cpld.cpl.hi.ice."+cyear+"-"+cmon+"-"+cday+"-"+csec+".nc","r")
      fland = addfile(RT2+rts(0)+"kmtu_cice_NEMS_mx100.nc","r")
 
      print(rts(1)+" - "+rts(0))
@@ -75,7 +75,7 @@
 ; define the map
 ;************************************************
 
-  wkstitle="ice_diff"
+  wkstitle="ice_diff"+hemi
   wkstype="X11"
   ;wkstype="png"
   wkstype@wkWidth=1200
@@ -176,40 +176,42 @@ end
     ;colormap = "amwg256"
 
         ii = 0
-    vname = "iceImp_Fioi_taux"
+    ;vname = "iceImp_Fioi_taux"
     ;vname = "iceImp_Faii_taux"
     ; vname = "iceImp_Fioi_melth"
-   pltlevs = (/-1,1,.1/)
+  ; pltlevs = (/-1,1,.1/)
   ;   vname = "congel_h"
-  ;   vname = "aice_h"
-  ; pltlevs = (/-.5,.5,.05/)
+     vname = "aice_h"
+   pltlevs = (/-.5,.5,.05/)
   ;   vname = "sst_h"
   ; pltlevs = (/-.2,.2,.02/)
   res@gsnCenterString  = vname
   ivar = files[1]->$vname$(lstep,:,:)-files[0]->$vname$(lstep,:,:)
-  ivar = ivar*1.0e14
+  ;ivar = ivar*1.0e14
   imask = tofloat(fland->kmt)
   ivar = mask(ivar, (imask .eq. 1.0), default_fillvalue(typeof(files[0]->$vname$)))
   printVarSummary(ivar)
-  ivar@lon2d = files[0]->$tlonname$(lstep,:,:)*rfactor
-  ivar@lat2d = files[0]->$tlatname$(lstep,:,:)*rfactor
+  ivar@lon2d = files[0]->$tlonname$(:,:)*rfactor
+  ivar@lat2d = files[0]->$tlatname$(:,:)*rfactor
 
   plot(ii) = subplot(ii,vname,ivar(:,:),pltlevs,colormap)
    dum(ii) = gsn_add_polyline(wks,plot(ii),(/lon1, lon2/) , (/lat1, lat2/) ,pres)
 
         ii = 1
-    vname = "iceImp_Fioi_tauy"
+  ;  vname = "iceImp_Fioi_tauy"
   ;  vname = "iceImp_Faii_tauy"
   ;   vname = "iceImp_Fioi_melthw"
+  vname = "hi_h"
+  pltlevs = (/-.5,.5,.05/)
   res@gsnCenterString  = vname
   ivar = files[1]->$vname$(lstep,:,:)-files[0]->$vname$(lstep,:,:)
   ;ivar = ivar*1.0e17
-  ivar = ivar*1.0e14
+  ;ivar = ivar*1.0e14
   imask = tofloat(fland->kmt)
   ivar = mask(ivar, (imask .eq. 1.0), default_fillvalue(typeof(files[0]->$vname$)))
   printVarSummary(ivar)
-  ivar@lon2d = files[0]->$tlonname$(lstep,:,:)*rfactor
-  ivar@lat2d = files[0]->$tlatname$(lstep,:,:)*rfactor
+  ivar@lon2d = files[0]->$tlonname$(:,:)*rfactor
+  ivar@lat2d = files[0]->$tlatname$(:,:)*rfactor
 
   plot(ii) = subplot(ii,vname,ivar(:,:),pltlevs,colormap)
    dum(ii) = gsn_add_polyline(wks,plot(ii),(/lon1, lon2/) , (/lat1, lat2/) ,pres)
