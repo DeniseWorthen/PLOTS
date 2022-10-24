@@ -10,35 +10,45 @@
 ;**********************************************************
 begin
 
-  RT		= "/scratch1/NCEPDEV/stmp2/Denise.Worthen/WaveUnstr2/"
+  RT		= "/scratch1/NCEPDEV/stmp2/Denise.Worthen/WaveUnstr2/atmwtrip/"
+  MD            = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/WaveUnstr2/moddefs3/"
+
   ;dirsrc        = "unstr3PE/"
   ;dirsrc        = "unstrnoland3PE/"
-  dirsrc         = "pdlibnoland3PE/"
+  ;dirsrc         = "pdlibnoland3PE/"
+  ;dirsrc        = "pdlibnolandtrip3PE/"
+  ;dirsrc        = "tripnoland/"
+  dirsrc        = "withust3PEcarddeck/"
 
   dcmpfile	= "emesh.decomp.nc"
   fdcmp		= addfile(RT+dirsrc+dcmpfile,"r")
   vname		= "decomp"
   var1d		= fdcmp->$vname$
-  var1d@lon1d   = fdcmp->coordx
-  var1d@lat1d   = fdcmp->coordy
-  levs		= (/1,4,1/)
+  ;var1d@lon1d   = fdcmp->coordx
+  ;var1d@lat1d   = fdcmp->coordy
+  levs		= (/1,6,1/)
+  ;levs          = (/1,21,1/)
+  print(fdcmp)
 
   doffile	= "dof.wav.nc"
     fdof	= addfile(RT+dirsrc+doffile,"r")
     vname	= "dof"
       dof	= fdof->$vname$(:)
        ip	= dim_pqsort(dof,1)
+  print(fdof)
 
      ;scrpfile	= "with_land_CardDeck.SCRIP.nc"
-     scrpfile	= "no_land_CardDeck.SCRIP.nc"
-     sfile	= addfile(RT+"moddefs3/"+scrpfile,"r")
+     ;scrpfile	= "no_land_CardDeck.SCRIP.nc"
+     scrpfile   = "trip1deg_noland.SCRIP.nc"
+
+     sfile	= addfile(MD+scrpfile,"r")
      x		= sfile->grid_center_lon
      y		= sfile->grid_center_lat
      cx		= sfile->grid_corner_lon
      cy		= sfile->grid_corner_lat
      ;printVarSummary(x)
      ;printVarSummary(cx)
-
+     print(sfile)
      var1d_sort = var1d
      var1d_sort = var1d(ip)
      var1d      = var1d_sort
@@ -63,8 +73,10 @@ begin
   res@gsnDraw              = False       ; do not draw until the end
   res@gsnFrame             = False       ; do not automatically advance 'frame'
 
+  res@vpWidthF          = 0.70
+  res@vpHeightF         = 0.35
+
   res@cnFillOn             = True            ; turn on color
-  res@cnFillPalette        = "gui_default"   ; set color map
   res@cnLinesOn            = False           ; turn off contour lines
   res@cnLineLabelsOn       = False           ; turn off line labels
   ;res@cnLevelSpacingF      = 1               ; NCL chose 50 for this particular data
@@ -104,10 +116,12 @@ begin
    ;res@cnFillPalette   = "amwg"
    ;res@cnFillPalette   = "MPL_rainbow"
    ;res@cnFillPalette   = "BlWhRe"
-   res@cnFillPalette    = "NCV_jet"
+   res@cnFillPalette    = "circular_2"
    res@tiMainFontHeightF = .010
    res@tiMainString = dirsrc
    res@mpFillOn             = False
+
+   res@cnFillPatterns       = (/17,17,17/) ; the patterns
 
   ; res@mpMinLatF            = -30      ; range to zoom in on
   ; res@mpMaxLatF            =  30.

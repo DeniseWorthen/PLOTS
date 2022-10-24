@@ -6,12 +6,15 @@ begin
   RT            = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/WaveUnstr2/"
   ;dirsrc        = "unstrnoland3PE/"
   ;plotlab       = "unstr noland"
-  dirsrc        = "pdlibnoland3PE/"
-  plotlab       = "pdlib noland"
+  ;dirsrc        = "pdlibnoland3PE/"
+  ;plotlab       = "pdlib noland"
+  dirsrc        = "tripnoland/"
+  plotlab       = "pdlib noland tripole"
 
    nl		= str_get_nl()
    nflags	= 9
-  dstfile	= "dststatus.atm.wav.bilnr_nstod.nc"
+  ;dstfile	= "dststatus.atm.wav.bilnr_nstod.nc"
+  dstfile       = "dststatus.ocn.wav.bilnr_nstod.nc"
   fdst		= addfile(RT+dirsrc+dstfile,"r")   
   print("plotting file "+RT+dirsrc+dstfile)
   vname		= "dststatus"
@@ -29,7 +32,8 @@ begin
        ip       = dim_pqsort(dof,1)
 
      ;scrpfile  = "with_land_CardDeck.SCRIP.nc"
-     scrpfile   = "no_land_CardDeck.SCRIP.nc"
+     ;scrpfile  = "no_land_CardDeck.SCRIP.nc"
+     scrpfile   = "trip1deg_noland.SCRIP.nc"
      sfile      = addfile(RT+"moddefs3/"+scrpfile,"r")
      x          = sfile->grid_center_lon
      y          = sfile->grid_center_lat

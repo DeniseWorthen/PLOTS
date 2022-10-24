@@ -9,26 +9,44 @@
 
 ;**********************************************************
 begin
-     RT = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/WaveUnstr2/"
+     RT = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/WaveUnstr2/atmwtrip/"
+     MD = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/WaveUnstr2/moddefs3/"
+
+     ;RT = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/rt_5441/"
+     ;MD = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/WW3_input_data_20220624/"
 
      ;scrpfile  = "with_land_CardDeck.SCRIP.nc"
-     scrpfile   = "no_land_CardDeck.SCRIP.nc"
-     sfile      = addfile(RT+"moddefs3/"+scrpfile,"r")
+     ;scrpfile   = "no_land_CardDeck.SCRIP.nc"
+     scrpfile   = "trip1deg_noland.SCRIP.nc"
+     sfile      = addfile(MD+scrpfile,"r")
      x          = sfile->grid_center_lon
      y          = sfile->grid_center_lat
      cx         = sfile->grid_corner_lon
      cy         = sfile->grid_corner_lat
 
-    ;dirsrc        = "unstrnoland3PE/"
+    ;dirsrc        = "noust3PE/"
+    ;plotlab       = "noust3PE"
+    ;dirsrc        = "withust3PE/"
+    ;plotlab       = "withust3PE"
+     dirsrc = "test/"
+     plotlab = "test"
+
+    ;dirsrc        = "pdlibnolandtrip3PE/"
+    ;dirsrc        = "tripnoland_noust/"
+    ;dirsrc        = "tripnoland/"
+
+    ;dirsrc        = "atmwav_pdlib_control_noaero_p8/"
+    ;plotlab       = "pdlib noland"
+    ;dirsrc        = "atmwav_unstr_control_noaero_p8/"
     ;plotlab       = "unstr noland"
-    dirsrc        = "pdlibnoland3PE/"
-    plotlab       = "pdlib noland"
 
      ;filetype="wave history"
      ;fsrc="ufs.atmw.ww3.hi."
+     ;fsrc="ufs.cpld.ww3.hi."
 
      filetype="wave coupler"
      fsrc="ufs.atmw.cpl.hi.wav."
+     ;fsrc="ufs.cpld.cpl.hi.wav."
 
      date="2021-03-22-"
      time="25200"
@@ -36,27 +54,34 @@ begin
      f = addfile(fname,"r")
 
      if (filetype .eq. "wave history") then
-        ;vname = "UAX"
-        ;levs = (/-20,20,1.0/)
+        vname = "UAX"
+        levs = (/-20,20,1.0/)
 
         ;vname = "DW"
         ;levs = (/0,8000.0,500.0/)
 
-        vname = "HS"
-        levs = (/0,.50,.02/)
+        ;vname = "HS"
+        ;levs = (/0,1.00,.01/)
 
-        ;vname = "USTX"
-        ;levs = (/-1.,1.,0.1/)
+        vname = "USTX"
+        levs = (/-1.,1.,0.1/)
+       
+        ;vname = "PHS"
+        ;levs = (/0.,.5,.05/)
 
+        ;vname="CHARN"
+        ;levs = (/0.,.5,.05/)
+        
         data = f->$vname$(0,0,:)
+        ;data = f->$vname$(0,0,0,:)
         data@lon1d = f->lon(0,:)
         data@lat1d = f->lat(0,:)
      end if
 
      if (filetype .eq. "wave coupler") then
-        vname="wavExp_Sa_u10m"
-        data = f->$vname$(0,0,:)
-        levs = (/-20,20,1/)
+        ;vname="wavExp_Sa_u10m"
+        ;data = f->$vname$(0,0,:)
+        ;levs = (/-20,20,1/)
 
         ;vname="wavExp_Sa_tbot"
         ;data = f->$vname$(0,0,:)
@@ -64,12 +89,12 @@ begin
         ;levs = (/-40,40,.5/)
         ;levs = (/230,320,1/)
 
-        ;vname="wavImp_Sw_z0"
-        ;data = f->$vname$(0,0,:)
+        vname="wavImp_Sw_z0"
+        data = f->$vname$(0,0,:)
         ;data = where(data .lt. 0.0 .or. data .gt. 1.0e3, default_fillvalue(typeof(data)), data*1.0e3)
         ;data = where(abs(data) .ge. 2.0, data@_FillValue, data)
-        ;data = data*1.0e3
-        ;levs = (/0.0, 1.0, 0.05/)
+        data = data*1.0e3
+        levs = (/0.0, 0.5, 0.02/)
 
         data@lon1d = f->wavImp_lon(0,0,:)
         data@lat1d = f->wavImp_lat(0,0,:)
@@ -119,9 +144,10 @@ begin
   ;res@cnFillPalette   = "amwg"
   ;res@cnFillPalette   = "MPL_rainbow"
   ;res@cnFillPalette   = "BlWhRe"
-  res@cnFillPalette    = "NCV_jet"
+  ;res@cnFillPalette    = "NCV_jet"
+  res@cnFillPalette   = "WhiteBlueGreenYellowRed"
   res@tiMainFontHeightF = .010
-  res@tiMainString = "test"
+  res@tiMainString = plotlab
   ;res@mpFillOn             = False
   res@mpOutlineOn          = False
 
@@ -130,18 +156,19 @@ begin
   ;res@mpMinLonF            = 30.
   ;res@mpMaxLonF            = 40.
 
-  if (filetype .eq. "wave history")then
+  ;if (filetype .eq. "wave history")then
     res@sfXCellBounds = cx(:,0:5)
-    res@sfYCellBounds = cy(:,0:5) 
-  end if
+    res@sfYCellBounds = cy(:,0:5)
+  ;end if
+
 ;************************************************
 ;
 ;************************************************
 
     ;res@gsnAddCyclic         = False
 
-   plot = gsn_csm_contour_map(wks,data,res)    ; create the plot
-   ;plot = gsn_csm_contour(wks,data,res)    ; create the plot
+   ;plot = gsn_csm_contour_map(wks,data,res)    ; create the plot
+   plot = gsn_csm_contour(wks,data,res)    ; create the plot
 
   draw(plot)
   frame(wks)
