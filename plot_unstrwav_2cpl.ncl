@@ -7,6 +7,7 @@
   
   ;MD = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/WW3_input_data_20220624/"
   ;scrpfile   = "no_land_CardDeck.SCRIP.nc"
+
   MD = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/WaveUnstr2/moddefs3/"
   scrpfile   = "trip1deg_noland.SCRIP.nc"
   sfile      = addfile(MD+scrpfile,"r")
@@ -141,7 +142,7 @@ begin
     delete(res@mpCenterLonF)
     delete(res@mpFillOn)
     delete(res@mpOutlineOn)
-  else 
+  else
     splot = gsn_csm_contour(wks,pltvar,res)    ; create the plot
   end if
   ;delete(res@cnLevels)
@@ -190,7 +191,7 @@ end
 
       do ii = 0,nplots-1
         vname = flds(fldtoplot)
-        gtype = gridtype(ii) 
+        gtype = gridtype(ii)
         if (gtype .eq. "structured")then
         data = files[ii]->$vname$(0,:,:)
         data = data*wgt
@@ -201,7 +202,7 @@ end
         data = data*wgt
         data@lon1d = files[ii]->$lonname$(0,0,:)
         data@lat1d = files[ii]->$latname$(0,0,:)
-      end if      
+      end if
       plot(ii) = subplot(ii,plotlabs(ii),gtype,data,levs,cmap)
       delete(data)
     end do

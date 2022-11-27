@@ -14,7 +14,7 @@ begin
 
    nl = str_get_nl()
    nflags = 9
-     RT = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/WaveUnstr2/"
+     RT = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/rt_wavunstr/"
    date = "2021-03-22-"
 
     atmres = 96
@@ -24,14 +24,14 @@ begin
    ;plotlab="unstr noland"
    ;dirs=(/"unstrnoland3PE/"/)
 
-   plotlab="pdlib noland"
-   dirs=(/"pdlibnoland3PE/"/)
+   plotlab="dststatus"
+   dirs=(/"dststatus/"/)
 
 
    ;plotlab="mx050"
    ;plotlab="mx025"
    ;dirs = (/"c384/"+plotlab+"/"/)
-   wkstitle="c96"+plotlab
+   wkstitle="dststatus"
 
    ;plotlab = (/"atm meshmask"/)
    ;vname = "mask"
@@ -41,10 +41,10 @@ begin
 
    vname = "dststatus"
    levs = (/0,9,1/)
-   ;fsrc = vname+".wav.atm.nstod_consf"
+   fsrc = vname+".wav.atm.nstod_consf"
    ;fsrc = vname+".ocn.atm.consd"
    ;fsrc = vname+".ocn.atm.consf"
-   fsrc = vname+".wav.atm.bilnr_nstod"
+   ;fsrc = vname+".wav.atm.bilnr_nstod"
 
   ntile = 6
   ndirs = dimsizes(dirs)
@@ -68,9 +68,8 @@ begin
 ;**********************************************************
 
   ;fname = "/glade/scratch/worthen/FV3_RT/wave_test/base/ufs.cpld.cpl.hi.atm."+date+"22320.nc"
-  ;fname = RT+dirs(0)+"ufs.cpld.cpl.hi.atm."+date+"22320.nc"
-  ;fname = RT+dirs(0)+"ufs.cpld.cpl.hi.atm."+date+"22200.nc"
-  fname = RT+dirs(0)+"ufs.atmw.cpl.hi.atm."+date+"22320.nc"
+  fname = RT+dirs(0)+"ufs.cpld.cpl.hi.atm."+date+"25200.nc"
+  ;fname = RT+dirs(0)+"ufs.atmw.cpl.hi.atm."+date+"22320.nc"
   print("input file "+fname)
   ff = addfile(fname,"r")
 

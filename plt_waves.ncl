@@ -32,18 +32,40 @@
   ;cres = "mx025"
   ;cdate = "2013-04-01-21600"
 
-  rundir="hafs_regional_atm_ocn_wav"
-  RT1 = "/glade/scratch/worthen/FV3_RT/rt_39580/cpld_bmark_p8/"
-  cdate = "2019-08-29-21600"
-  
+  ;rundir="hafs_regional_atm_ocn_wav"
+  ;RT1 = "/glade/scratch/worthen/FV3_RT/rt_39580/cpld_bmark_p8/"
+  ;cdate = "2019-08-29-21600"
+
+  ;rundir = "cpld384str"
+  ;RT1 = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/rt_wavunstr/"+rundir+"/"
+  ;cdate = "2013-04-01-14400"
+  ;cres = "mx025"
+  ;gridtype="structured"
+
+  rundir = "cpld384unstr"
+  RT1 = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/rt_wavunstr/"+rundir+"/"
+  cdate = "2013-04-01-14400"
+  cres = "mx025"
+  gridtype="unstructured"
+
+  MD = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/rt_wavunstr/moddefs/"
+  scrpfile   = "trip15minmask_dd.SCRIP.nc"
+  sfile      = addfile(MD+scrpfile,"r")
+  x          = sfile->grid_center_lon
+  y          = sfile->grid_center_lat
+  cx         = sfile->grid_corner_lon
+  cy         = sfile->grid_corner_lat
+  ;printVarSummary(cx)
+
   ;cdate = "2021-03-22-28800"
   ;cdate = "2021-03-22-43200"
   ;cdate = "2021-03-22-64800"
   ;cdate = "2021-03-22-25200"
 
-  ;files = addfile(RT1+"ufs.cpld.cpl.hi.wav."+cdate+".nc","r")
+  files = addfile(RT1+"ufs.cpld.cpl.hi.wav."+cdate+".nc","r")
+  print(RT1+"ufs.cpld.cpl.hi.wav."+cdate+".nc")
   ; to add land
-  ;files2 = addfile(RT1+"kmtu_cice_NEMS_"+cres+".nc","r")
+  files2 = addfile(RT1+"kmtu_cice_NEMS_"+cres+".nc","r")
 
   ; coupler fields
   cmepsflds = (/"wavImp_Sw_ustokes1",   \
@@ -80,17 +102,17 @@
   ;cmap="BlueWhiteOrangeRed"
   cmap="BlueYellowRed"
 
-  ;fland = files2->kmt
-  ;wkstitle="wave_"+cres
-  wkstitle="wave_hafs"
+  fland = files2->kmt
+  wkstitle="wave_"+cres
+  ;wkstitle="wave_hafs"
   plottitle=rundir
 
 ;************************************************
 ; define the map
 ;************************************************
 
-  ;wkstype="X11"
-  wkstype="png"
+  wkstype="X11"
+  ;wkstype="png"
   wkstype@wkWidth=800
   wkstype@wkHeight=800
   wks   = gsn_open_wks (wkstype,wkstitle)              ; send graphics to X11 window
@@ -139,7 +161,7 @@
 ;************************************************
 ; the subplot call
 ;************************************************
-function subplot(ii,name,pltvar,pltlevs,palette)
+function subplot(ii,gtype,name,pltvar,pltlevs,palette)
 begin
    res@cnLevelSelectionMode = "ManualLevels"        ; set the contour levels with the following 3 resources
    res@cnMinLevelValF       = pltlevs(0)            ; set the minimum contour level
@@ -152,6 +174,10 @@ begin
   res@gsnCenterStringFontHeightF      = 0.020
   res@gsnCenterString                 = name
   res@gsnCenterStringOrthogonalPosF   = 0.15
+  if (gtype .eq. "unstructured") then
+    res@sfXCellBounds = cx(:,0:5)
+    res@sfYCellBounds = cy(:,0:5)
+  end if
 
    splot = gsn_csm_contour(wks,pltvar,res)    ; create the plot
   ;delete(res@cnLevels)
@@ -184,21 +210,25 @@ end
   ; pick a field to plot
        levs = plotlevs(ii,:)
         wgt = fldwgts(ii)
-
+        gtype = gridtype
     if(ii .eq. 6)then
      cmap = "WhiteBlueGreenYellowRed"
     end if
 
     name = cmepsflds(ii)
-    f1 = files->$name$(0,:,:)
+    if (gtype .eq. "structured") then
+      f1 = files->$name$(0,:,:)
+    else
+      f1 = files->$name$(0,0,:)
+    end if
+    printVarSummary(f1)
+    printVarSummary(cx)
     if(wgt .ne. 1.0)then
      plotlab = name+"(*"+sprintf("%5.0e", wgt)+")"
     else
      plotlab = name
     end if
-    plot(ii) = subplot(ii,plotlab,wgt*f1,levs,cmap)
-    ;oplot(ii) = gsn_csm_contour(wks,fland,ores)
-    ;overlay(plot(ii),oplot(ii))
+    plot(ii) = subplot(ii,gtype,plotlab,wgt*f1,levs,cmap)
   end do
 
 ;************************************************

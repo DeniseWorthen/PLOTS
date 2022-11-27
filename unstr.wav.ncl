@@ -9,15 +9,19 @@
 
 ;**********************************************************
 begin
-     RT = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/WaveUnstr2/atmwtrip/"
-     MD = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/WaveUnstr2/moddefs3/"
+     ;RT = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/WaveUnstr2/atmwtrip/"
+     ;MD = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/WaveUnstr2/moddefs3/"
+
+     RT = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/rt_wavunstr/"
+     MD = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/rt_wavunstr/moddefs/"
 
      ;RT = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/rt_5441/"
      ;MD = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/WW3_input_data_20220624/"
 
      ;scrpfile  = "with_land_CardDeck.SCRIP.nc"
      ;scrpfile   = "no_land_CardDeck.SCRIP.nc"
-     scrpfile   = "trip1deg_noland.SCRIP.nc"
+     ;scrpfile   = "trip1deg_noland.SCRIP.nc"
+     scrpfile   = "trip15minmask_dd.SCRIP.nc"
      sfile      = addfile(MD+scrpfile,"r")
      x          = sfile->grid_center_lon
      y          = sfile->grid_center_lat
@@ -28,8 +32,8 @@ begin
     ;plotlab       = "noust3PE"
     ;dirsrc        = "withust3PE/"
     ;plotlab       = "withust3PE"
-     dirsrc = "test/"
-     plotlab = "test"
+     dirsrc = "cpld384unstr/"
+     plotlab = "cpld384unstr"
 
     ;dirsrc        = "pdlibnolandtrip3PE/"
     ;dirsrc        = "tripnoland_noust/"
@@ -45,17 +49,17 @@ begin
      ;fsrc="ufs.cpld.ww3.hi."
 
      filetype="wave coupler"
-     fsrc="ufs.atmw.cpl.hi.wav."
-     ;fsrc="ufs.cpld.cpl.hi.wav."
+     ;fsrc="ufs.atmw.cpl.hi.wav."
+     fsrc="ufs.cpld.cpl.hi.wav."
 
-     date="2021-03-22-"
-     time="25200"
+     date="2013-04-01-"
+     time="36000"
      fname=RT+dirsrc+fsrc+date+time+".nc"
      f = addfile(fname,"r")
 
      if (filetype .eq. "wave history") then
-        vname = "UAX"
-        levs = (/-20,20,1.0/)
+        ;vname = "UAX"
+        ;levs = (/-20,20,1.0/)
 
         ;vname = "DW"
         ;levs = (/0,8000.0,500.0/)
@@ -63,17 +67,17 @@ begin
         ;vname = "HS"
         ;levs = (/0,1.00,.01/)
 
-        vname = "USTX"
-        levs = (/-1.,1.,0.1/)
-       
-        ;vname = "PHS"
-        ;levs = (/0.,.5,.05/)
+        ;vname = "USTX"
+        ;levs = (/-1.,1.,0.1/)
+
+        vname = "PHS"
+        levs = (/0.,.5,.05/)
 
         ;vname="CHARN"
         ;levs = (/0.,.5,.05/)
-        
-        data = f->$vname$(0,0,:)
-        ;data = f->$vname$(0,0,0,:)
+
+        ;data = f->$vname$(0,0,:)
+        data = f->$vname$(0,0,0,:)
         data@lon1d = f->lon(0,:)
         data@lat1d = f->lat(0,:)
      end if
