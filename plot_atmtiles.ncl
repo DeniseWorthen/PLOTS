@@ -9,7 +9,8 @@
 ;**********************************************************
 begin
 
-   RT="/scratch1/NCEPDEV/stmp2/Denise.Worthen/WaveUnstr2/"
+   ;RT="/scratch1/NCEPDEV/stmp2/Denise.Worthen/WaveUnstr2/"
+  RT="/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/rt_wavunstr/"
 
    nl = str_get_nl()
    nflags = 9
@@ -21,9 +22,9 @@ begin
  ;   atmres = 384
 
    ;dirs = (/"unstrnoland3PE/"/)
-   ; dirs = (/"pdlibnolandtrip3PE/"/)
-    dirs = (/"tripnoland/"/)
-   wkstitle="base"
+    dirs = (/"new/"/)
+   ; dirs = (/"tripnoland/"/)
+   wkstitle="new"
 
   ntile = 6
   ndirs = dimsizes(dirs)
@@ -45,8 +46,8 @@ begin
 ;************************************************
 
   dirsrc = RT+dirs(0)
-    ;fname=dirsrc+"ufs.atmw.cpl.hi.atm."+date+time+".nc"
-    fname=dirsrc+"ufs.cpld.cpl.hi.atm."+date+time+".nc"
+    fname=dirsrc+"ufs.atmw.cpl.hi.atm."+date+time+".nc"
+    ;fname=dirsrc+"ufs.cpld.cpl.hi.atm."+date+time+".nc"
     print(fname)
        ff = addfile(fname, "r")
      vname="atmExp_Sw_z0"
@@ -165,7 +166,7 @@ begin
         res@lbLabelBarOn = False
        end if
        if( kk .eq. 2) then
-        res@gsnLeftString = plotlab+":  "
+        res@gsnLeftString = plotlab+":  "+date+time
        else
         res@gsnLeftString = ""
        end if

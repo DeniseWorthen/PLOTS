@@ -4,10 +4,9 @@
 ; load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl"
 
 ;************************************************
-  
-  ;MD = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/WW3_input_data_20220624/"
-  ;scrpfile   = "no_land_CardDeck.SCRIP.nc"
-  MD = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/rt_wavunstr/moddefs/"
+
+  RT         = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/rt_wavunstr/"
+  MD         = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/rt_wavunstr/moddefs/"
   scrpfile   = "trip1degmask_dd.SCRIP.nc"
   sfile      = addfile(MD+scrpfile,"r")
   x          = sfile->grid_center_lon
@@ -15,33 +14,19 @@
   cx         = sfile->grid_corner_lon
   cy         = sfile->grid_corner_lat
 
-  ; cheyenne
-  ;RT1 = "/glade/scratch/worthen/WaveUnstr/"
-  ; hera
-  RT1 = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/rt_wavunstr/base"
+ gridtype  = (/"unstructured", "unstructured"/)
 
- gridtype  = (/"unstructured", \
-               "unstructured", \
-               "unstructured", \
-               "unstructured"  /)
+ plotlabs = (/"Unstr DomainDecomp, 30PE", "Unstr DomainDecomp, 20PE"/)
 
- plotlabs = (/"Unstr DomainDecomp, no UST, 3PE",   \
-              "Unstr Domain Decomp, with UST, 3PE", \
-              "Unstr Domain Decomp, with UST, 5PE", \
-              "Unstr Domain Decomp, with UST, 6PE"/)
+      rts = (/"base/", "base.mpi/"/)
 
-      rts = (/"noust3PE/",      \
-              "withust3PE/", \
-              "withust5PE/", \
-              "withust6PE/"  /)
-
-  fnames = RT1+rts+"emesh.decomp.nc"
+  fnames = RT+rts+"emesh.decomp.nc"
   files  = addfiles(fnames,"r")
   nplots = dimsizes(gridtype)
-  levs = (/1,10,1/)
+  levs = (/1,31,1/)
 
   fdof = "dof.wav.nc"
-  dofs = addfiles(RT1+rts+fdof,"r")
+  dofs = addfiles(RT+rts+fdof,"r")
   wkstitle = "decomp"
   plottitle= "decomp"
 
@@ -78,7 +63,7 @@
 
   ;res@mpFillOn           = False
   ;res@mpOutlineOn        = False
-  res@cnMissingValFillColor   = "gray"          ; color fill missing areas blue
+  res@cnMissingValFillColor   = "white"          ; color fill missing areas blue
 
 ;************************************************
 ; the subplot call
@@ -90,16 +75,16 @@ begin
   res@cnMaxLevelValF       = pltlevs(1)            ; set the maximum contour level
   res@cnLevelSpacingF      = pltlevs(2)            ; set the interval between contours
   res@cnFillPalette        = palette
-  
+
   if (gtype .eq. "unstructured") then
     res@sfXCellBounds = cx(:,0:5)
     res@sfYCellBounds = cy(:,0:5)
   end if
-    
+
   res@gsnCenterStringFontHeightF      = 0.012
   res@gsnCenterString                 = name
   ;res@gsnCenterStringOrthogonalPosF   = -.05
- 
+
   pltvar@units = ""
   pltvar@long_name = ""
 
@@ -118,24 +103,6 @@ begin
   ;delete(res@lbLabelStrings)
   return(splot)
 end
-
-;************************************************
-; resources for overlay
-;************************************************
-
-  ores                  = True
-  ores@cnLineThicknessF = 1.0            ; line thickness
-  ores@cnLineColor      = "black"        ; line color
-  ores@cnLineLabelsOn   = False
-  ores@cnLinesOn        = True
-  ores@cnInfoLabelOn    = False
-  ores@gsnDraw          = False ; don't draw
-  ores@gsnFrame         = False ; don't advance frame
-  ores@gsnLeftString    = ""    ; no titles
-  ores@gsnRightString   = ""
-  ;ores@cnLevelSelectionMode = "ManualLevels"
-  ;ores@cnLevels         = (/1,6,1/)
-  ;ores@cnFillPatterns   = (/17,17,17,17/)
 ; ***************************************************
 ; panel resources
 ; **************************************************
@@ -157,20 +124,17 @@ end
 ; ***************************************************
 ;
 ; ***************************************************
-  
-      wgt = 1.0
-      cmap = "circular_2"
+
+      cmap = "cb_9step"
       do ii = 0,nplots-1
         vname = "decomp"
         gtype = gridtype(ii)
         if (gtype .eq. "structured")then
         data = files[ii]->$vname$(0,:,:)
-        data = data*wgt
         data@lon2d = files[ii]->$lonname$(:,:)
         data@lat2d = files[ii]->$latname$(:,:)
       else
         data = files[ii]->$vname$
-        data = data*wgt
 
         dof = dofs[ii]->dof
           ip = dim_pqsort(dof,1)
@@ -181,7 +145,7 @@ end
           data@lat1d = y
       end if
       plot(ii) = subplot(ii,plotlabs(ii),gtype,data,levs,cmap)
-      
+
       delete(data)
     end do
 

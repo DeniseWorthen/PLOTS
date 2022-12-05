@@ -10,15 +10,15 @@
 ;**********************************************************
 begin
 
-  RT		= "/scratch1/NCEPDEV/stmp2/Denise.Worthen/WaveUnstr2/atmwtrip/"
-  MD            = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/WaveUnstr2/moddefs3/"
+  RT		= "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/rt_wavunstr/"
+  MD            = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/rt_wavunstr/moddefs/"
 
   ;dirsrc        = "unstr3PE/"
   ;dirsrc        = "unstrnoland3PE/"
   ;dirsrc         = "pdlibnoland3PE/"
   ;dirsrc        = "pdlibnolandtrip3PE/"
   ;dirsrc        = "tripnoland/"
-  dirsrc        = "withust3PEcarddeck/"
+  dirsrc        = "base.mpi/"
 
   dcmpfile	= "emesh.decomp.nc"
   fdcmp		= addfile(RT+dirsrc+dcmpfile,"r")
@@ -26,20 +26,20 @@ begin
   var1d		= fdcmp->$vname$
   ;var1d@lon1d   = fdcmp->coordx
   ;var1d@lat1d   = fdcmp->coordy
-  levs		= (/1,6,1/)
-  ;levs          = (/1,21,1/)
-  print(fdcmp)
+  ;levs		= (/1,4,1/)
+  levs          = (/1,31,1/)
+  ;print(fdcmp)
 
   doffile	= "dof.wav.nc"
     fdof	= addfile(RT+dirsrc+doffile,"r")
     vname	= "dof"
       dof	= fdof->$vname$(:)
        ip	= dim_pqsort(dof,1)
-  print(fdof)
+  ;print(fdof)
 
      ;scrpfile	= "with_land_CardDeck.SCRIP.nc"
      ;scrpfile	= "no_land_CardDeck.SCRIP.nc"
-     scrpfile   = "trip1deg_noland.SCRIP.nc"
+     scrpfile   = "trip1degmask_dd.SCRIP.nc"
 
      sfile	= addfile(MD+scrpfile,"r")
      x		= sfile->grid_center_lon
@@ -48,15 +48,15 @@ begin
      cy		= sfile->grid_corner_lat
      ;printVarSummary(x)
      ;printVarSummary(cx)
-     print(sfile)
+     ;print(sfile)
      var1d_sort = var1d
      var1d_sort = var1d(ip)
      var1d      = var1d_sort
      ;printVarSummary(var1d)
-     
+
      var1d@lon1d = x
      var1d@lat1d = y
-     printVarSummary(var1d)
+     ;printVarSummary(var1d)
 
 ;************************************************
 ; define the map
@@ -115,13 +115,13 @@ begin
    res@cnLevelSpacingF = levs(2)                      ; set the interval between contours
    ;res@cnFillPalette   = "amwg"
    ;res@cnFillPalette   = "MPL_rainbow"
-   ;res@cnFillPalette   = "BlWhRe"
-   res@cnFillPalette    = "circular_2"
+   res@cnFillPalette   = "cb_9step"
+   ;res@cnFillPalette    = "circular"
    res@tiMainFontHeightF = .010
    res@tiMainString = dirsrc
    res@mpFillOn             = False
 
-   res@cnFillPatterns       = (/17,17,17/) ; the patterns
+  ; res@cnFillPatterns       = (/17,17,17/) ; the patterns
 
   ; res@mpMinLatF            = -30      ; range to zoom in on
   ; res@mpMaxLatF            =  30.
