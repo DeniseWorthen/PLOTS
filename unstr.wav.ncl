@@ -16,17 +16,22 @@ begin
      ;MD = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/rt_wavunstr/moddefs/"
      ;RT = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/WaveUnstr2/"
      ;MD = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/WaveUnstr2/moddefs3/"
-     RT = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/rt_wavunstr2/"
-     MD = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/rt_wavunstr2/moddefs/"
+     ;RT = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/rt_wavunstr2/"
+     ;MD = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/rt_wavunstr2/moddefs/"
 
      ;RT = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/rt_5441/"
      ;MD = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/WW3_input_data_20220624/"
 
+  RT = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/testpr1/"
+  MD = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/testpr1/moddefs/"
+
      ;scrpfile  = "no_land_Domain_Decomposition.SCRIP.nc"
      ;scrpfile  = "with_land_CardDeck.SCRIP.nc"
      ;scrpfile   = "no_land_CardDeck.SCRIP.nc"
-     scrpfile   = "trip1degmask.SCRIP.nc"
+     ;scrpfile   = "trip1degmask.SCRIP.nc"
      ;scrpfile   = "trip15minmask_dd.SCRIP.nc"
+  scrpfile = "exp.global_270k.SCRIP.nc"
+
      sfile      = addfile(MD+scrpfile,"r")
      x          = sfile->grid_center_lon
      y          = sfile->grid_center_lat
@@ -44,27 +49,36 @@ begin
     ;dirsrc        = "tripnoland_noust/"
     ;dirsrc        = "tripnoland/"
     ;dirsrc        = "pdlibnoland3PE/"
-    dirsrc         = "base.imp/"
+
+    ;dirsrc         = "base.cd/"
+    ;plotlab       =  "unstr card deck"
+    ;dirsrc         = "base.dd20/"
+    ;plotlab       =  "unstr domain decomp"
 
     ;dirsrc        = "atmwav_pdlib_control_noaero_p8/"
     ;plotlab       = "pdlib noland"
     ;dirsrc        = "atmwav_unstr_control_noaero_p8/"
     ;plotlab       = "unstr noland"
 
-    ; dirsrc = "new/"
-     plotlab = "new"
+     plotlab = "pdlib270k"
+     dirsrc = "pdlib270k/"
 
-     ;filetype="wave history"
+     filetype="wave history"
      ;fsrc="ufs.atmw.ww3.hi."
      ;fsrc="ufs.cpld.ww3.hi."
 
-     filetype="wave coupler"
-     fsrc="ufs.atmw.cpl.hi.wav."
+     ;filetype="wave coupler"
+     ;fsrc="ufs.atmw.cpl.hi.wav."
      ;fsrc="ufs.cpld.cpl.hi.wav."
 
-     date="2021-03-22-"
-     time="64800"
-     fname=RT+dirsrc+fsrc+date+time+".nc"
+     ;date="2021-03-22-"
+     ;time="64800"
+     ;time="60480"
+     ;fname=RT+dirsrc+fsrc+date+time+".nc"
+     date="20210824"
+     time="060000"
+     fsrc=".out_grd.ww3.nc"
+     fname = RT+dirsrc+date+"."+time+fsrc
      f = addfile(fname,"r")
 
      if (filetype .eq. "wave history") then
@@ -74,22 +88,30 @@ begin
         ;vname = "DW"
         ;levs = (/0,8000.0,500.0/)
 
-        ;vname = "HS"
-        ;levs = (/0,1.00,.01/)
+        vname = "HS"
+;        levs = (/0,4.00,.05/)
+        levs = (/0,10.0, .1/)
+
+;        vname = "ICE"
+;        levs = (/0,1.00,.1/)
 
         ;vname = "USTX"
         ;levs = (/-1.,1.,0.1/)
 
-        vname = "PHS"
-        levs = (/0.,2,.02/)
+        ;vname = "PHS"
+        ;levs = (/0.,2,.02/)
 
         ;vname="CHARN"
         ;levs = (/0.,.5,.05/)
 
-        ;data = f->$vname$(0,0,:)
-        data = f->$vname$(0,0,0,:)
+        data = f->$vname$(0,0,:)
+        ;data = f->$vname$(0,0,0,:)
         data@lon1d = f->lon(0,:)
         data@lat1d = f->lat(0,:)
+
+        mskvar = f->ICE(0,0,:)
+        mskvar@lon1d = f->lon(0,:)
+        mskvar@lat1d = f->lat(0,:)
      end if
 
      if (filetype .eq. "wave coupler") then
@@ -142,7 +164,7 @@ begin
   res@gsnStringFontHeightF = 0.01
   res@cnMissingValPerimOn     = False            ; turn on the missing value perimeter
   ;res@cnMissingValPerimColor  = "black"           ; outline the perimeter red
-  res@cnMissingValFillPattern = 0               ; choose fill pattern 0 (solid fill)
+  ;res@cnMissingValFillPattern = 0               ; choose fill pattern 0 (solid fill)
   ;res@cnMissingValFillColor   = "gray"          ; color fill missing areas blue
 
   res@cnFillDrawOrder   = "PreDraw"             ; draw contours first
@@ -162,11 +184,16 @@ begin
   ;res@cnFillPalette   = "MPL_rainbow"
   ;res@cnFillPalette   = "BlWhRe"
   ;res@cnFillPalette    = "NCV_jet"
-  res@cnFillPalette   = "WhiteBlueGreenYellowRed"
+  ;res@cnFillPalette   = "WhiteBlueGreenYellowRed"
+  res@cnFillPalette = "WhBlGrYeRe"
   res@tiMainFontHeightF = .010
   res@tiMainString = plotlab
   ;res@mpFillOn             = False
   res@mpOutlineOn          = False
+
+   res@gsnPolar   =  "NH"                         ; specify the hemisphere
+   res@mpMinLatF  =  66.0                    ; minimum lat to plot
+   res@mpCenterLonF = -45
 
   ;res@mpMinLatF            = -30      ; range to zoom in on
   ;res@mpMaxLatF            = -20.
@@ -174,11 +201,31 @@ begin
   ;res@mpMaxLonF            = 40.
 
   ;if (filetype .eq. "wave history")then
-    ;res@sfXCellBounds = cx(:,0:5)
-    ;res@sfYCellBounds = cy(:,0:5)
-    res@sfXCellBounds = cx(:,:)
-    res@sfYCellBounds = cy(:,:)
+    res@sfXCellBounds = cx(:,0:5)
+    res@sfYCellBounds = cy(:,0:5)
+    ;res@sfXCellBounds = cx(:,:)
+    ;res@sfYCellBounds = cy(:,:)
   ;end if
+   res@gsnLeftString = date+time
+
+;************************************************
+; resources for overlay
+;************************************************
+
+  ores                  = True
+  ores@cnLineThicknessF = 2.0            ; line thickness
+  ores@cnLineColor      = "black"        ; line color
+  ;ores@cnFillOn         = True
+  ;ores@cnFillPalette    = "black"
+  ores@cnLineLabelsOn   = False
+  ores@cnInfoLabelOn    = False
+  ores@gsnDraw          = False ; don't draw
+  ores@gsnFrame         = False ; don't advance frame
+  ores@gsnLeftString    = ""    ; no titles
+  ores@gsnRightString   = ""
+  ;ores@lbLabelBarOn       = False                 ; turn off individual colorbars
+  ores@cnLevelSelectionMode = "ExplicitLevels"     ; set the contour levels with the following 3 resources
+  ores@cnLevels         = (/0.75/)
 
 ;************************************************
 ;
@@ -187,7 +234,10 @@ begin
     ;res@gsnAddCyclic         = False
 
    ;plot = gsn_csm_contour_map(wks,data,res)    ; create the plot
-   plot = gsn_csm_contour(wks,data,res)    ; create the plot
+   ;plot = gsn_csm_contour(wks,data,res)    ; create the plot
+   plot = gsn_csm_contour_map_polar(wks,data,res)    ; create the plot
+   oplot = gsn_csm_contour(wks,mskvar,ores)
+   overlay(plot,oplot)
 
   draw(plot)
   frame(wks)

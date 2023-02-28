@@ -5,11 +5,9 @@
 
 ;************************************************
 
-  ;MD = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/WW3_input_data_20220624/"
-  ;scrpfile   = "no_land_CardDeck.SCRIP.nc"
+  ;MD = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/rt_wavunstr2/moddefs/"
+  MD="/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/addunstr.2acd891b.ww.33d337356/moddefs/"
 
-  MD = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/rt_wavunstr2/moddefs/"
-  ;scrpfile   = "trip15minmask_dd.SCRIP.nc"
   scrpfile   = "trip1degmask.SCRIP.nc"
   sfile      = addfile(MD+scrpfile,"r")
   x          = sfile->grid_center_lon
@@ -20,69 +18,73 @@
   ; cheyenne
   ;RT1 = "/glade/scratch/worthen/WaveUnstr/"
   ; hera
-  RT1 = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/rt_wavunstr2/"
+  ;RT1 = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/rt_wavunstr2/"
+  RT1 = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/addunstr.2acd891b.ww.33d337356/"
 
-  gridtype  = (/"unstructured","unstructured"/)
-   plotlabs = (/"unstr 1deg 20PE"  , "unstr 1deg 20PE iostyp0"/)
-        rts = (/"base48h.dd20/", "base48h.dd20.iostyp0/"/)
+  gridtype  = "unstructured"
+  ;cpltype = "ufs.atmw."
+  cpltype = "ufs.cpld."
+
+   ;plotlabs = "Card Deck Unstr 1deg 20PE"
+    plotlabs = "Domain Decomp Unstr 1deg 30PE, explicit"
+   ; rts = "base48.dd30/"
+   ; rts = "base.dd3.exp.iostyp0/"
+   ; rts = "base48h.dd20.iostyp0/"
+   ;rts = "base.dd20/"
+   ; rts = "atmw.pdlib.fix1/"
+    rts = "test/"
 
   date = "2021-03-22-"
-  ;time = "64080"
-  time = "64800"
-  ;time = "65518"
-  ;time = "66240"
-  fsrc = "ufs.atmw.ww3.hi."
+  ;times = (/"41760", "42480", "43200", "43920"/)
+  ;times = (/"24480", "25200", "25920"/)
+  times = (/"28080", "28800", "29520"/)
+  ;times = (/"26640", "27360", "28080"/)
+  ;times = (/"29520", "30240", "30960"/)
+  ;times = (/"59760","64080", "64800", "65520"/)
 
-  fnames = RT1+rts+fsrc+date+time+".nc"
+  fsrc = cpltype+"cpl.hi.wav."
+
+  timelabs = date+times
+
+  fnames = RT1+rts+fsrc+date+times+".nc"
   files  = addfiles(fnames,"r")
   print(fnames)
 
-  flds = (/"PHS"  , \
-           "EF"   , \
-           "HS"   , \
-           "CHARN", \
-           "USTX"   /)
+  flds = (/"wavImp_Sw_z0" ,  \
+           "wavExp_Sa_u10m", \
+           "wavExp_Sa_v10m"/)
 
-  fldwgts = (/1.0, \
-              1.0, \
-              1.0, \
-              1.0, \
-              1.0  /)
-
-  flddims = (/4, \
-              4, \
-              3, \
-              3, \
-              3  /)
-
-  lonname = "lon"
-  latname = "lat"
+  fldwgts = (/1.e3, \
+              1., \
+              1./)
+  lonname = "wavImp_lon"
+  latname = "wavImp_lat"
 
   nflds = dimsizes(flds)
-  nplots = dimsizes(gridtype)
+  nplots = dimsizes(times)
 
   ; plot levels
   plotlevs = new((/nflds,3/), float)
-  plotlevs( 0,:) = (/   0.0,    0.5,  0.05/)   ; phs
-  plotlevs( 1,:) = (/   0.0,    3.0,  0.05/)   ; ef, k=28
-  plotlevs( 2,:) = (/   0.0,    1.0,  0.10/)   ; hs
-  plotlevs( 3,:) = (/   0.0,    1.0,  0.10/)   ; charn
-  plotlevs( 4,:) = (/  -1.0,    1.0,  0.10/)   ; ustx
+  ;plotlevs( 0,:) = (/   0.0,    1.00,  0.01/)   ; z0
+  plotlevs( 0,:) = (/   0.0,    0.5,  0.05/)   ; z0
+  plotlevs( 1,:) = (/ -20.0,   20.0,  0.50/)   ; u10m
+  plotlevs( 2,:) = (/ -20.0,   20.0,  0.50/)   ; v10m
 
 ;************************************************
 ;
 ;************************************************
 
   ; pick a field to plot
-  fldtoplot = 3
+  fldtoplot = 0
   levs = plotlevs(fldtoplot,:)
   wgt = fldwgts(fldtoplot)
-  ndims = flddims(fldtoplot)
-  wkstitle = flds(fldtoplot)+"_"+date+time
+  wkstitle = flds(fldtoplot)
+  gtype = gridtype
   ;wkstitle = plotlabs(0)
 
-   cmap = "WhiteBlueGreenYellowRed"
-   plottitle=flds(fldtoplot)
+   cmap = "WhBlGrYeRe"
+   ;cmap = "WhiteBlueGreenYellowRed"
+   plottitle=flds(fldtoplot)+";  "+plotlabs
 
 ;************************************************
 ; define the map
@@ -120,7 +122,7 @@
 ;************************************************
 ; the subplot call
 ;************************************************
-function subplot(ii,name,gtype,pltvar,pltlevs,palette)
+function subplot(ii,gtype,pltvar,pltlevs,palette)
 begin
   res@cnLevelSelectionMode = "ManualLevels"        ; set the contour levels with the following 3 resources
   res@cnMinLevelValF       = pltlevs(0)            ; set the minimum contour level
@@ -128,24 +130,18 @@ begin
   res@cnLevelSpacingF      = pltlevs(2)            ; set the interval between contours
   res@cnFillPalette        = palette
 
-  if (gtype .eq. "unstructured") then
+ if (gtype .eq. "unstructured") then
     res@sfXCellBounds = cx(:,0:5)
     res@sfYCellBounds = cy(:,0:5)
   end if
-
-  res@gsnCenterStringFontHeightF      = 0.012
-  res@gsnCenterString                 = name
-  ;res@gsnCenterStringOrthogonalPosF   = -.05
 
   pltvar@units = ""
   pltvar@long_name = ""
 
   splot = gsn_csm_contour(wks,pltvar,res)    ; create the plot
-  ;delete(res@cnLevels)
-  ;delete(res@lbLabelStrings)
   return(splot)
 end
-; **************************************************
+; ***************************************************
 ; panel resources
 ; **************************************************
 
@@ -160,7 +156,7 @@ end
   resP@gsnPanelMainString = plottitle
   resP@gsnMaximize        = True        ; use full page
 
-  resP@gsnPanelFigureStrings = (/date+time,date+time,date+time/)
+  resP@gsnPanelFigureStrings = timelabs
   resP@amJust = "TopLeft"
   resP@gsnPanelFigureStringsFontHeightF = 0.008
 
@@ -169,28 +165,21 @@ end
 ; ***************************************************
 
      ii = 0
-     klev = 28-1
      do ii = 0,nplots-1
           vname = flds(fldtoplot)
-          gtype = gridtype(ii)
           if (gtype .eq. "structured")then
-            if (ndims .eq. 4) then
-              data = files[ii]->$vname$(0,klev,:,:)
-            else
-              data = files[ii]->$vname$(0,:,:)
-           end if
+           data = files[ii]->$vname$(0,:,:)
            data = data*wgt
          else
-            if (ndims .eq. 4) then
-              data = files[ii]->$vname$(0,klev,0,:)
-            else
-              data = files[ii]->$vname$(0,0,:)
-           end if
+           data = files[ii]->$vname$(0,0,:)
            data = data*wgt
-           data@lon1d = files[ii]->$lonname$(0,:)
-           data@lat1d = files[ii]->$latname$(0,:)
+           data@lon1d = files[ii]->$lonname$(0,0,:)
+           data@lat1d = files[ii]->$latname$(0,0,:)
          end if
-          plot(ii) = subplot(ii,plotlabs(ii),gtype,data,levs,cmap)
+         if (vname .eq. "wavImp_Sw_z0")then
+           data = where(data .lt. 0.0 .or. data .gt. 1.0, default_fillvalue(typeof(data)), data)
+         end if
+          plot(ii) = subplot(ii,gtype,data,levs,cmap)
         delete(data)
      end do
 

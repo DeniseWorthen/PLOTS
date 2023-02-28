@@ -12,10 +12,8 @@ begin
 
   ;RT		= "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/rt_wavunstr2/"
   ;MD            = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/rt_wavunstr2/moddefs/"
-  ;RT = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/testpr1/"
-  ;MD = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/testpr1/moddefs/"
-  RT = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/addunstr.2acd891b.ww.33d337356/"
-  MD = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/addunstr.2acd891b.ww.33d337356/"
+  RT = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/testpr1/"
+  MD = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/testpr1/moddefs/"
 
   ;dirsrc        = "unstr3PE/"
   ;dirsrc        = "unstrnoland3PE/"
@@ -23,8 +21,7 @@ begin
   ;dirsrc        = "pdlibnolandtrip3PE/"
   ;dirsrc        = "tripnoland/"
   ;dirsrc        = "base.dd3.iostyp0/"
-  ;dirsrc = "pdlib270k/"
-  dirsrc = "atmw.pdlib.fix1/"
+  dirsrc = "pdlib270k/"
 
   dcmpfile	= "emesh.decomp.nc"
   fdcmp		= addfile(RT+dirsrc+dcmpfile,"r")
@@ -33,7 +30,7 @@ begin
   ;var1d@lon1d   = fdcmp->coordx
   ;var1d@lat1d   = fdcmp->coordy
   ;levs		= (/1,4,1/)
-  levs          = (/1,31,1/)
+  levs          = (/1,41,1/)
   ;print(fdcmp)
 
   doffile	= "dof.wav.nc"
@@ -45,8 +42,8 @@ begin
 
      ;scrpfile	= "with_land_CardDeck.SCRIP.nc"
      ;scrpfile	= "no_land_CardDeck.SCRIP.nc"
-     scrpfile   = "trip1degmask.SCRIP.nc"
-     ;  scrpfile = "exp.global_270k.SCRIP.nc"
+     ;scrpfile   = "trip1degmask.SCRIP.nc"
+       scrpfile = "exp.global_270k.SCRIP.nc"
 
      sfile	= addfile(MD+scrpfile,"r")
      x		= sfile->grid_center_lon
@@ -101,6 +98,10 @@ begin
   ; ;res@cnFillMode = "MeshFill"
    res@cnFillMode = "RasterFill"
 
+   res@gsnPolar   =  "NH"                         ; specify the hemisphere
+   res@mpMinLatF    =  66.0                    ; minimum lat to plot
+   res@mpCenterLonF = -45
+
    res@gsnStringFontHeightF = 0.01
    res@cnMissingValPerimOn     = False            ; turn on the missing value perimeter
    ;res@cnMissingValPerimColor  = "black"           ; outline the perimeter red
@@ -135,6 +136,9 @@ begin
   ; res@mpMinLonF            = -60.
   ; res@mpMaxLonF            =  30.
 
+  ;res@sfXCellBounds = cx(:,0:5)
+  ;res@sfYCellBounds = cy(:,0:5)
+
   res@sfXCellBounds = cx(:,0:5)
   res@sfYCellBounds = cy(:,0:5)
 
@@ -144,7 +148,7 @@ begin
 
    res@gsnAddCyclic         = False
 
-   plot = gsn_csm_contour(wks,var1d,res)    ; create the plot
+   plot = gsn_csm_contour_map_polar(wks,var1d,res)    ; create the plot
 
   draw(plot)
   frame(wks)

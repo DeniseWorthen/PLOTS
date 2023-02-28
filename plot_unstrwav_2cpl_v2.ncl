@@ -28,7 +28,8 @@
 
   date = "2021-03-22-"
   ;time = "25200"
-  time = "64800"
+  time = "64080"
+  ;time = "64800"
   fsrc = "ufs.atmw.cpl.hi.wav."
 
   fnames = RT1+rts+fsrc+date+time+".nc"

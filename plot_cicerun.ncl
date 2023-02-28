@@ -30,17 +30,17 @@ begin
 ; read in netCDF file
 ;************************************************
 
-   idate = "2012010100"
+   idate = "2021010100"
    cyear = "2021"
-    cmon = "03"
-    cday = "23"
+    cmon = "08"
+    cday = "24"
    cdate = cyear+"-"+cmon+"-"+cday
-   rtsrc = RT2+"FV3_RT/rt_3654/test/"
+   rtsrc = RT2+"testpr1/pdlib270k/"
 
    ; use one file for grid
    ;gf =addfile(rtsrc+"iceic"+idate+"00.01."+idate+"00.nc","r")
-   gf =addfile(rtsrc+"history/iceh_06h."+cyear+"-"+cmon+"-23-00000.nc","r")
-   print(gf)
+   gf =addfile(rtsrc+"history/iceh_inst."+cyear+"-"+cmon+"-24-21600.nc","r")
+   ;print(gf)
    tlatname="TLAT"
    tlonname="TLON"
    rfactor=1.0
@@ -92,7 +92,8 @@ begin
   ;varname="hs_h"
   ;levs=(/0.0,0.42,0.02/)
 
-    icef = addfile(rtsrc+"history/iceh_06h."+cdate+"-00000.nc","r")
+   icef =addfile(rtsrc+"history/iceh_inst."+cyear+"-"+cmon+"-24-21600.nc","r")
+  ;  icef = addfile(rtsrc+"history/iceh_06h."+cdate+"-00000.nc","r")
   icevar = icef->$varname$(lstep,:,:)
   ;icevar = icevar/100.0
   icevar@lon2d=gf->$tlonname$*rfactor
@@ -147,15 +148,15 @@ begin
 
   res@gsnStringFontHeightF = 0.05
 
- ; res@gsnPolar   =  hemi                         ; specify the hemisphere
-;  if(hemi .eq. "NH")then
-;   res@mpMinLatF    =  minlat                          ; minimum lat to plot
-;   res@mpCenterLonF = -45
-;  end if
-;  if(hemi .eq. "SH")then
-;   res@mpMaxLatF    = -50                            ; minimum lat to plot
-;   res@mpCenterLonF = 0.0
-;  end if
+  res@gsnPolar   =  hemi                         ; specify the hemisphere
+  if(hemi .eq. "NH")then
+   res@mpMinLatF    =  minlat                          ; minimum lat to plot
+   res@mpCenterLonF = -45
+  end if
+  if(hemi .eq. "SH")then
+   res@mpMaxLatF    = -50                            ; minimum lat to plot
+   res@mpCenterLonF = 0.0
+  end if
 
   ; Near Yenisei
   ;res@mpMinLatF            =  70      ; range to zoom in on
@@ -168,7 +169,7 @@ begin
   res@cnLinesOn         = False                 ; no contour lines
   res@cnLineLabelsOn    = False
   res@lbLabelBarOn      = True
-  
+
   ;res@cnFillOn          = False                  ; color fill
 
   ;res@cnLevelSelectionMode = "ManualLevels"     ; set the contour levels with the following 3 resources
@@ -209,8 +210,8 @@ begin
 ;
 ;************************************************
 
-  ;plot = gsn_csm_contour_map_polar(wks,icevar,res)    ; create the plot
-  plot = gsn_csm_contour_map(wks,icevar,res)    ; create the plot
+  plot = gsn_csm_contour_map_polar(wks,icevar,res)    ; create the plot
+  ;plot = gsn_csm_contour_map(wks,icevar,res)    ; create the plot
   ;dum= gsn_add_polyline(wks,plot,(/lon1, lon2/) , (/lat1, lat2/) ,pres)
   ;pum= gsn_add_polymarker(wks,plot,center_xlon,center_xlat,mkres)
 

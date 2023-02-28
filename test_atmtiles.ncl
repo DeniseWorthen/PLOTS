@@ -9,22 +9,20 @@
 ;**********************************************************
 begin
 
-   ;RT="/scratch1/NCEPDEV/stmp2/Denise.Worthen/WaveUnstr2/"
-  RT="/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/rt_wavunstr2/"
-
+   RT="/scratch1/NCEPDEV/nems/emc.nemspara/RT/NEMSfv3gfs/develop-20221220/INTEL/cpld_bmark_p8/"
    nl = str_get_nl()
    nflags = 9
    date = "2021-03-22-"
    ;time = "64080"
    ;time = "64800"
    time = 65520
-    atmres = 96
+   ; atmres = 96
 
  ;   atmres = 192
- ;   atmres = 384
+    atmres = 384
 
    ;dirs = (/"unstrnoland3PE/"/)
-    dirs = (/"base48h.dd20/"/)
+    dirs = (/"RESTART/"/)
    ; dirs = (/"tripnoland/"/)
    wkstitle="new"
 
@@ -32,7 +30,7 @@ begin
   ndirs = dimsizes(dirs)
 
   ; retrieve orodata file from INPUT directory for masking
-  filelist = systemfunc("ls "+RT+dirs(0)+"INPUT/oro_data.tile*.nc")
+  filelist = systemfunc("ls /scratch1/NCEPDEV/nems/emc.nemspara/RT/NEMSfv3gfs/input-data-20221101/FV3_input_data384/INPUT/oro_data.tile*.nc")
   print(filelist)
   ofiles = addfiles(filelist,"r")
   ListSetType(ofiles,"join")
@@ -48,27 +46,16 @@ begin
 ;************************************************
 
   dirsrc = RT+dirs(0)
-    fname=dirsrc+"ufs.atmw.cpl.hi.atm."+date+time+".nc"
-    ;fname=dirsrc+"ufs.cpld.cpl.hi.atm."+date+time+".nc"
-    print(fname)
-       ff = addfile(fname, "r")
-     vname="atmExp_Sw_z0"
-     data = ff->$vname$(0,:,:,:)
-     dtmp = data
-     dtmp = 1.0e3*data
-     data = dtmp
-     data@units=""
-     ;data = where(abs(dtmp) .gt. 1.0e3, dtmp@_FillValue, dtmp*1.0e3)
-     ;data = where(dtmp .lt. 0.0 .or. dtmp .gt. 1.0e3, default_fillvalue(typeof(dtmp)), dtmp*1.0e3)
-     levs=(/0,0.5,.05/)
-     ;printVarSummary(data)
-
-     ;vname="atmImp_Sa_u10m"
-     ;data = ff->$vname$(0,:,:,:)
-     ;levs = (/-20.0, 20.0, 1.0/)
-     ocnonly = data
-     ocnonly = mask(data,mskvar,0.0)
-     data = ocnonly
+  restlist=systemfunc("ls "+RT+dirs(0)+"sfc_data.tile*.nc")
+  print(restlist)
+  rfiles = addfiles(restlist,"r")
+  ListSetType(ofiles,"join")
+  varname="albdifnir_lnd"
+  avar = rfiles[:]->$varname$
+  ; use orodata
+  avar@lon2d = ofiles[0]->$msklonname$
+  avar@lat2d = ofiles[0]->$msklatname$
+  printVarSummary(avar)
 
     ;if(1.eq.0)then
      ; re-arrange tiles that are on their side

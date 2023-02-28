@@ -5,20 +5,22 @@
 
 ;************************************************
 
-  RT         = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/rt_wavunstr/"
-  MD         = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/rt_wavunstr/moddefs/"
-  scrpfile   = "trip1degmask_dd.SCRIP.nc"
+  RT         = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/rt_wavunstr2/"
+  MD         = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/rt_wavunstr2/moddefs/"
+  scrpfile   = "trip1degmask.SCRIP.nc"
   sfile      = addfile(MD+scrpfile,"r")
   x          = sfile->grid_center_lon
   y          = sfile->grid_center_lat
   cx         = sfile->grid_corner_lon
   cy         = sfile->grid_corner_lat
 
- gridtype  = (/"unstructured", "unstructured"/)
+ gridtype  = (/"unstructured", "unstructured", \
+               "unstructured"/)
 
- plotlabs = (/"Unstr DomainDecomp, 30PE", "Unstr DomainDecomp, 20PE"/)
+ plotlabs = (/"Unstr DomainDecomp, 30PE", "Unstr DomainDecomp, 20PE", \
+              "Unstr DomainDecomp, 10PE"/)
 
-      rts = (/"base/", "base.mpi/"/)
+      rts = (/"base.dd/", "base.dd20/", "base.dd10/" /)
 
   fnames = RT+rts+"emesh.decomp.nc"
   files  = addfiles(fnames,"r")
