@@ -4,11 +4,16 @@
 ; load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl"
 
 ;************************************************
-  
+
   ;MD = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/WW3_input_data_20220624/"
   ;scrpfile   = "no_land_CardDeck.SCRIP.nc"
-  MD = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/rt_wavunstr/moddefs/"
-  scrpfile   = "trip1degmask_dd.SCRIP.nc"
+  ;MD = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/rt_wavunstr/moddefs/"
+  ;scrpfile   = "trip1degmask_dd.SCRIP.nc"
+
+  RT = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/addunstr.2acd891b.ww.33d337356/"
+  MD = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/addunstr.2acd891b.ww.33d337356/"
+  scrpfile   = "trip1degmask.SCRIP.nc"
+
   sfile      = addfile(MD+scrpfile,"r")
   x          = sfile->grid_center_lon
   y          = sfile->grid_center_lat
@@ -18,30 +23,37 @@
   ; cheyenne
   ;RT1 = "/glade/scratch/worthen/WaveUnstr/"
   ; hera
-  RT1 = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/rt_wavunstr/base"
+  ;RT1 = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/rt_wavunstr/base"
 
- gridtype  = (/"unstructured", \
-               "unstructured", \
-               "unstructured", \
-               "unstructured"  /)
+ ;gridtype  = (/"unstructured", \
+ ;              "unstructured", \
+ ;              "unstructured", \
+ ;              "unstructured"  /)
 
- plotlabs = (/"Unstr DomainDecomp, no UST, 3PE",   \
-              "Unstr Domain Decomp, with UST, 3PE", \
-              "Unstr Domain Decomp, with UST, 5PE", \
-              "Unstr Domain Decomp, with UST, 6PE"/)
+ gridtype  = (/"unstructured", "unstructured"/)
 
-      rts = (/"noust3PE/",      \
-              "withust3PE/", \
-              "withust5PE/", \
-              "withust6PE/"  /)
+ ;plotlabs = (/"Unstr DomainDecomp, no UST, 3PE",   \
+ ;             "Unstr Domain Decomp, with UST, 3PE", \
+ ;             "Unstr Domain Decomp, with UST, 5PE", \
+ ;             "Unstr Domain Decomp, with UST, 6PE"/)
 
-  fnames = RT1+rts+"emesh.decomp.nc"
+ plotlabs = (/"Unstr DomainDecomp, 10PE", \
+              "Unstr DomainDecomp, 20PE"/)
+
+ ;    rts = (/"noust3PE/",      \
+ ;             "withust3PE/", \
+ ;             "withust5PE/", \
+ ;             "withust6PE/"  /)
+
+  rts = (/"cpld.fix.10PE/", "cpld.fix.20PE/"/)
+
+  fnames = RT+rts+"emesh.decomp.nc"
   files  = addfiles(fnames,"r")
   nplots = dimsizes(gridtype)
-  levs = (/1,10,1/)
+  levs = (/1,21,1/)
 
   fdof = "dof.wav.nc"
-  dofs = addfiles(RT1+rts+fdof,"r")
+  dofs = addfiles(RT+rts+fdof,"r")
   wkstitle = "decomp"
   plottitle= "decomp"
 
@@ -78,7 +90,7 @@
 
   ;res@mpFillOn           = False
   ;res@mpOutlineOn        = False
-  res@cnMissingValFillColor   = "gray"          ; color fill missing areas blue
+  ;res@cnMissingValFillColor   = "gray"          ; color fill missing areas blue
 
 ;************************************************
 ; the subplot call
@@ -90,16 +102,16 @@ begin
   res@cnMaxLevelValF       = pltlevs(1)            ; set the maximum contour level
   res@cnLevelSpacingF      = pltlevs(2)            ; set the interval between contours
   res@cnFillPalette        = palette
-  
+
   if (gtype .eq. "unstructured") then
     res@sfXCellBounds = cx(:,0:5)
     res@sfYCellBounds = cy(:,0:5)
   end if
-    
+
   res@gsnCenterStringFontHeightF      = 0.012
   res@gsnCenterString                 = name
   ;res@gsnCenterStringOrthogonalPosF   = -.05
- 
+
   pltvar@units = ""
   pltvar@long_name = ""
 
@@ -143,8 +155,8 @@ end
   resP                       = True     ; modify the panel plot
   resP@gsnMaximize           = True     ; maximize in frame
   resP@gsnFrame              = False    ; don't advance frame yet
-  resP@gsnPanelYWhiteSpacePercent = 5
-  resP@gsnPanelYWhiteSpacePercent = 8
+  ;resP@gsnPanelYWhiteSpacePercent = 5
+  ;resP@gsnPanelYWhiteSpacePercent = 8
   resP@gsnPanelLabelBar      = True     ; turn on a common labelbar for the entire panel plot
 
   resP@gsnPanelMainFontHeightF = 0.010  ; new resource added in NCL V6.4.0
@@ -157,9 +169,9 @@ end
 ; ***************************************************
 ;
 ; ***************************************************
-  
+
       wgt = 1.0
-      cmap = "circular_2"
+      cmap = "cb_9step"
       do ii = 0,nplots-1
         vname = "decomp"
         gtype = gridtype(ii)
@@ -181,7 +193,7 @@ end
           data@lat1d = y
       end if
       plot(ii) = subplot(ii,plotlabs(ii),gtype,data,levs,cmap)
-      
+
       delete(data)
     end do
 

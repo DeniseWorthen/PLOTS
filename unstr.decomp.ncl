@@ -24,7 +24,7 @@ begin
   ;dirsrc        = "tripnoland/"
   ;dirsrc        = "base.dd3.iostyp0/"
   ;dirsrc = "pdlib270k/"
-  dirsrc = "atmw.pdlib.fix1/"
+  dirsrc = "cpld.fix.10PE/"
 
   dcmpfile	= "emesh.decomp.nc"
   fdcmp		= addfile(RT+dirsrc+dcmpfile,"r")
@@ -33,7 +33,7 @@ begin
   ;var1d@lon1d   = fdcmp->coordx
   ;var1d@lat1d   = fdcmp->coordy
   ;levs		= (/1,4,1/)
-  levs          = (/1,31,1/)
+  levs          = (/1,21,1/)
   ;print(fdcmp)
 
   doffile	= "dof.wav.nc"

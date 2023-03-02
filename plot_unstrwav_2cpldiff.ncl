@@ -8,9 +8,12 @@
   ;MD = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/WW3_input_data_20220624/"
   ;scrpfile   = "no_land_CardDeck.SCRIP.nc"
 
-  MD = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/rt_wavunstr/moddefs/"
+  ;MD = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/rt_wavunstr/moddefs/"
   ;scrpfile   = "trip15minmask_dd.SCRIP.nc"
-  scrpfile   = "trip1degmask_dd.SCRIP.nc"
+  ;scrpfile   = "trip1degmask_dd.SCRIP.nc"
+
+  MD = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/addunstr.2acd891b.ww.33d337356/moddefs/"
+  scrpfile = "trip1degmask.SCRIP.nc"
   sfile      = addfile(MD+scrpfile,"r")
   x          = sfile->grid_center_lon
   y          = sfile->grid_center_lat
@@ -20,15 +23,16 @@
   ; cheyenne
   ;RT1 = "/glade/scratch/worthen/WaveUnstr/"
   ; hera
-  RT1 = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/rt_wavunstr/"
+  ;RT1 = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/rt_wavunstr/"
+  RT1 = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/addunstr.2acd891b.ww.33d337356/"
 
   gridtype  = (/"unstructured","unstructured"/)
    plotlabs = (/"unstr 1deg 20PE"  , "unstr 1deg 10PE"/)
-        rts = (/"base/", "base.mpi/"/)
+        rts = (/"cpld.fix.10PE/", "cpld.fix.20PE/"/)
 
   date = "2021-03-22-"
-  time = "64800"
-  fsrc = "ufs.atmw.cpl.hi.wav."
+  time = "32400"
+  fsrc = "ufs.cpld.cpl.hi.wav."
 
   fnames = RT1+rts+fsrc+date+time+".nc"
   files  = addfiles(fnames,"r")
@@ -36,11 +40,16 @@
 
   flds = (/"wavImp_Sw_z0" ,  \
            "wavExp_Sa_u10m", \
-           "wavExp_Sa_v10m"/)
+           "wavExp_Sa_v10m", \
+           "wavImp_Sw_pstokes_x2", \
+           "wavImp_Sw_pstokes_y2"/)
 
   fldwgts = (/1.0e3, \
               1., \
-              1./)
+              1., \
+              1.0e6, \
+              1.0e6/)
+
   lonname = "wavImp_lon"
   latname = "wavImp_lat"
 
@@ -52,13 +61,15 @@
   plotlevs( 0,:) = (/  -0.5,    0.5,  0.01/)   ; z0
   plotlevs( 1,:) = (/ -20.0,   20.0,  0.50/)   ; u10m
   plotlevs( 2,:) = (/ -20.0,   20.0,  0.50/)   ; v10m
+  plotlevs( 3,:) = (/  -2.0,    2.0,  0.02/)   ; stokes_x2
+  plotlevs( 4,:) = (/  -2.0,    2.0,  0.02/)   ; stokes_y2
 
 ;************************************************
 ;
 ;************************************************
 
   ; pick a field to plot
-  fldtoplot = 0
+  fldtoplot = 3
   levs = plotlevs(fldtoplot,:)
   wgt = fldwgts(fldtoplot)
   wkstitle = flds(fldtoplot)+"_"+date+time
@@ -152,8 +163,8 @@ end
   resP                       = True     ; modify the panel plot
   resP@gsnMaximize           = True     ; maximize in frame
   resP@gsnFrame              = False    ; don't advance frame yet
-  resP@gsnPanelYWhiteSpacePercent = 5
-  resP@gsnPanelYWhiteSpacePercent = 8
+  ;resP@gsnPanelYWhiteSpacePercent = 5
+  ;resP@gsnPanelYWhiteSpacePercent = 8
   resP@gsnPanelLabelBar      = True     ; turn on a common labelbar for the entire panel plot
 
   resP@gsnPanelMainFontHeightF = 0.010  ; new resource added in NCL V6.4.0
@@ -179,7 +190,7 @@ end
            data@lat1d = files[0]->$latname$(0,0,:)
          end if
          data = data*wgt
-           
+
           plot(ii) = subplot(ii,plotlabs(ii),gtype,data,levs,cmap)
         delete(data)
 
