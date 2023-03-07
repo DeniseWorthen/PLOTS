@@ -9,17 +9,33 @@
 
 ;**********************************************************
 begin
-     ;RT = "/glade/scratch/worthen/WaveUnstr/str3PE/"
-     ;RT = "/glade/scratch/worthen/WaveUnstr/unstr2PE/"
-     ;RT = "/glade/scratch/worthen/WaveUnstr/pdlib2PE/"
-     RT = "/glade/scratch/worthen/WaveUnstr/pdlibnoland2PE/"
 
-     ;filetype="wave history"
-     filetype="wave coupler"
+  MD = "/glade/scratch/worthen/addunstr.2acd891b.ww.33d337356/moddefs/"
+  scrpfile = MD+"trip1degmask.SCRIP.nc"
+  ;MD       = "/glade/work/worthen/WaveIn_unstruc2/moddefs/"
+  ;scrpfile = MD+"no_land_CardDeck.SCRIP.nc"
+       ;print(scrpfile)
+       sf       = addfile(scrpfile,"r")
+       x        = sf->grid_center_lon
+       y        = sf->grid_center_lat
+       cx       = sf->grid_corner_lon(:,0:5)
+       cy       = sf->grid_corner_lat(:,0:5)
+       cx@units = "degrees_east"
+       cy@units = "degress_north"
+       printVarSummary(cx)
+
+     ;RT = "/glade/scratch/worthen/WaveUnstr/str3PE/"
+     ;RT = "/glade/scratch/worthen/WaveUnstr/unstrnoland3PE/"
+     ;RT = "/glade/scratch/worthen/WaveUnstr2/pdlib2PE/"
+     ;RT = "/glade/scratch/worthen/WaveUnstr/pdlibnoland3PE/"
+       RT = "/glade/scratch/worthen/addunstr.2acd891b.ww.33d337356/ATMW/base/"
+
+     filetype="wave history"
+     ;filetype="wave coupler"
      ;filetype="meshdecomp"
 
      if (filetype .eq. "wave history") then
-        time="22320"
+        time="25200"
         f = addfile(RT+"ufs.atmw.ww3.hi.2021-03-22-"+time+".nc","r")
         print(RT+"ufs.atmw.ww3.hi.2021-03-22-"+time+".nc")
         ;vname = "UAX"
@@ -29,7 +45,7 @@ begin
         ;levs = (/0,8000.0,500.0/)
 
         ;vname = "HS"
-        ;levs = (/0,.30,.02/)
+        ;levs = (/0,.50,.05/)
 
         vname = "USTX"
         levs = (/-1.,1.,0.1/)
@@ -50,11 +66,11 @@ begin
      end if
 
      if (filetype .eq. "wave coupler") then
-        time = "25200"
+        time = "25920"
         f = addfile(RT+"ufs.atmw.cpl.hi.wav.2021-03-22-"+time+".nc","r")
-        ;vname="wavExp_Sa_u10m"
-        ;data = f->$vname$(0,0,:)
-        ;levs = (/-20,20,1/)
+        vname="wavExp_Sa_u10m"
+        data = f->$vname$(0,0,:)
+        levs = (/-20,20,1/)
 
         ;vname="wavExp_Sa_tbot"
         ;data = f->$vname$(0,0,:)
@@ -62,12 +78,12 @@ begin
         ;levs = (/-40,40,.5/)
         ;levs = (/230,320,1/)
 
-        vname="wavImp_Sw_z0"
-        data = f->$vname$(0,0,:)
-        data = where(data .lt. 0.0 .or. data .gt. 1.0e3, default_fillvalue(typeof(data)), data*1.0e3)
+        ;vname="wavImp_Sw_z0"
+        ;data = f->$vname$(0,0,:)
+        ;data = where(data .lt. 0.0 .or. data .gt. 1.0e3, default_fillvalue(typeof(data)), data*1.0e3)
         ;data = where(abs(data) .ge. 2.0, data@_FillValue, data)
         ;data = data*1.0e3
-        levs = (/0.0, 1.0, 0.05/)
+        ;levs = (/0.0, 1.0, 0.05/)
 
         data@lon1d = f->wavImp_lon(0,0,:)
         data@lat1d = f->wavImp_lat(0,0,:)
@@ -80,6 +96,7 @@ begin
        data = fmsk->$vname$
        data@lon1d = fmsk->coordx
        data@lat1d = fmsk->coordy
+
        levs = (/0,4,1/)
     end if
 
@@ -119,10 +136,10 @@ begin
   res@cnLabelBarEndStyle = "ExcludeOuterBoxes"
   res@lbLabelAlignment = "BoxCenters"
 
-  res@cnLevelSelectionMode = "ManualLevels"     ; set the contour levels with the following 3 resources
-  res@cnMinLevelValF  = levs(0)                      ; set the minimum contour level
-  res@cnMaxLevelValF  = levs(1)                      ; set the maximum contour level
-  res@cnLevelSpacingF = levs(2)                      ; set the interval between contours
+ ; res@cnLevelSelectionMode = "ManualLevels"     ; set the contour levels with the following 3 resources
+ ; res@cnMinLevelValF  = levs(0)                      ; set the minimum contour level
+ ; res@cnMaxLevelValF  = levs(1)                      ; set the maximum contour level
+ ; res@cnLevelSpacingF = levs(2)                      ; set the interval between contours
   ;res@cnFillPalette   = "amwg"
   ;res@cnFillPalette   = "MPL_rainbow"
   ;res@cnFillPalette   = "BlWhRe"
@@ -132,23 +149,29 @@ begin
 
   ;res@trGridType           = "TriangularMesh"  ; This is required to allow
   ;                                             ; missing coordinates.
-
+  ;res@sfXArray = loncell
+  ;res@sfYArray = latcell
   ;res@sfElementNodes = f2->elementConn(1::2,:)
   ;res@sfFirstNodeIndex = 1
-  res@mpFillOn             = False
+  ;res@mpFillOn             = False
+  ;res@mpOutlineOn          = False
 
   ;res@mpMinLatF            = -30      ; range to zoom in on
   ;res@mpMaxLatF            = -20.
-  ;res@mpMinLonF            = 30.
-  ;res@mpMaxLonF            = 40.
+  ;res@mpMinLonF            = -180.
+  ;res@mpMaxLonF            = -60.
+
+  res@sfXCellBounds        = cx
+  res@sfYCellBounds        = cy
 
 ;************************************************
 ;
 ;************************************************
 
-    ;res@gsnAddCyclic         = False
+    res@gsnAddCyclic         = False
 
-   plot = gsn_csm_contour_map(wks,data,res)    ; create the plot
+ ;plot = gsn_csm_contour_map(wks,data,res)    ; create the plot
+ plot = gsn_csm_contour(wks,data,res)    ; create the plot
 
   draw(plot)
   frame(wks)

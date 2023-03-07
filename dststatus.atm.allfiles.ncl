@@ -4,7 +4,7 @@
 ;
 ; adapted from code originally written by
 ; Ufuk Turuncoglu turuncu@ucar.edu
- 
+
   load "dststatus_counts.ncl"
 
 ;**********************************************************
@@ -27,8 +27,8 @@ begin
  ;   res = 192
  ;   res = 384
 
-     RT = "/glade/scratch/worthen/FV3_RT/wave_test/"
-    dirs = (/"basebilin/"/)
+     RT = "/glade/scratch/worthen/FV3_RT/bilin/"
+    dirs = (/"basespval/"/)
     date = "2021-03-22-"
    vname = "dststatus"
    ndirs = dimsizes(dirs)
@@ -129,7 +129,7 @@ if(1.eq.0)then
 
     var1d = ff->$vname$(:)
     ;printVarSummary(var1d)
- 
+
      total = 0
     do i = 0,nflags-1
      total = total+dststatus_counts(var1d,i)

@@ -1,79 +1,80 @@
 ;**********************************************************
-;**********************************************************
-
-  load "dststatus_counts.ncl"
-
+;
 ;**********************************************************
 begin
 
-  RT = "/glade/scratch/worthen/WaveUnstr2/"
-  MD = "/glade/scratch/worthen/WaveUnstr2/moddefs/"
+  RT		= "/glade/scratch/worthen/WaveUnstr2/"
+  MD		= "/glade/scratch/worthen/WaveUnstr2/moddefs/"
 
-  nl = str_get_nl()
-  nflags = 9
-  ;dirs = (/"unstrnoland3PE/"/)
-  dirs = (/"pdlib2PE/"/)
-  fsrc = "dststatus.atm.wav.bilnr_nstod.nc"
-  doffile = "dof.wav.nc"
+  dirs		= (/"pdlib2PE/"/)
+  doffile	= "dof.wav.nc"
+    ndirs	= dimsizes(dirs)
+    levs        = (/0,4,1/)
 
-    vname = "dststatus"
-    levs = (/0,9,1/)
-    ndirs = dimsizes(dirs)
-
-       ;scrpfile = MD+"no_land_CardDeck.SCRIP.nc"
-    scrpfile = MD+"trip1degmask.SCRIP.nc"
-       print(scrpfile)
+       scrpfile = MD+"trip1degmask.SCRIP.nc"
+       ;print(scrpfile)
        sf       = addfile(scrpfile,"r")
        x        = sf->grid_center_lon
        y        = sf->grid_center_lat
        cx       = sf->grid_corner_lon
        cy       = sf->grid_corner_lat
-       print(x(0:9)+"    "+y(0:9))
-       print(dimsizes(cx))
-       dims = dimsizes(cx)
-  ;ncell = dims(0)
-  ;nvert = dims(1)
-
-;---This code ensures that the cells are closed.
-  ;cx_closed = new((/ncell,nvert+1/),typeof(cx))
-  ;cy_closed = new((/ncell,nvert+1/),typeof(cy))
-  ;cx_closed(:,0:nvert-1) = cx
-  ;cx_closed(:,nvert)     = cx(:,0)
-  ;cy_closed(:,0:nvert-1) = cy
-  ;cy_closed(:,nvert)     = cy(:,0)
-
+       ;print(x(0:9)+"    "+y(0:9))
 ;**********************************************************
 ;
 ;**********************************************************
 
-do nd = 0,ndirs-1
-  dirsrc = RT+dirs(nd)
-   ifile = fsrc
-
-  fname = dirsrc+ifile
-  print("input file "+fname)
-  ff = addfile(fname,"r")
-
-  ; the dststatus field
-  var1d = ff->$vname$(:)
-  do i = 0,nflags-1
-   ret = dststatus_counts(var1d,i)
-  end do
+do nd			= 0,ndirs-1
+  dirsrc		= RT+dirs(nd)
 
   ; get the index seq to resort
-  doff = addfile(dirsrc+doffile,"r")
-  dof = doff->dof(:)
-  ;print(dof(0:9))
+  doff			= addfile(dirsrc+doffile,"r")
+  dof			= doff->dof(:)
+  print(dof(0:9))
+  ip			= dim_pqsort(dof,1)
 
-  ip = dim_pqsort(dof,1)
-  var1d_sort=var1d
-  var1d_sort=var1d(ip)
-  ;data = var1d_sort
-  ;print(data(0:9))
-  data = var1d_sort
-  data@lon1d = x
-  data@lat1d = y
-  ;print(data(0:9))
+    vname	= "decomp"
+    ofile	= dirsrc+"emesh.decomp.nc"
+    ff = addfile(ofile, "r")
+    var1d	= ff->$vname$
+       ;data@lon1d	= ff->coordx
+       ;data@lat1d	= ff->coordy
+       ; sort the data using dof
+       var1d_sort       = var1d
+       var1d_sort       = var1d(ip)
+       var1d            = var1d_sort
+
+       var1d@lon1d       = x
+       var1d@lat1d       = y
+
+     if (1 .eq. 0)then
+                                ;printVarSummary(data)
+       var1d_sort	=data
+       var1d_sort	=data(ip)
+       data		= var1d_sort
+
+       scrpfile		= MD+"no_land_CardDeck.SCRIP.nc"
+       print(scrpfile)
+       sf			= addfile(scrpfile,"r")
+       x			= sf->grid_center_lon
+       y			= sf->grid_center_lat
+       cx			= sf->grid_corner_lon
+       cy			= sf->grid_corner_lat
+       printVarSummary(cx)
+       cxsort = cx
+       cxsort = cx(ip,:)
+       cx = cxsort
+       cysort = cy
+       cysort = cy(ip,:)
+       cy = cysort
+       xsort = x
+       xsort = x(ip)
+       x = xsort
+       ysort = y
+       ysort = y(ip)
+       y = ysort
+                                ;data@lon1d = x
+                                ;data@lat1d = y
+     end if
 
 ;************************************************
 ; define the map
@@ -118,27 +119,22 @@ do nd = 0,ndirs-1
   res@cnFillPalette   = "amwg"
 
   res@tiMainFontHeightF = .010
-  res@tiMainString = fsrc
+  res@tiMainString = vname
 
-  res@mpOutlineOn          = True
-  res@mpFillOn             = False
   res@gsnAddCyclic         = False
 
 ;---These resources define the cell centers and cell vertices
-  ;res@sfXArray             = x
-  ;res@sfYArray             = y
-  res@sfXCellBounds        = cx(:,0:5)
-  res@sfYCellBounds        = cy(:,0:5)
-  ;res@sfXCellBounds        = cx_closed
-  ;res@sfYCellBounds        = cy_closed
-  ;res@sfDataArray          = data
+ ; res@sfXArray             = x(0:5)
+ ; res@sfYArray             = y(0:5)
+ ; res@sfXCellBounds        = cx(0:5)
+ ; res@sfYCellBounds        = cy(0:5)
+  ;res@sfDataArray          = var1d
 
 ;************************************************
 ;
 ;************************************************
 
-   plot = gsn_csm_contour(wks,data,res)    ; create the plot
-   ;plot = gsn_csm_contour_map(wks,data,res)    ; create the plot
+   plot = gsn_csm_contour(wks,var1d,res)    ; create the plot
 
   draw(plot)
   frame(wks)

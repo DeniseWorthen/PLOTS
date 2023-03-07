@@ -5,8 +5,19 @@
 
 ;************************************************
 
-  scrpfile = "trip1degmask.SCRIP.nc"
-  MD = "/glade/scratch/worthen/WaveUnstr2/moddefs/"
+  ;MD = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/WW3_input_data_20220624/"
+  ;scrpfile   = "no_land_CardDeck.SCRIP.nc"
+  ;MD = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/rt_wavunstr/moddefs/"
+  ;scrpfile   = "trip1degmask_dd.SCRIP.nc"
+
+  ;RT = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/addunstr.2acd891b.ww.33d337356/"
+  ;MD = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/addunstr.2acd891b.ww.33d337356/"
+
+  RT = "/glade/scratch/worthen/addunstr.2acd891b.ww.33d337356/"
+  MD = "/glade/scratch/worthen/addunstr.2acd891b.ww.33d337356/"
+
+  scrpfile   = "trip1degmask.SCRIP.nc"
+
   sfile      = addfile(MD+scrpfile,"r")
   x          = sfile->grid_center_lon
   y          = sfile->grid_center_lat
@@ -14,21 +25,39 @@
   cy         = sfile->grid_corner_lat
 
   ; cheyenne
-  RT1 = "/glade/scratch/worthen/WaveUnstr2/"
+  ;RT1 = "/glade/scratch/worthen/WaveUnstr/"
   ; hera
-  ;RT1 = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/WaveUnstr2/atmwtrip/"
+  ;RT1 = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/rt_wavunstr/base"
 
-  gridtype  = (/"unstructured", "unstructured"  /)
-  plotlabs = (/"Unstr DomainDecomp, 2PE", "Unstr Domain Decomp, 3PE"/)
-  rts = (/"pdlib2PE/", "pdlib3PE/"/)
+ ;gridtype  = (/"unstructured", \
+ ;              "unstructured", \
+ ;              "unstructured", \
+ ;              "unstructured"  /)
 
-  fnames = RT1+rts+"emesh.decomp.nc"
+ gridtype  = (/"unstructured", "unstructured"/)
+
+ ;plotlabs = (/"Unstr DomainDecomp, no UST, 3PE",   \
+ ;             "Unstr Domain Decomp, with UST, 3PE", \
+ ;             "Unstr Domain Decomp, with UST, 5PE", \
+ ;             "Unstr Domain Decomp, with UST, 6PE"/)
+
+ plotlabs = (/"Unstr DomainDecomp, 5PE", \
+              "Unstr DomainDecomp, 3PE"/)
+
+ ;    rts = (/"noust3PE/",      \
+ ;             "withust3PE/", \
+ ;             "withust5PE/", \
+ ;             "withust6PE/"  /)
+
+  rts = (/"CPLD/base/", "CPLD/mpi/"/)
+
+  fnames = RT+rts+"emesh.decomp.nc"
   files  = addfiles(fnames,"r")
   nplots = dimsizes(gridtype)
-  levs = (/1,4,1/)
+  levs = (/1,6,1/)
 
   fdof = "dof.wav.nc"
-  dofs = addfiles(RT1+rts+fdof,"r")
+  dofs = addfiles(RT+rts+fdof,"r")
   wkstitle = "decomp"
   plottitle= "decomp"
 
@@ -53,29 +82,15 @@
 
   ;res@cnFillMode = "MeshFill"
   res@cnFillMode = "RasterFill"
-  res@gsnDraw          = False ; don't draw
-  res@gsnFrame         = False ; don't advance frame
 
   res@cnFillDrawOrder   = "PreDraw"             ; draw contours first
+  res@cnFillOn           = True                 ; color fill
+  res@cnLinesOn          = False                ; no contour lines
+  res@cnLineLabelsOn     = False                ; no contour lines
   res@lbLabelBarOn       = False                ; turn off individual colorbars
   res@cnInfoLabelOn      = False		; turn off cn info label
   res@cnLabelBarEndStyle = "ExcludeOuterBoxes"
   res@lbLabelAlignment = "BoxCenters"
-
-  res@cnLineLabelsOn   = False
-  res@cnFillOn         = True
-  res@cnLinesOn        = False
-  res@cnInfoLabelOn    = False
-  res@gsnLeftString    = ""    ; no titles
-  res@gsnRightString   = ""
-  res@cnLevelSelectionMode = "ManualLevels"
-  res@cnMinLevelValF       = 1.               ; min level
-  res@cnMaxLevelValF       = 4                ; max level
-  res@cnLevelSpacingF      = 1                ; contour interval
-  res@cnSpanFillPalette    = False            ; don't span the full color map
-  res@cnFillPalette        = "default"        ; This colormap will be used for the dots
-
-  res@cnFillPatterns   = (/17,17,17/)
 
   ;res@mpFillOn           = False
   ;res@mpOutlineOn        = False
@@ -86,6 +101,11 @@
 ;************************************************
 function subplot(ii,name,gtype,pltvar,pltlevs,palette)
 begin
+  res@cnLevelSelectionMode = "ManualLevels"        ; set the contour levels with the following 3 resources
+  res@cnMinLevelValF       = pltlevs(0)            ; set the minimum contour level
+  res@cnMaxLevelValF       = pltlevs(1)            ; set the maximum contour level
+  res@cnLevelSpacingF      = pltlevs(2)            ; set the interval between contours
+  res@cnFillPalette        = palette
 
   if (gtype .eq. "unstructured") then
     res@sfXCellBounds = cx(:,0:5)
@@ -139,8 +159,8 @@ end
   resP                       = True     ; modify the panel plot
   resP@gsnMaximize           = True     ; maximize in frame
   resP@gsnFrame              = False    ; don't advance frame yet
-  resP@gsnPanelYWhiteSpacePercent = 5
-  resP@gsnPanelYWhiteSpacePercent = 8
+  ;resP@gsnPanelYWhiteSpacePercent = 5
+  ;resP@gsnPanelYWhiteSpacePercent = 8
   resP@gsnPanelLabelBar      = True     ; turn on a common labelbar for the entire panel plot
 
   resP@gsnPanelMainFontHeightF = 0.010  ; new resource added in NCL V6.4.0
@@ -155,7 +175,7 @@ end
 ; ***************************************************
 
       wgt = 1.0
-      cmap = "circular_2"
+      cmap = "cb_9step"
       do ii = 0,nplots-1
         vname = "decomp"
         gtype = gridtype(ii)

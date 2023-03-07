@@ -22,15 +22,49 @@
   plotlabs = (/"Unstr DomainDecomp, 2PE", "Unstr Domain Decomp, 3PE"/)
   rts = (/"pdlib2PE/", "pdlib3PE/"/)
 
-  fnames = RT1+rts+"emesh.decomp.nc"
+  date = "2021-03-22-"
+  time = "23760"
+  fsrc = "ufs.atmw.ww3.hi."
+
+  fnames = RT1+rts+fsrc+date+time+".nc"
   files  = addfiles(fnames,"r")
+  print(fnames)
+
+  flds = (/"EF"/)
+  fldwgts = (/1.0e11/)
+  lonname = "lon"
+  latname = "lat"
+
+  nflds = dimsizes(flds)
   nplots = dimsizes(gridtype)
-  levs = (/1,4,1/)
+
+  ; plot levels
+  plotlevs = new((/nflds,3/), float)
+  plotlevs( 0,:) = (/   0.0,    0.5,  0.01/)   ; k=28
+  ;plotlevs( 0,:) = (/   0.0,    2.0,  0.20/)   ; k=29
+  ;plotlevs( 0,:) = (/   0.0,    1.0,  0.01/)   ; k=30
+
+  fdecomp = "emesh.decomp.nc"
+  decomps  = addfiles(RT1+rts+fdecomp,"r")
+  print(decomps)
 
   fdof = "dof.wav.nc"
   dofs = addfiles(RT1+rts+fdof,"r")
-  wkstitle = "decomp"
-  plottitle= "decomp"
+  print(dofs)
+
+;************************************************
+;
+;************************************************
+
+  ; pick a field to plot
+  fldtoplot = 0
+  levs = plotlevs(fldtoplot,:)
+  wgt = fldwgts(fldtoplot)
+  wkstitle = flds(fldtoplot)+"_"+date+time
+  ;wkstitle = plotlabs(0)
+
+   cmap = "WhiteBlueGreenYellowRed"
+   plottitle=flds(fldtoplot)
 
 ;************************************************
 ; define the map
@@ -42,7 +76,8 @@
   wkstype@wkHeight=1200
   wks   = gsn_open_wks (wkstype,wkstitle)       ; send graphics to X11 window
   ; drawNDCGrid(wks)
-  plot = new(nplots,graphic)
+  plot = new(2,graphic)
+  oplot = new(2,graphic)
 
   res                      = True		; plot mods desired
   res@gsnDraw              = False		; do not draw until the end
@@ -53,39 +88,28 @@
 
   ;res@cnFillMode = "MeshFill"
   res@cnFillMode = "RasterFill"
-  res@gsnDraw          = False ; don't draw
-  res@gsnFrame         = False ; don't advance frame
 
   res@cnFillDrawOrder   = "PreDraw"             ; draw contours first
+  res@cnFillOn           = True                 ; color fill
+  res@cnLinesOn          = False                ; no contour lines
+  res@cnLineLabelsOn     = False                ; no contour lines
   res@lbLabelBarOn       = False                ; turn off individual colorbars
   res@cnInfoLabelOn      = False		; turn off cn info label
-  res@cnLabelBarEndStyle = "ExcludeOuterBoxes"
-  res@lbLabelAlignment = "BoxCenters"
-
-  res@cnLineLabelsOn   = False
-  res@cnFillOn         = True
-  res@cnLinesOn        = False
-  res@cnInfoLabelOn    = False
-  res@gsnLeftString    = ""    ; no titles
-  res@gsnRightString   = ""
-  res@cnLevelSelectionMode = "ManualLevels"
-  res@cnMinLevelValF       = 1.               ; min level
-  res@cnMaxLevelValF       = 4                ; max level
-  res@cnLevelSpacingF      = 1                ; contour interval
-  res@cnSpanFillPalette    = False            ; don't span the full color map
-  res@cnFillPalette        = "default"        ; This colormap will be used for the dots
-
-  res@cnFillPatterns   = (/17,17,17/)
 
   ;res@mpFillOn           = False
   ;res@mpOutlineOn        = False
-  ;res@cnMissingValFillColor   = "gray"          ; color fill missing areas blue
+  res@cnMissingValFillColor   = "gray"          ; color fill missing areas blue
 
 ;************************************************
 ; the subplot call
 ;************************************************
 function subplot(ii,name,gtype,pltvar,pltlevs,palette)
 begin
+  res@cnLevelSelectionMode = "ManualLevels"        ; set the contour levels with the following 3 resources
+  res@cnMinLevelValF       = pltlevs(0)            ; set the minimum contour level
+  res@cnMaxLevelValF       = pltlevs(1)            ; set the maximum contour level
+  res@cnLevelSpacingF      = pltlevs(2)            ; set the interval between contours
+  res@cnFillPalette        = palette
 
   if (gtype .eq. "unstructured") then
     res@sfXCellBounds = cx(:,0:5)
@@ -114,24 +138,28 @@ begin
   ;delete(res@lbLabelStrings)
   return(splot)
 end
-
 ;************************************************
 ; resources for overlay
 ;************************************************
 
   ores                  = True
-  ores@cnLineThicknessF = 1.0            ; line thickness
-  ores@cnLineColor      = "black"        ; line color
-  ores@cnLineLabelsOn   = False
-  ores@cnLinesOn        = True
-  ores@cnInfoLabelOn    = False
   ores@gsnDraw          = False ; don't draw
   ores@gsnFrame         = False ; don't advance frame
   ores@gsnLeftString    = ""    ; no titles
   ores@gsnRightString   = ""
-  ;ores@cnLevelSelectionMode = "ManualLevels"
-  ;ores@cnLevels         = (/1,6,1/)
-  ;ores@cnFillPatterns   = (/17,17,17,17/)
+
+  ores@cnLineThicknessF = 1.0            ; line thickness
+  ores@cnLineColor      = "black"        ; line color
+  ores@cnLineLabelsOn   = False
+  ores@cnFillOn         = False
+  ores@cnLinesOn        = True
+  ores@cnInfoLabelOn    = False
+  ores@cnLevelSelectionMode = "ExplicitLevels"
+  ores@cnLevels = (/1,2,3,4/)
+  ;ores@cnMinLevelValF       = 1.               ; min level
+  ;ores@cnMaxLevelValF       = 4                ; max level
+  ;ores@cnLevelSpacingF      = 1                ; contour interval
+
 ; ***************************************************
 ; panel resources
 ; **************************************************
@@ -147,45 +175,45 @@ end
   resP@gsnPanelMainString = plottitle
   resP@gsnMaximize        = True        ; use full page
 
-  ;resP@gsnPanelFigureStrings = (/date+time,date+time,date+time/)
-  ;resP@amJust = "TopLeft"
-  ;resP@gsnPanelFigureStringsFontHeightF = 0.008
+  resP@gsnPanelFigureStrings = (/date+time,date+time,date+time/)
+  resP@amJust = "TopLeft"
+  resP@gsnPanelFigureStringsFontHeightF = 0.008
+
 ; ***************************************************
 ;
 ; ***************************************************
 
-      wgt = 1.0
-      cmap = "circular_2"
-      do ii = 0,nplots-1
-        vname = "decomp"
-        gtype = gridtype(ii)
-        if (gtype .eq. "structured")then
-        data = files[ii]->$vname$(0,:,:)
-        data = data*wgt
-        data@lon2d = files[ii]->$lonname$(:,:)
-        data@lat2d = files[ii]->$latname$(:,:)
-      else
-        data = files[ii]->$vname$
-        data = data*wgt
+  ii=0
+  k = 28
+  do ii = 0,nplots-1
+    vname = flds(fldtoplot)
+    gtype = gridtype(ii)
+    data = files[1]->$vname$(0,k-1,0,:)-files[0]->$vname$(0,k-1,0,:)
+    data = abs(data)*wgt
+    data@lon1d = files[0]->$lonname$(0,:)
+    data@lat1d = files[0]->$latname$(0,:)
+    plot(ii) = subplot(ii,plotlabs(nplots-1)+" - "+plotlabs(0),gtype,data,levs,cmap)
 
-        dof = dofs[ii]->dof
-          ip = dim_pqsort(dof,1)
-          var1d_sort = data
-          var1d_sort = data(ip)
-          data       = var1d_sort
-          data@lon1d = x
-          data@lat1d = y
-      end if
-      plot(ii) = subplot(ii,plotlabs(ii),gtype,data,levs,cmap)
-
-      delete(data)
-    end do
+    ;dcmp = decomps[ii]->decomp(:)
+    ;dof = dofs[ii]->dof
+    ;  ip = dim_pqsort(dof,1)
+    ;  var1d_sort = dcmp
+    ;  var1d_sort = dcmp(ip)
+    ;  dcmp       = var1d_sort
+    ;  dcmp@lon1d = x
+    ;  dcmp@lat1d = y
+    ;  ores@sfXCellBounds = cx(:,0:5)
+    ;  ores@sfYCellBounds = cy(:,0:5)
+    ;  oplot(ii) = gsn_csm_contour(wks,dcmp,ores)
+    ;  overlay(plot(ii),oplot(ii))
+  end do
 
 ;************************************************
 ; make the panel
 ;************************************************
 
-   gsn_panel(wks,plot,(/nplots,1/),resP)
+   ;gsn_panel(wks,plot,(/nplots,1/),resP)
+   gsn_panel(wks,plot,(/1,1/),resP)
 
   frame(wks)
 

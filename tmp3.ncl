@@ -1,4 +1,4 @@
-**********************************************************
+;**********************************************************
 ; re-write CMEPS dststatus files for atm
 ;
 ; adapted from code originally written by
@@ -14,7 +14,7 @@ begin
 
    nl = str_get_nl()
    nflags = 9
-     RT = "/glade/scratch/worthen/FV3_RT/bilin/"
+     RT = "/glade/scratch/worthen/WaveUnstr2/"
    date = "2021-03-22-"
 
     atmres = 96
@@ -25,7 +25,7 @@ begin
    ;dirs=(/"unstrnoland3PE/"/)
 
    plotlab="dststatus"
-   dirs=(/"base/"/)
+   dirs=(/"pdlib2PE/"/)
 
    ;plotlab="mx050"
    ;plotlab="mx025"
@@ -42,8 +42,8 @@ begin
    levs = (/0,9,1/)
    ;fsrc = vname+".wav.atm.nstod_consf"
    ;fsrc = vname+".ocn.atm.consd"
-   fsrc = vname+".ocn.atm.consf"
-   ;fsrc = vname+".wav.atm.bilnr_nstod"
+   ;fsrc = vname+".ocn.atm.consf"
+   fsrc = vname+".wav.atm.bilnr_nstod"
 
   ntile = 6
   ndirs = dimsizes(dirs)
@@ -67,8 +67,8 @@ begin
 ;**********************************************************
 
   ;fname = "/glade/scratch/worthen/FV3_RT/wave_test/base/ufs.cpld.cpl.hi.atm."+date+"22320.nc"
-  fname = RT+dirs(0)+"ufs.cpld.cpl.hi.atm."+date+"22320.nc"
-  ;fname = RT+dirs(0)+"ufs.atmw.cpl.hi.atm."+date+"22320.nc"
+  ;fname = RT+dirs(0)+"ufs.cpld.cpl.hi.atm."+date+"25200.nc"
+  fname = RT+dirs(0)+"ufs.atmw.cpl.hi.atm."+date+"22320.nc"
   print("input file "+fname)
   ff = addfile(fname,"r")
 
@@ -180,10 +180,6 @@ do nd = 0,ndirs-1
       ;print("tile number = "+i+" "+istr+" "+iend)
      end do
 
-     ;ocnonly = var3d
-     ;ocnonly = mask(var3d,mskvar,0.0)
-     ;var3d = ocnonly
-
      fout->$vname$ = var3d(:,:,:)
     delete(fout)
     delete(var1d)
@@ -201,9 +197,9 @@ if(makeplot .eq. "yes") then
        ff = addfile(ofile, "r")
      data = ff->$vname$
 
-     ;ocnonly = data
-     ;ocnonly = mask(data,mskvar,0.0)
-     ;data = ocnonly
+     ocnonly = data
+     ocnonly = mask(data,mskvar,0.0)
+     data = ocnonly
 
     ;if(1.eq.0)then
      ; re-arrange tiles that are on their side

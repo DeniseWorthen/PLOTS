@@ -5,8 +5,14 @@
 
 ;************************************************
 
+
+ ;MD = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/WW3_input_data_20220624/"
+ ;scrpfile   = "no_land_CardDeck.SCRIP.nc"
+ ;MD = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/WaveUnstr2/moddefs3/"
+ ;scrpfile   = "trip1deg_noland.SCRIP.nc"
+
   scrpfile = "trip1degmask.SCRIP.nc"
-  MD = "/glade/scratch/worthen/WaveUnstr2/moddefs/"
+  MD = "/glade/scratch/worthen/addunstr.2acd891b.ww.33d337356/moddefs/"
   sfile      = addfile(MD+scrpfile,"r")
   x          = sfile->grid_center_lon
   y          = sfile->grid_center_lat
@@ -14,23 +20,58 @@
   cy         = sfile->grid_corner_lat
 
   ; cheyenne
-  RT1 = "/glade/scratch/worthen/WaveUnstr2/"
+  RT1 = "/glade/scratch/worthen/addunstr.2acd891b.ww.33d337356/"
   ; hera
   ;RT1 = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/WaveUnstr2/atmwtrip/"
 
   gridtype  = (/"unstructured", "unstructured"  /)
-  plotlabs = (/"Unstr DomainDecomp, 2PE", "Unstr Domain Decomp, 3PE"/)
-  rts = (/"pdlib2PE/", "pdlib3PE/"/)
+  plotlabs = (/"Unstr DomainDecomp, 5PE", "Unstr Card Deck, 3PE"/)
+  rts = (/"CPLD/base/", "CPLD/mpi/"/)
 
-  fnames = RT1+rts+"emesh.decomp.nc"
+  date = "2021-03-22-"
+  time = "25920"
+  fsrc = "ufs.cpld.ww3.hi."
+
+  fnames = RT1+rts+fsrc+date+time+".nc"
   files  = addfiles(fnames,"r")
-  nplots = dimsizes(gridtype)
-  levs = (/1,4,1/)
+  print(fnames)
 
-  fdof = "dof.wav.nc"
-  dofs = addfiles(RT1+rts+fdof,"r")
-  wkstitle = "decomp"
-  plottitle= "decomp"
+  flds = (/"EF"   , \
+           "USSPX", \
+           "USSPY", \
+           "ICE"/)
+ fldwgts = (/1.0e10, \
+             1.0e2,  \
+             1.0e2,  \
+             1.0e0/)
+  lonname = "lon"
+  latname = "lat"
+
+  nflds = dimsizes(flds)
+  nplots = dimsizes(gridtype)
+
+  ; plot levels
+  plotlevs = new((/nflds,3/), float)
+  plotlevs( 0,:) = (/   0.0,    3.0,  0.05/)   ; k=28
+  ;plotlevs( 0,:) = (/   0.0,    2.0,  0.20/)   ; k=29
+  ;plotlevs( 0,:) = (/   0.0,    1.0,  0.01/)   ; k=30
+  ; plotlevs( 1,:) = (/   -2.0,    2.0,  0.02/)   ; k=3 stokes
+  plotlevs( 3,:) = (/   0.0,    1.0,  0.1/)   ; ice
+
+;************************************************
+;
+;************************************************
+
+  ; pick a field to plot
+  fldtoplot = 3
+  levs = plotlevs(fldtoplot,:)
+  wgt = fldwgts(fldtoplot)
+  wkstitle = flds(fldtoplot)+"_"+date+time
+  ;wkstitle = plotlabs(0)
+
+ cmap = "WhiteBlueGreenYellowRed"
+ ;  cmap = "BlueWhiteOrangeRed"
+   plottitle=flds(fldtoplot)
 
 ;************************************************
 ; define the map
@@ -53,39 +94,28 @@
 
   ;res@cnFillMode = "MeshFill"
   res@cnFillMode = "RasterFill"
-  res@gsnDraw          = False ; don't draw
-  res@gsnFrame         = False ; don't advance frame
 
   res@cnFillDrawOrder   = "PreDraw"             ; draw contours first
+  res@cnFillOn           = True                 ; color fill
+  res@cnLinesOn          = False                ; no contour lines
+  res@cnLineLabelsOn     = False                ; no contour lines
   res@lbLabelBarOn       = False                ; turn off individual colorbars
   res@cnInfoLabelOn      = False		; turn off cn info label
-  res@cnLabelBarEndStyle = "ExcludeOuterBoxes"
-  res@lbLabelAlignment = "BoxCenters"
-
-  res@cnLineLabelsOn   = False
-  res@cnFillOn         = True
-  res@cnLinesOn        = False
-  res@cnInfoLabelOn    = False
-  res@gsnLeftString    = ""    ; no titles
-  res@gsnRightString   = ""
-  res@cnLevelSelectionMode = "ManualLevels"
-  res@cnMinLevelValF       = 1.               ; min level
-  res@cnMaxLevelValF       = 4                ; max level
-  res@cnLevelSpacingF      = 1                ; contour interval
-  res@cnSpanFillPalette    = False            ; don't span the full color map
-  res@cnFillPalette        = "default"        ; This colormap will be used for the dots
-
-  res@cnFillPatterns   = (/17,17,17/)
 
   ;res@mpFillOn           = False
   ;res@mpOutlineOn        = False
-  ;res@cnMissingValFillColor   = "gray"          ; color fill missing areas blue
+  res@cnMissingValFillColor   = "gray"          ; color fill missing areas blue
 
 ;************************************************
 ; the subplot call
 ;************************************************
 function subplot(ii,name,gtype,pltvar,pltlevs,palette)
 begin
+  res@cnLevelSelectionMode = "ManualLevels"        ; set the contour levels with the following 3 resources
+  res@cnMinLevelValF       = pltlevs(0)            ; set the minimum contour level
+  res@cnMaxLevelValF       = pltlevs(1)            ; set the maximum contour level
+  res@cnLevelSpacingF      = pltlevs(2)            ; set the interval between contours
+  res@cnFillPalette        = palette
 
   if (gtype .eq. "unstructured") then
     res@sfXCellBounds = cx(:,0:5)
@@ -114,7 +144,6 @@ begin
   ;delete(res@lbLabelStrings)
   return(splot)
 end
-
 ;************************************************
 ; resources for overlay
 ;************************************************
@@ -139,25 +168,25 @@ end
   resP                       = True     ; modify the panel plot
   resP@gsnMaximize           = True     ; maximize in frame
   resP@gsnFrame              = False    ; don't advance frame yet
-  resP@gsnPanelYWhiteSpacePercent = 5
-  resP@gsnPanelYWhiteSpacePercent = 8
+  ;resP@gsnPanelYWhiteSpacePercent = 5
+  ;resP@gsnPanelYWhiteSpacePercent = 8
   resP@gsnPanelLabelBar      = True     ; turn on a common labelbar for the entire panel plot
 
   resP@gsnPanelMainFontHeightF = 0.010  ; new resource added in NCL V6.4.0
   resP@gsnPanelMainString = plottitle
   resP@gsnMaximize        = True        ; use full page
 
-  ;resP@gsnPanelFigureStrings = (/date+time,date+time,date+time/)
-  ;resP@amJust = "TopLeft"
-  ;resP@gsnPanelFigureStringsFontHeightF = 0.008
+  resP@gsnPanelFigureStrings = (/date+time,date+time,date+time/)
+  resP@amJust = "TopLeft"
+  resP@gsnPanelFigureStringsFontHeightF = 0.008
+
 ; ***************************************************
 ;
 ; ***************************************************
 
-      wgt = 1.0
-      cmap = "circular_2"
+      k = 3
       do ii = 0,nplots-1
-        vname = "decomp"
+        vname = flds(fldtoplot)
         gtype = gridtype(ii)
         if (gtype .eq. "structured")then
         data = files[ii]->$vname$(0,:,:)
@@ -165,19 +194,14 @@ end
         data@lon2d = files[ii]->$lonname$(:,:)
         data@lat2d = files[ii]->$latname$(:,:)
       else
-        data = files[ii]->$vname$
+        ;printVarSummary(files[ii]->$vname$)
+        ;data = files[ii]->$vname$(0,k-1,0,:)
+        data = files[ii]->$vname$(0,0,:)
         data = data*wgt
-
-        dof = dofs[ii]->dof
-          ip = dim_pqsort(dof,1)
-          var1d_sort = data
-          var1d_sort = data(ip)
-          data       = var1d_sort
-          data@lon1d = x
-          data@lat1d = y
+        data@lon1d = files[ii]->$lonname$(0,:)
+        data@lat1d = files[ii]->$latname$(0,:)
       end if
       plot(ii) = subplot(ii,plotlabs(ii),gtype,data,levs,cmap)
-
       delete(data)
     end do
 
