@@ -14,8 +14,10 @@ begin
   ;MD            = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/WaveUnstr2/moddefs3/"
   RT            = "/glade/scratch/worthen/addunstr.2acd891b.ww.33d337356/"
   MD            = "/glade/scratch/worthen/addunstr.2acd891b.ww.33d337356/"
-  ;dirsrc        = "ATMW/base/"
-  dirsrc = "CPLD/cd/"
+  dirsrc        = "ATMW/base/"
+  ;dirsrc = "CPLD/cd/"
+
+  plotlab = (/"Unstr DomainDecomp, 5PE"/)
 
   dcmpfile = "emesh.decomp.nc"
   fdcmp = addfile(RT+dirsrc+dcmpfile,"r")
@@ -29,13 +31,6 @@ begin
   ;var1d@lat1d   = fdcmp->coordy
   levs		= (/1,1+dmax,1/)
   ;print(fdcmp)
-
-  ;doffile	= "dof.wav.nc"
-  ;  fdof	= addfile(RT+dirsrc+doffile,"r")
-  ;  vname	= "dof"
-  ;    dof	= fdof->$vname$(:)
-  ;     ip	= dim_pqsort(dof,1)
-  ;print(fdof)
 
   scrpfile   = "trip1degmask.SCRIP.nc"
      sfile	= addfile(MD+scrpfile,"r")
@@ -59,8 +54,8 @@ begin
 ; define the map
 ;************************************************
 
-  wkstype="X11"
-  ;wkstype="png"
+  ;wkstype="X11"
+  wkstype="png"
   wkstitle="emesh.decomp"
   wkstype@wkWidth=1000
   wkstype@wkHeight=1000
@@ -117,7 +112,7 @@ begin
    res@cnFillPalette    = "cb_9step"
 
    res@tiMainFontHeightF = .010
-   res@tiMainString = dirsrc
+   res@tiMainString = plotlab
    res@mpFillOn             = False
 
    res@cnFillPatterns       = (/17,17,17/) ; the patterns

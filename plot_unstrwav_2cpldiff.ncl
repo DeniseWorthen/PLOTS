@@ -33,7 +33,7 @@
         rts = (/"CPLD/base/", "CPLD/mpi/"/)
 
   date = "2021-03-22-"
-  time = "24480"
+  time = "25200"
   fsrc = "ufs.cpld.cpl.hi.wav."
 
   fnames = RT1+rts+fsrc+date+time+".nc"

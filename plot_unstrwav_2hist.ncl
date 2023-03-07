@@ -29,7 +29,7 @@
   rts = (/"CPLD/base/", "CPLD/mpi/"/)
 
   date = "2021-03-22-"
-  time = "25920"
+  time = "25200"
   fsrc = "ufs.cpld.ww3.hi."
 
   fnames = RT1+rts+fsrc+date+time+".nc"
@@ -63,7 +63,7 @@
 ;************************************************
 
   ; pick a field to plot
-  fldtoplot = 3
+  fldtoplot = 0
   levs = plotlevs(fldtoplot,:)
   wgt = fldwgts(fldtoplot)
   wkstitle = flds(fldtoplot)+"_"+date+time
@@ -184,7 +184,7 @@ end
 ;
 ; ***************************************************
 
-      k = 3
+      k = 28
       do ii = 0,nplots-1
         vname = flds(fldtoplot)
         gtype = gridtype(ii)
@@ -195,8 +195,8 @@ end
         data@lat2d = files[ii]->$latname$(:,:)
       else
         ;printVarSummary(files[ii]->$vname$)
-        ;data = files[ii]->$vname$(0,k-1,0,:)
-        data = files[ii]->$vname$(0,0,:)
+        data = files[ii]->$vname$(0,k-1,0,:)
+        ;data = files[ii]->$vname$(0,0,:)
         data = data*wgt
         data@lon1d = files[ii]->$lonname$(0,:)
         data@lat1d = files[ii]->$latname$(0,:)

@@ -24,9 +24,9 @@
   cpltype = "ufs.atmw."
   ;cpltype = "ufs.cpld."
 
-  plotlabs = "Domain Decomp Unstr 1deg 30PE, explicit"
+  plotlabs = "Domain Decomp Unstr 1deg 5PE, explicit"
   ;rts = "ATMW/case1.iostyp1/test/"
-  rts = "ATMW/base/"
+  rts = "ATMW/fix/"
   ;rts = "CPLD/cd/"
 
   date = "2021-03-22-"

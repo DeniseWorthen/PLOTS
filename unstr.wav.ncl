@@ -28,10 +28,10 @@ begin
      ;RT = "/glade/scratch/worthen/WaveUnstr/unstrnoland3PE/"
      ;RT = "/glade/scratch/worthen/WaveUnstr2/pdlib2PE/"
      ;RT = "/glade/scratch/worthen/WaveUnstr/pdlibnoland3PE/"
-       RT = "/glade/scratch/worthen/addunstr.2acd891b.ww.33d337356/ATMW/base/"
+       RT = "/glade/scratch/worthen/addunstr.2acd891b.ww.33d337356/ATMW/fix/"
 
-     filetype="wave history"
-     ;filetype="wave coupler"
+     ;filetype="wave history"
+     filetype="wave coupler"
      ;filetype="meshdecomp"
 
      if (filetype .eq. "wave history") then
@@ -66,11 +66,11 @@ begin
      end if
 
      if (filetype .eq. "wave coupler") then
-        time = "25920"
+        time = "25200"
         f = addfile(RT+"ufs.atmw.cpl.hi.wav.2021-03-22-"+time+".nc","r")
-        vname="wavExp_Sa_u10m"
-        data = f->$vname$(0,0,:)
-        levs = (/-20,20,1/)
+        ;vname="wavExp_Sa_u10m"
+        ;data = f->$vname$(0,0,:)
+        ;levs = (/-20,20,1/)
 
         ;vname="wavExp_Sa_tbot"
         ;data = f->$vname$(0,0,:)
@@ -78,12 +78,12 @@ begin
         ;levs = (/-40,40,.5/)
         ;levs = (/230,320,1/)
 
-        ;vname="wavImp_Sw_z0"
-        ;data = f->$vname$(0,0,:)
+        vname="wavImp_Sw_z0"
+        data = f->$vname$(0,0,:)
         ;data = where(data .lt. 0.0 .or. data .gt. 1.0e3, default_fillvalue(typeof(data)), data*1.0e3)
         ;data = where(abs(data) .ge. 2.0, data@_FillValue, data)
-        ;data = data*1.0e3
-        ;levs = (/0.0, 1.0, 0.05/)
+        data = data*1.0e3
+        levs = (/0.0, 0.5, 0.05/)
 
         data@lon1d = f->wavImp_lon(0,0,:)
         data@lat1d = f->wavImp_lat(0,0,:)
@@ -125,7 +125,7 @@ begin
   res@cnMissingValPerimOn     = False            ; turn on the missing value perimeter
   ;res@cnMissingValPerimColor  = "black"           ; outline the perimeter red
   res@cnMissingValFillPattern = 0               ; choose fill pattern 0 (solid fill)
-  ;res@cnMissingValFillColor   = "gray"          ; color fill missing areas blue
+  res@cnMissingValFillColor   = "gray"          ; color fill missing areas blue
 
   res@cnFillDrawOrder   = "PreDraw"             ; draw contours first
   res@cnFillOn          = True                 ; color fill
@@ -136,14 +136,14 @@ begin
   res@cnLabelBarEndStyle = "ExcludeOuterBoxes"
   res@lbLabelAlignment = "BoxCenters"
 
- ; res@cnLevelSelectionMode = "ManualLevels"     ; set the contour levels with the following 3 resources
- ; res@cnMinLevelValF  = levs(0)                      ; set the minimum contour level
- ; res@cnMaxLevelValF  = levs(1)                      ; set the maximum contour level
- ; res@cnLevelSpacingF = levs(2)                      ; set the interval between contours
+  res@cnLevelSelectionMode = "ManualLevels"     ; set the contour levels with the following 3 resources
+  res@cnMinLevelValF  = levs(0)                      ; set the minimum contour level
+  res@cnMaxLevelValF  = levs(1)                      ; set the maximum contour level
+  res@cnLevelSpacingF = levs(2)                      ; set the interval between contours
   ;res@cnFillPalette   = "amwg"
   ;res@cnFillPalette   = "MPL_rainbow"
-  ;res@cnFillPalette   = "BlWhRe"
-  res@cnFillPalette    = "NCV_jet"
+  res@cnFillPalette   = "WhiteBlueGreenYellowRed"
+  ;res@cnFillPalette    = "NCV_jet"
   res@tiMainFontHeightF = .010
   res@tiMainString = "test"
 

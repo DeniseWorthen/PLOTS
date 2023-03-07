@@ -24,40 +24,42 @@
   cx         = sfile->grid_corner_lon
   cy         = sfile->grid_corner_lat
 
-  ; cheyenne
-  ;RT1 = "/glade/scratch/worthen/WaveUnstr/"
-  ; hera
-  ;RT1 = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/rt_wavunstr/base"
-
  ;gridtype  = (/"unstructured", \
  ;              "unstructured", \
  ;              "unstructured", \
  ;              "unstructured"  /)
-
- gridtype  = (/"unstructured", "unstructured"/)
 
  ;plotlabs = (/"Unstr DomainDecomp, no UST, 3PE",   \
  ;             "Unstr Domain Decomp, with UST, 3PE", \
  ;             "Unstr Domain Decomp, with UST, 5PE", \
  ;             "Unstr Domain Decomp, with UST, 6PE"/)
 
- plotlabs = (/"Unstr DomainDecomp, 5PE", \
-              "Unstr DomainDecomp, 3PE"/)
-
  ;    rts = (/"noust3PE/",      \
  ;             "withust3PE/", \
  ;             "withust5PE/", \
  ;             "withust6PE/"  /)
 
+ gridtype  = (/"unstructured", "unstructured"/)
+
+ plotlabs = (/"Unstr DomainDecomp, 5PE", \
+              "Unstr DomainDecomp, 10PE"/)
+
+  ;rts = (/"ATMW/base/", "ATMW/mpi/"/)
   rts = (/"CPLD/base/", "CPLD/mpi/"/)
 
   fnames = RT+rts+"emesh.decomp.nc"
   files  = addfiles(fnames,"r")
   nplots = dimsizes(gridtype)
-  levs = (/1,6,1/)
+  print(fnames)
 
-  fdof = "dof.wav.nc"
-  dofs = addfiles(RT+rts+fdof,"r")
+  ; auto-set the max fill level
+  dmax = new((/nplots/),integer)
+  do ii = 0,nplots-1
+    dc = toint(files[ii]->decomp)
+    dmax(ii) = max(dc)
+  end do
+  levs = (/1,max(dmax)+1,1/)
+
   wkstitle = "decomp"
   plottitle= "decomp"
 
@@ -66,7 +68,7 @@
 ;************************************************
 
   wkstype="X11"
-						; wkstype="png"
+ ; wkstype="png"
   wkstype@wkWidth=1200
   wkstype@wkHeight=1200
   wks   = gsn_open_wks (wkstype,wkstitle)       ; send graphics to X11 window
@@ -188,7 +190,7 @@ end
         data = files[ii]->$vname$
         data = data*wgt
 
-        dof = dofs[ii]->dof
+        dof = files[ii]->dof
           ip = dim_pqsort(dof,1)
           var1d_sort = data
           var1d_sort = data(ip)
