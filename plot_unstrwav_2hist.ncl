@@ -20,17 +20,23 @@
   cy         = sfile->grid_corner_lat
 
   ; cheyenne
-  RT1 = "/glade/scratch/worthen/addunstr.2acd891b.ww.33d337356/"
+  RT1 = "/glade/scratch/worthen/addunstr.2acd891b.ww.33d337356/ATMW/"
   ; hera
   ;RT1 = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/WaveUnstr2/atmwtrip/"
 
-  gridtype  = (/"unstructured", "unstructured"  /)
-  plotlabs = (/"Unstr DomainDecomp, 5PE", "Unstr Card Deck, 3PE"/)
-  rts = (/"CPLD/base/", "CPLD/mpi/"/)
+  gridtype = (/"unstructured"           , "unstructured"           , "structured" /)
+  plotlabs = (/"Unstr DomainDecomp, 10PE", "Unstr Card Deck, 10PE"   , "Struc, 10PE" /)
+  ;rts =      (/"ustjsea.nofix/base/"    , "ustjsea.nofix/cd.base/" , "ustjsea.nofix/str/"  /)
+  rts =      (/"base/"    , "cd.base/" , "str/"  /)
+
+  ;gridtype = (/  "unstructured"           , "structured" /)
+  ;plotlabs = (/ "Unstr Card Deck, 5PE"   , "Struc, 5PE" /)
+  ;rts =      (/"ustjsea.nofix/base/"    , "ustjsea.nofix/cd.base/" , "ustjsea.nofix/str/"  /)
+  ;rts =      (/ "cd.base/" , "str/"  /)
 
   date = "2021-03-22-"
-  time = "25200"
-  fsrc = "ufs.cpld.ww3.hi."
+  time = "25920"
+  fsrc = "ufs.atmw.ww3.hi."
 
   fnames = RT1+rts+fsrc+date+time+".nc"
   files  = addfiles(fnames,"r")
@@ -38,12 +44,15 @@
 
   flds = (/"EF"   , \
            "USSPX", \
-           "USSPY", \
-           "ICE"/)
+           "ICE"  , \
+           "USTX" , \
+           "UAX"   /)
+
  fldwgts = (/1.0e10, \
              1.0e2,  \
-             1.0e2,  \
-             1.0e0/)
+             1.0e0,  \
+             1.0e0,  \
+             1.0e0   /)
   lonname = "lon"
   latname = "lat"
 
@@ -55,22 +64,24 @@
   plotlevs( 0,:) = (/   0.0,    3.0,  0.05/)   ; k=28
   ;plotlevs( 0,:) = (/   0.0,    2.0,  0.20/)   ; k=29
   ;plotlevs( 0,:) = (/   0.0,    1.0,  0.01/)   ; k=30
-  ; plotlevs( 1,:) = (/   -2.0,    2.0,  0.02/)   ; k=3 stokes
-  plotlevs( 3,:) = (/   0.0,    1.0,  0.1/)   ; ice
-
+  plotlevs( 1,:) = (/   -2.0,    2.0,  0.02/)   ; k=3 stokes
+  plotlevs( 2,:) = (/   0.0,    1.0,  0.1/)   ; ice
+  plotlevs( 3,:) = (/  -1.0,    1.0,  0.1/)   ; ustx
+  plotlevs( 4,:) = (/ -20.0,    20.0,  2./)   ; uax
 ;************************************************
 ;
 ;************************************************
 
   ; pick a field to plot
-  fldtoplot = 0
+  fldtoplot = 3
   levs = plotlevs(fldtoplot,:)
   wgt = fldwgts(fldtoplot)
   wkstitle = flds(fldtoplot)+"_"+date+time
   ;wkstitle = plotlabs(0)
 
- cmap = "WhiteBlueGreenYellowRed"
- ;  cmap = "BlueWhiteOrangeRed"
+ ;  cmap = "WhiteBlueGreenYellowRed"
+   cmap = "BlueWhiteOrangeRed"
+
    plottitle=flds(fldtoplot)
 
 ;************************************************
@@ -78,7 +89,7 @@
 ;************************************************
 
   wkstype="X11"
-						; wkstype="png"
+ ; wkstype="png"
   wkstype@wkWidth=1200
   wkstype@wkHeight=1200
   wks   = gsn_open_wks (wkstype,wkstitle)       ; send graphics to X11 window
@@ -144,23 +155,6 @@ begin
   ;delete(res@lbLabelStrings)
   return(splot)
 end
-;************************************************
-; resources for overlay
-;************************************************
-
-  ores                  = True
-  ores@cnLineThicknessF = 1.0            ; line thickness
-  ores@cnLineColor      = "black"        ; line color
-  ores@cnLineLabelsOn   = False
-  ores@cnLinesOn        = True
-  ores@cnInfoLabelOn    = False
-  ores@gsnDraw          = False ; don't draw
-  ores@gsnFrame         = False ; don't advance frame
-  ores@gsnLeftString    = ""    ; no titles
-  ores@gsnRightString   = ""
-  ;ores@cnLevelSelectionMode = "ManualLevels"
-  ;ores@cnLevels         = (/1,6,1/)
-  ;ores@cnFillPatterns   = (/17,17,17,17/)
 ; ***************************************************
 ; panel resources
 ; **************************************************
@@ -169,10 +163,10 @@ end
   resP@gsnMaximize           = True     ; maximize in frame
   resP@gsnFrame              = False    ; don't advance frame yet
   ;resP@gsnPanelYWhiteSpacePercent = 5
-  ;resP@gsnPanelYWhiteSpacePercent = 8
+  resP@gsnPanelYWhiteSpacePercent = 5
   resP@gsnPanelLabelBar      = True     ; turn on a common labelbar for the entire panel plot
 
-  resP@gsnPanelMainFontHeightF = 0.010  ; new resource added in NCL V6.4.0
+  resP@gsnPanelMainFontHeightF = 0.015  ; new resource added in NCL V6.4.0
   resP@gsnPanelMainString = plottitle
   resP@gsnMaximize        = True        ; use full page
 
@@ -195,8 +189,8 @@ end
         data@lat2d = files[ii]->$latname$(:,:)
       else
         ;printVarSummary(files[ii]->$vname$)
-        data = files[ii]->$vname$(0,k-1,0,:)
-        ;data = files[ii]->$vname$(0,0,:)
+        ;data = files[ii]->$vname$(0,k-1,0,:)
+        data = files[ii]->$vname$(0,0,:)
         data = data*wgt
         data@lon1d = files[ii]->$lonname$(0,:)
         data@lat1d = files[ii]->$latname$(0,:)

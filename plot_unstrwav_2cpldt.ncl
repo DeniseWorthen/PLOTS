@@ -20,14 +20,20 @@
   ; hera
   ;RT1 = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/addunstr.2acd891b.ww.33d337356/"
 
-  gridtype  = "unstructured"
   cpltype = "ufs.atmw."
   ;cpltype = "ufs.cpld."
 
-  plotlabs = "Domain Decomp Unstr 1deg 5PE, explicit"
-  ;rts = "ATMW/case1.iostyp1/test/"
-  rts = "ATMW/fix/"
-  ;rts = "CPLD/cd/"
+ gridtype  = "unstructured"
+ plotlabs = "Domain Decomp Unstr 1deg 30PE, explicit"
+ rts = "ATMW/base/"
+
+ ;gridtype  = "unstructured"
+ ;plotlabs = "Card Deck Unstr 1deg 30PE"
+ ;rts = "ATMW/cd.base/"
+
+ ;gridtype = "structured"
+ ;plotlabs = "Card Deck Str 1deg 30PE"
+ ;rts = "ATMW/str/"
 
   date = "2021-03-22-"
   ;times = (/"22320", "23040", "23760"/)
@@ -38,7 +44,7 @@
   dt=720
   dtrest=3600
   time0=21600
-  trest=time0+1*dtrest
+  trest=time0+2*dtrest
   itimes = (/trest-dt, trest, trest+dt/)
   times = sprinti("%d", itimes)
   ;print(times)

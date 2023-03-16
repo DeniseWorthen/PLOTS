@@ -1,0 +1,42 @@
+program logictest
+
+ logical :: lpdlib
+ logical :: result
+
+ character(len=1) :: gtype, ungtype
+
+ ungtype = "U"
+
+ gtype = "S"
+ lpdlib = .true.
+
+ ! DD, structured
+ result =  (.NOT. LPDLIB .or. (GTYPE.ne.UNGTYPE))
+ print *,'lpdlib = ',lpdlib,' gtype = ',gtype
+ print *,'IF (.NOT. LPDLIB .or. (GTYPE.ne.UNGTYPE)) ', result
+ print *
+
+ ! CD, structured
+ gtype = "S"
+ lpdlib = .false.
+ result =  (.NOT. LPDLIB .or. (GTYPE.ne.UNGTYPE))
+ print *,'lpdlib = ',lpdlib,' gtype = ',gtype
+ print *,'IF (.NOT. LPDLIB .or. (GTYPE.ne.UNGTYPE)) ', result
+ print *
+
+ ! CD, unstruc
+ gtype = "U"
+ lpdlib = .false.
+ result =  (.NOT. LPDLIB .or. (GTYPE.ne.UNGTYPE))
+ print *,'lpdlib = ',lpdlib,' gtype = ',gtype
+ print *,'IF (.NOT. LPDLIB .or. (GTYPE.ne.UNGTYPE)) ', result
+ print *
+
+ ! DD, unstr
+ gtype = "U"
+ lpdlib = .true.
+ result =  (.NOT. LPDLIB .or. (GTYPE.ne.UNGTYPE))
+ print *,'lpdlib = ',lpdlib,' gtype = ',gtype
+ print *,'IF (.NOT. LPDLIB .or. (GTYPE.ne.UNGTYPE)) ', result
+
+end program logictest

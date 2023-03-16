@@ -17,7 +17,7 @@ begin
   dirsrc        = "ATMW/base/"
   ;dirsrc = "CPLD/cd/"
 
-  plotlab = (/"Unstr DomainDecomp, 5PE"/)
+  plotlab = (/"Unstr DomainDecomp, 10PE"/)
 
   dcmpfile = "emesh.decomp.nc"
   fdcmp = addfile(RT+dirsrc+dcmpfile,"r")
@@ -54,8 +54,8 @@ begin
 ; define the map
 ;************************************************
 
-  ;wkstype="X11"
-  wkstype="png"
+  wkstype="X11"
+  ;wkstype="png"
   wkstitle="emesh.decomp"
   wkstype@wkWidth=1000
   wkstype@wkHeight=1000

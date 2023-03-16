@@ -4,11 +4,13 @@
 ; load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl"
 
 ;************************************************
-  
+
   ;MD = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/WW3_input_data_20220624/"
   ;scrpfile   = "no_land_CardDeck.SCRIP.nc"
-  MD = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/WaveUnstr2/moddefs3/"
-  scrpfile   = "trip1deg_noland.SCRIP.nc"
+  ;MD = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/WaveUnstr2/moddefs3/"
+
+  MD = "/glade/scratch/worthen/addunstr.2acd891b.ww.33d337356/moddefs/"
+  scrpfile   = "trip1degmask.SCRIP.nc"
   sfile      = addfile(MD+scrpfile,"r")
   x          = sfile->grid_center_lon
   y          = sfile->grid_center_lat
@@ -17,28 +19,18 @@
 
   ; cheyenne
   ;RT1 = "/glade/scratch/worthen/WaveUnstr/"
+  RT1 = "/glade/scratch/worthen/addunstr.2acd891b.ww.33d337356/ATMW/"
   ; hera
-  RT1 = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/WaveUnstr2/atmwtrip/"
+  ;RT1 = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/WaveUnstr2/atmwtrip/"
 
- gridtype  = (/"unstructured", \
-               "unstructured", \
-               "unstructured", \
-               "unstructured"  /)
-
- plotlabs = (/"Unstr DomainDecomp, no UST",   \
-              "Unstr Domain Decomp, with UST, 3PE", \
-              "Unstr Domain Decomp, with UST, 5PE", \
-              "Unstr CardDeck, with UST, 3PE"/)
-              ;"Unstr Domain Decomp, with UST, 6PE"/)
-
-      rts = (/"noust3PE/",      \
-              "withust3PE/", \
-              "withust5PE/", \
-              "withust3PEcarddeck/"  /)
-              ;"withust6PE/"  /)
+ gridtype = (/"unstructured"           , "unstructured"        ,  "structured"    /)
+ plotlabs = (/"Unstr DomainDecomp, 10PE", "Unstr Card Deck, 10PE", "Structured, 10PE"/)
+ ;rts =      (/"base/"             ,    "cd.base/"    ,  "str/"     /)
+ ;rts =      (/"ustjsea.nofix.10pe/base/" , "ustjsea.nofix.10pe/cd.base/" ,  "ustjsea.nofix.10pe/str/"     /)
+ rts =      (/"ustjsea.fix.10pe/base/" , "ustjsea.fix.10pe/cd.base/" ,  "ustjsea.fix.10pe/str/"     /)
 
   date = "2021-03-22-"
-  time = "25200"
+  time = "28800"
   fsrc = "ufs.atmw.cpl.hi.wav."
 
   fnames = RT1+rts+fsrc+date+time+".nc"
@@ -62,7 +54,7 @@
   plotlevs( 0,:) = (/   0.0,    0.5,  0.02/)   ; z0
   plotlevs( 1,:) = (/ -20.0,   20.0,  0.50/)   ; u10m
   plotlevs( 2,:) = (/ -20.0,   20.0,  0.50/)   ; v10m
- 
+
 ;************************************************
 ;
 ;************************************************
@@ -81,8 +73,8 @@
 ; define the map
 ;************************************************
 
-  wkstype="X11"
-						; wkstype="png"
+ ; wkstype="X11"
+  wkstype="png"
   wkstype@wkWidth=1200
   wkstype@wkHeight=1200
   wks   = gsn_open_wks (wkstype,wkstitle)       ; send graphics to X11 window
@@ -120,28 +112,28 @@ begin
   res@cnMaxLevelValF       = pltlevs(1)            ; set the maximum contour level
   res@cnLevelSpacingF      = pltlevs(2)            ; set the interval between contours
   res@cnFillPalette        = palette
-  
+
   if (gtype .eq. "unstructured") then
     res@sfXCellBounds = cx(:,0:5)
     res@sfYCellBounds = cy(:,0:5)
   end if
-    
-  res@gsnCenterStringFontHeightF      = 0.012
+
+  res@gsnCenterStringFontHeightF      = 0.015
   res@gsnCenterString                 = name
   ;res@gsnCenterStringOrthogonalPosF   = -.05
- 
+
   pltvar@units = ""
   pltvar@long_name = ""
 
   if (gtype .eq. "structured") then
     res@mpCenterLonF       = 180
-    res@mpFillOn           = False
+    res@mpFillOn           = True
     res@mpOutlineOn        = False
     splot = gsn_csm_contour_map(wks,pltvar,res)    ; create the plot
     delete(res@mpCenterLonF)
     delete(res@mpFillOn)
     delete(res@mpOutlineOn)
-  else 
+  else
     splot = gsn_csm_contour(wks,pltvar,res)    ; create the plot
   end if
   ;delete(res@cnLevels)
@@ -172,8 +164,8 @@ end
   resP                       = True     ; modify the panel plot
   resP@gsnMaximize           = True     ; maximize in frame
   resP@gsnFrame              = False    ; don't advance frame yet
+  ;resP@gsnPanelYWhiteSpacePercent = 5
   resP@gsnPanelYWhiteSpacePercent = 5
-  resP@gsnPanelYWhiteSpacePercent = 8
   resP@gsnPanelLabelBar      = True     ; turn on a common labelbar for the entire panel plot
 
   resP@gsnPanelMainFontHeightF = 0.010  ; new resource added in NCL V6.4.0
@@ -190,18 +182,18 @@ end
 
       do ii = 0,nplots-1
         vname = flds(fldtoplot)
-        gtype = gridtype(ii) 
+        gtype = gridtype(ii)
         if (gtype .eq. "structured")then
         data = files[ii]->$vname$(0,:,:)
         data = data*wgt
-        data@lon2d = files[ii]->$lonname$(:,:)
-        data@lat2d = files[ii]->$latname$(:,:)
+        data@lon2d = files[ii]->$lonname$(0,:,:)
+        data@lat2d = files[ii]->$latname$(0,:,:)
       else
         data = files[ii]->$vname$(0,0,:)
         data = data*wgt
         data@lon1d = files[ii]->$lonname$(0,0,:)
         data@lat1d = files[ii]->$latname$(0,0,:)
-      end if      
+      end if
       plot(ii) = subplot(ii,plotlabs(ii),gtype,data,levs,cmap)
       delete(data)
     end do
