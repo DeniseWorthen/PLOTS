@@ -16,7 +16,8 @@
   cy         = sfile->grid_corner_lat
 
   ; cheyenne
-  RT1 = "/glade/scratch/worthen/addunstr.2acd891b.ww.33d337356/"
+ ;RT1 = "/glade/scratch/worthen/addunstr.2acd891b.ww.33d337356/"
+  RT1 = "/glade/scratch/worthen/FV3_RT/"
   ; hera
   ;RT1 = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/addunstr.2acd891b.ww.33d337356/"
 
@@ -25,7 +26,7 @@
 
  gridtype  = "unstructured"
  plotlabs = "Domain Decomp Unstr 1deg 30PE, explicit"
- rts = "ATMW/base/"
+ rts = "wisepr/base/"
 
  ;gridtype  = "unstructured"
  ;plotlabs = "Card Deck Unstr 1deg 30PE"

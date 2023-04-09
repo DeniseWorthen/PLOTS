@@ -22,22 +22,21 @@ begin
        cy       = sf->grid_corner_lat(:,0:5)
        cx@units = "degrees_east"
        cy@units = "degress_north"
-       printVarSummary(cx)
+       ;printVarSummary(cx)
 
      ;RT = "/glade/scratch/worthen/WaveUnstr/str3PE/"
      ;RT = "/glade/scratch/worthen/WaveUnstr/unstrnoland3PE/"
      ;RT = "/glade/scratch/worthen/WaveUnstr2/pdlib2PE/"
      ;RT = "/glade/scratch/worthen/WaveUnstr/pdlibnoland3PE/"
-       RT = "/glade/scratch/worthen/addunstr.2acd891b.ww.33d337356/ATMW/fix/"
+      RT = "/glade/scratch/worthen/addunstr.2acd891b.ww.33d337356/CPLD/base/"
 
-     ;filetype="wave history"
-     filetype="wave coupler"
+     filetype="wave history"
+     ;filetype="wave coupler"
      ;filetype="meshdecomp"
 
      if (filetype .eq. "wave history") then
-        time="25200"
-        f = addfile(RT+"ufs.atmw.ww3.hi.2021-03-22-"+time+".nc","r")
-        print(RT+"ufs.atmw.ww3.hi.2021-03-22-"+time+".nc")
+        time="28800"
+        f = addfile(RT+"ufs.cpld.ww3.hi.2021-03-22-"+time+".nc","r")
         ;vname = "UAX"
         ;levs = (/-20,20,1.0/)
 
@@ -47,8 +46,15 @@ begin
         ;vname = "HS"
         ;levs = (/0,.50,.05/)
 
-        vname = "USTX"
-        levs = (/-1.,1.,0.1/)
+        ;vname = "ICE"
+        ;levs = (/0.0, 1.0, 0.1/)
+        vname = "mapsta"
+        levs = (/-3,3,1/)
+        ;vname = "maptmp"
+        ;levs = (/-5, 3, 1/)
+
+        ;vname = "USTX"
+        ;levs = (/-1.,1.,0.1/)
 
         data = f->$vname$(0,0,:)
         ;lons = f->lon(0,:)
@@ -62,7 +68,7 @@ begin
         ;mdata = data
         ;data = where(mdata .lt. 9.0, mdata@_FillValue, mdata)
         ;printVarSummary(data)
-
+        print("plotting "+vname+" from "+RT+"ufs.cpld.ww3.hi.2021-03-22-"+time+".nc")
      end if
 
      if (filetype .eq. "wave coupler") then
@@ -125,7 +131,7 @@ begin
   res@cnMissingValPerimOn     = False            ; turn on the missing value perimeter
   ;res@cnMissingValPerimColor  = "black"           ; outline the perimeter red
   res@cnMissingValFillPattern = 0               ; choose fill pattern 0 (solid fill)
-  res@cnMissingValFillColor   = "gray"          ; color fill missing areas blue
+  ;res@cnMissingValFillColor   = "gray"          ; color fill missing areas blue
 
   res@cnFillDrawOrder   = "PreDraw"             ; draw contours first
   res@cnFillOn          = True                 ; color fill
@@ -143,7 +149,7 @@ begin
   ;res@cnFillPalette   = "amwg"
   ;res@cnFillPalette   = "MPL_rainbow"
   res@cnFillPalette   = "WhiteBlueGreenYellowRed"
-  ;res@cnFillPalette    = "NCV_jet"
+  ;res@cnFillPalette    = "cb_9step"
   res@tiMainFontHeightF = .010
   res@tiMainString = "test"
 

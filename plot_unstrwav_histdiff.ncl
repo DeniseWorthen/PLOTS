@@ -6,7 +6,8 @@
 ;************************************************
 
   scrpfile = "trip1degmask.SCRIP.nc"
-  MD = "/glade/scratch/worthen/WaveUnstr2/moddefs/"
+  MD = "/glade/scratch/worthen/addunstr.2acd891b.ww.33d337356/moddefs/"
+  ;MD = "/glade/scratch/worthen/WaveUnstr2/moddefs/"
   sfile      = addfile(MD+scrpfile,"r")
   x          = sfile->grid_center_lon
   y          = sfile->grid_center_lat
@@ -14,24 +15,36 @@
   cy         = sfile->grid_corner_lat
 
   ; cheyenne
-  RT1 = "/glade/scratch/worthen/WaveUnstr2/"
+  RT1 = "/glade/scratch/worthen/addunstr.2acd891b.ww.33d337356/ATMW/"
   ; hera
   ;RT1 = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/WaveUnstr2/atmwtrip/"
 
   gridtype  = (/"unstructured", "unstructured"  /)
-  plotlabs = (/"Unstr DomainDecomp, 2PE", "Unstr Domain Decomp, 3PE"/)
-  rts = (/"pdlib2PE/", "pdlib3PE/"/)
+  plotlabs = (/"10PE", "5PE"/)
+  rts = (/"IMP/base/", "IMP/mpi/"/)
+  ;rts = (/"npa.nofix/base/", "npa.nofix/mpi/"/)
 
   date = "2021-03-22-"
-  time = "23760"
+  time = "25200"
   fsrc = "ufs.atmw.ww3.hi."
 
   fnames = RT1+rts+fsrc+date+time+".nc"
   files  = addfiles(fnames,"r")
   print(fnames)
 
-  flds = (/"EF"/)
-  fldwgts = (/1.0e11/)
+  flds = (/"EF"   , \
+           "USSPX", \
+           "ICE"  , \
+           "USTX" , \
+           "UAX"  , \
+           "TAUWNX"/)
+
+ fldwgts = (/1.0e6, \
+             1.0e2,  \
+             1.0e0,  \
+             1.0e4,  \
+             1.0e0,  \
+             1.0e18 /)
   lonname = "lon"
   latname = "lat"
 
@@ -40,30 +53,34 @@
 
   ; plot levels
   plotlevs = new((/nflds,3/), float)
-  plotlevs( 0,:) = (/   0.0,    0.5,  0.01/)   ; k=28
-  ;plotlevs( 0,:) = (/   0.0,    2.0,  0.20/)   ; k=29
-  ;plotlevs( 0,:) = (/   0.0,    1.0,  0.01/)   ; k=30
+  plotlevs( 0,:) = (/  -1.0,    1.0,  0.10/)   ; ef,k=32
+  plotlevs( 1,:) = (/   0.0,    2.0,  0.20/)   ; ussx,k=29
+  ;plotlevs( 1,:) = (/   0.0,    1.0,  0.01/)   ; k=30
+  plotlevs( 2,:) = (/   0.0,    1.0,  0.1/)   ; ice
+  plotlevs( 3,:) = (/  -1.0,    1.0,  0.1/)   ; ustx
+  plotlevs( 4,:) = (/ -20.0,    20.0,  2./)   ; uax
+  plotlevs( 5,:) = (/ -2.0,    2.0,  0.02/)   ; hs
+  ;fdecomp = "emesh.decomp.nc"
+  ;decomps  = addfiles(RT1+rts+fdecomp,"r")
+  ;print(decomps)
 
-  fdecomp = "emesh.decomp.nc"
-  decomps  = addfiles(RT1+rts+fdecomp,"r")
-  print(decomps)
-
-  fdof = "dof.wav.nc"
-  dofs = addfiles(RT1+rts+fdof,"r")
-  print(dofs)
+  ;fdof = "dof.wav.nc"
+  ;dofs = addfiles(RT1+rts+fdof,"r")
+  ;print(dofs)
 
 ;************************************************
 ;
 ;************************************************
 
   ; pick a field to plot
-  fldtoplot = 0
+  fldtoplot = 5
   levs = plotlevs(fldtoplot,:)
   wgt = fldwgts(fldtoplot)
   wkstitle = flds(fldtoplot)+"_"+date+time
   ;wkstitle = plotlabs(0)
 
-   cmap = "WhiteBlueGreenYellowRed"
+  cmap = "BlueWhiteOrangeRed"
+   ;cmap = "WhiteBlueGreenYellowRed"
    plottitle=flds(fldtoplot)
 
 ;************************************************
@@ -184,11 +201,12 @@ end
 ; ***************************************************
 
   ii=0
-  k = 28
+  k = 32
   do ii = 0,nplots-1
     vname = flds(fldtoplot)
     gtype = gridtype(ii)
-    data = files[1]->$vname$(0,k-1,0,:)-files[0]->$vname$(0,k-1,0,:)
+    ;data = files[1]->$vname$(0,k-1,0,:)-files[0]->$vname$(0,k-1,0,:)
+    data = files[1]->$vname$(0,0,:)-files[0]->$vname$(0,0,:)
     data = abs(data)*wgt
     data@lon1d = files[0]->$lonname$(0,:)
     data@lat1d = files[0]->$latname$(0,:)

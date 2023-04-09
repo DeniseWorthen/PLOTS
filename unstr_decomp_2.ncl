@@ -41,12 +41,12 @@
 
  gridtype  = (/"unstructured", "unstructured"/)
 
- plotlabs = (/"Unstr DomainDecomp, 5PE", \
-              "Unstr DomainDecomp, 10PE"/)
+ plotlabs = (/"Unstr, 10PE", \
+              "Unstr, 5PE"/)
 
   ;rts = (/"ATMW/base/", "ATMW/mpi/"/)
-  rts = (/"CPLD/base/", "CPLD/mpi/"/)
-
+  ;rts = (/"CPLD/base/", "CPLD/mpi/"/)
+  rts = (/"ATMW/IMP/base/", "ATMW/IMP/mpi/"/)
   fnames = RT+rts+"emesh.decomp.nc"
   files  = addfiles(fnames,"r")
   nplots = dimsizes(gridtype)
@@ -61,7 +61,7 @@
   levs = (/1,max(dmax)+1,1/)
 
   wkstitle = "decomp"
-  plottitle= "decomp"
+  plottitle= "Decomposition Examples"
 
 ;************************************************
 ; define the map
@@ -166,7 +166,7 @@ end
   resP@gsnPanelLabelBar      = True     ; turn on a common labelbar for the entire panel plot
 
   resP@gsnPanelMainFontHeightF = 0.010  ; new resource added in NCL V6.4.0
-  resP@gsnPanelMainString = plottitle
+  ;resP@gsnPanelMainString = plottitle
   resP@gsnMaximize        = True        ; use full page
 
   ;resP@gsnPanelFigureStrings = (/date+time,date+time,date+time/)

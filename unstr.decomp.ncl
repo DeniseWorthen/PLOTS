@@ -105,8 +105,8 @@ begin
    res@cnMinLevelValF  = levs(0)                      ; set the minimum contour level
    res@cnMaxLevelValF  = levs(1)                      ; set the maximum contour level
    res@cnLevelSpacingF = levs(2)                      ; set the interval between contours
-   ;res@cnFillPalette   = "amwg"
-   ;res@cnFillPalette   = "MPL_rainbow"
+   res@cnFillPalette   = "amwg"
+
    ;res@cnFillPalette   = "BlWhRe"
    ;res@cnFillPalette    = "circular_2"
    res@cnFillPalette    = "cb_9step"

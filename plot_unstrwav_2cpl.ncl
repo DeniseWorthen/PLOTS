@@ -18,19 +18,23 @@
   cy         = sfile->grid_corner_lat
 
   ; cheyenne
-  ;RT1 = "/glade/scratch/worthen/WaveUnstr/"
-  RT1 = "/glade/scratch/worthen/addunstr.2acd891b.ww.33d337356/ATMW/"
+  RT1 = "/glade/scratch/worthen/FV3_RT/"
+  ;RT1 = "/glade/scratch/worthen/addunstr.2acd891b.ww.33d337356/ATMW/"
   ; hera
   ;RT1 = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/WaveUnstr2/atmwtrip/"
 
- gridtype = (/"unstructured"           , "unstructured"        ,  "structured"    /)
- plotlabs = (/"Unstr DomainDecomp, 10PE", "Unstr Card Deck, 10PE", "Structured, 10PE"/)
+ ;gridtype = (/"unstructured"           , "unstructured"        ,  "structured"    /)
+ ;plotlabs = (/"Unstr DomainDecomp, 10PE", "Unstr Card Deck, 10PE", "Structured, 10PE"/)
  ;rts =      (/"base/"             ,    "cd.base/"    ,  "str/"     /)
  ;rts =      (/"ustjsea.nofix.10pe/base/" , "ustjsea.nofix.10pe/cd.base/" ,  "ustjsea.nofix.10pe/str/"     /)
- rts =      (/"ustjsea.fix.10pe/base/" , "ustjsea.fix.10pe/cd.base/" ,  "ustjsea.fix.10pe/str/"     /)
+ ;rts =      (/"ustjsea.fix.10pe/base/" , "ustjsea.fix.10pe/cd.base/" ,  "ustjsea.fix.10pe/str/"     /)
+
+ gridtype = (/"unstructured"           , "unstructured"/)
+ plotlabs = (/"Unstr, 30PE, pre-wise", "Unstr, 30PE, post-wise"/)
+ rts =      (/"prewisepr/base/"             ,    "wisepr/base/"/)
 
   date = "2021-03-22-"
-  time = "28800"
+  time = "23760"
   fsrc = "ufs.atmw.cpl.hi.wav."
 
   fnames = RT1+rts+fsrc+date+time+".nc"
@@ -73,8 +77,8 @@
 ; define the map
 ;************************************************
 
- ; wkstype="X11"
-  wkstype="png"
+  wkstype="X11"
+ ; wkstype="png"
   wkstype@wkWidth=1200
   wkstype@wkHeight=1200
   wks   = gsn_open_wks (wkstype,wkstitle)       ; send graphics to X11 window

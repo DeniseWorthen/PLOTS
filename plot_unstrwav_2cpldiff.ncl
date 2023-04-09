@@ -1,4 +1,4 @@
-	; ***********************************************
+; ***********************************************
 ; These files are loaded by default in NCL V6.2.0 and newer
 ; load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_code.ncl"
 ; load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl"
@@ -23,18 +23,26 @@
   cy         = sfile->grid_corner_lat
 
   ; cheyenne
-  RT1 = "/glade/scratch/worthen/addunstr.2acd891b.ww.33d337356/"
+ RT1 = "/glade/scratch/worthen/addunstr.2acd891b.ww.33d337356/"
+ ;RT1 = "/glade/scratch/worthen/FV3_RT/"
   ; hera
   ;RT1 = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/rt_wavunstr/"
   ;RT1 = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/addunstr.2acd891b.ww.33d337356/"
 
   gridtype  = (/"unstructured","unstructured"/)
-   plotlabs = (/"unstr 30deg 5PE"  , "unstr 1deg 20PE"/)
-        rts = (/"CPLD/base/", "CPLD/mpi/"/)
+  plotlabs = (/"unstr 10PE"  , "unstr 5PE"/)
+ ;       rts = (/"ATMW/npa.nofix/base/", "ATMW/npa.nofix/mpi/"/)
+        rts = (/"ATMW/IMP/base/", "ATMW/IMP/mpi/"/)
 
+  ;rts = (/"CPLD/base/", "CPLD/mpi/"/)
   date = "2021-03-22-"
-  time = "25200"
-  fsrc = "ufs.cpld.cpl.hi.wav."
+  dt=720
+  time0=21600
+  time = sprinti("%d", time0+5*dt)
+
+  ;time = "24480"
+  ;fsrc = "ufs.cpld.cpl.hi.wav."
+  fsrc = "ufs.atmw.cpl.hi.wav."
 
   fnames = RT1+rts+fsrc+date+time+".nc"
   files  = addfiles(fnames,"r")
@@ -43,13 +51,13 @@
   flds = (/"wavImp_Sw_z0" ,  \
            "wavExp_Sa_u10m", \
            "wavExp_Sa_v10m", \
-           "wavImp_Sw_pstokes_x2", \
-           "wavImp_Sw_pstokes_y2"/)
+           "wavImp_Sw_pstokes_x3", \
+           "wavImp_Sw_pstokes_y3"/)
 
-  fldwgts = (/1.0e3, \
+  fldwgts = (/1.0e13, \
+              1.e12, \
               1., \
-              1., \
-              1.0e15, \
+              1.0e9, \
               1.0e6/)
 
   lonname = "wavImp_lon"
@@ -71,21 +79,22 @@
 ;************************************************
 
   ; pick a field to plot
-  fldtoplot = 3
+  fldtoplot = 0
   levs = plotlevs(fldtoplot,:)
   wgt = fldwgts(fldtoplot)
   wkstitle = flds(fldtoplot)+"_"+date+time
   ;wkstitle = plotlabs(0)
+  print("plot variable "+flds(fldtoplot))
 
    cmap = "BlueWhiteOrangeRed"
-   plottitle=flds(fldtoplot)
+   plottitle=flds(fldtoplot)+"(*"+sprintf("%5.0e", wgt)+")"
 
 ;************************************************
 ; define the map
 ;************************************************
 
   wkstype="X11"
-						; wkstype="png"
+  ;wkstype="png"
   wkstype@wkWidth=1200
   wkstype@wkHeight=1200
   wks   = gsn_open_wks (wkstype,wkstitle)       ; send graphics to X11 window
@@ -111,7 +120,7 @@
 
   ;res@mpFillOn           = False
   ;res@mpOutlineOn        = False
-   ;res@cnMissingValFillColor   = "gray"          ; color fill missing areas blue
+  res@cnMissingValFillColor   = "gray"          ; color fill missing areas blue
 
 ;************************************************
 ; the subplot call
@@ -169,7 +178,7 @@ end
   ;resP@gsnPanelYWhiteSpacePercent = 8
   resP@gsnPanelLabelBar      = True     ; turn on a common labelbar for the entire panel plot
 
-  resP@gsnPanelMainFontHeightF = 0.010  ; new resource added in NCL V6.4.0
+  resP@gsnPanelMainFontHeightF = 0.015  ; new resource added in NCL V6.4.0
   resP@gsnPanelMainString = plottitle
   resP@gsnMaximize        = True        ; use full page
 

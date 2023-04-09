@@ -1,7 +1,7 @@
 ;************************************************
 ; These files are loaded by default in NCL V6.2.0 and newer
 ; load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_code.ncl"
-; load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl" 
+; load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl"
 
   load "$NCARG_ROOT/lib/ncarg/nclscripts/contrib/cd_string.ncl"
 ;************************************************
@@ -12,10 +12,10 @@ begin
 
   ;nemsrc = "/scratch4/NCEPDEV/ocean/save/Denise.Worthen/NEMS_INPUT0.1/"
   ;grdsrc = "cice_data/mx024/"
-  grdsrc2 = "/home/Denise.Worthen/MOM2CICE_2/"
- 
-  rtsrc = "/scratch3/NCEPDEV/stmp2/Denise.Worthen/frzmlt_meddump_oldrot/tmp/cpld_fv3_mom6_cice_2d_atm_flux/"
-  grdsrc = "ocn_2016_10_03_03.nc"
+  ;grdsrc2 = "/home/Denise.Worthen/MOM2CICE_2/"
+  grdsrc = "/glade/u/home/worthen/ocean_topog_tnx1v4_20170622.nc"
+  ;rtsrc = "/scratch3/NCEPDEV/stmp2/Denise.Worthen/frzmlt_meddump_oldrot/tmp/cpld_fv3_mom6_cice_2d_atm_flux/"
+  ;grdsrc = "ocn_2016_10_03_03.nc"
 
   rad2deg = 180.d0/acos(-1.0d0)
 
@@ -26,27 +26,35 @@ begin
   ; load the grid file
   ;gr =addfile(nemsrc+grdsrc+"cice_grid_024.nc","r")
   ;gr =addfile(grdsrc+"grid_cice_NEMS_mx025.nc","r")
-  gr =addfile(rtsrc+grdsrc,"r")
-  gr2=addfile(grdsrc2+"grid_cice_NEMS_mx025.nc","r")
+  ;gr =addfile(rtsrc+grdsrc,"r")
+  ;gr2=addfile(grdsrc2+"grid_cice_NEMS_mx025.nc","r")
+  gr = addfile(grdsrc,"r")
 
   ;varname="htn"
   ;latname="ulat"
   ;lonname="ulon"
 
   ;varname="dxCv"
-  varname="htn"
-  latname="geolat_v"
-  lonname="geolon_v"
+  ;varname="htn"
+  ;latname="geolat_v"
+  ;lonname="geolon_v"
 
+  latname = "y"
+  lonname = "x"
+  varname = "y"
   ;var = gr->$varname$/100.0
-  var = gr2->$varname$
+  ;var = gr2->$varname$
   ;var@lon2d=gr->$lonname$*rad2deg
   ;var@lat2d=gr->$latname$*rad2deg
+  var = gr->$varname$
   var@lon2d=gr->$lonname$
   var@lat2d=gr->$latname$
 
-  levs=(/6400.0, 6600.0, 5.0/)
+  ;levs=(/6400.0, 6600.0, 5.0/)
   ;levs=(/10500.0, 11000.0, 5.0/)
+  ;levs = (/0, 1, 1/)
+  ;levs = (/-180.0,180.0, 5.0/)
+  levs = (/50.0, 90.0, 2.0/)
 
 ;************************************************
 ; add a poly line showing the polar seem along
@@ -77,8 +85,8 @@ begin
   res@gsnStringFontHeightF = 0.05
 
   res@gsnPolar   = "NH"                          ; specify the hemisphere
-  ;res@mpMinLatF  = 66                            ; minimum lat to plot
-  res@mpMinLatF  = 88                            ; minimum lat to plot
+  res@mpMinLatF  = 66                            ; minimum lat to plot
+  ;res@mpMinLatF  = 88                            ; minimum lat to plot
   ;res@mpMinLatF  = 82                            ; minimum lat to plot
   res@mpCenterLonF = -45
 
