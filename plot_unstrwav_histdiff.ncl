@@ -15,18 +15,18 @@
   cy         = sfile->grid_corner_lat
 
   ; cheyenne
-  RT1 = "/glade/scratch/worthen/addunstr.2acd891b.ww.33d337356/ATMW/"
+  RT1 = "/glade/scratch/worthen/addunstr.2acd891b.ww.33d337356/CPLD/"
   ; hera
   ;RT1 = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/WaveUnstr2/atmwtrip/"
 
   gridtype  = (/"unstructured", "unstructured"  /)
   plotlabs = (/"10PE", "5PE"/)
-  rts = (/"IMP/base/", "IMP/mpi/"/)
+  rts = (/"base/", "mpi/"/)
   ;rts = (/"npa.nofix/base/", "npa.nofix/mpi/"/)
 
   date = "2021-03-22-"
-  time = "25200"
-  fsrc = "ufs.atmw.ww3.hi."
+  time = "23760"
+  fsrc = "ufs.cpld.ww3.hi."
 
   fnames = RT1+rts+fsrc+date+time+".nc"
   files  = addfiles(fnames,"r")
@@ -37,14 +37,14 @@
            "ICE"  , \
            "USTX" , \
            "UAX"  , \
-           "TAUWNX"/)
+           "HS"/)
 
  fldwgts = (/1.0e6, \
              1.0e2,  \
              1.0e0,  \
              1.0e4,  \
              1.0e0,  \
-             1.0e18 /)
+             1.0e3 /)
   lonname = "lon"
   latname = "lat"
 

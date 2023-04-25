@@ -11,26 +11,40 @@
 begin
 
   MD = "/glade/scratch/worthen/addunstr.2acd891b.ww.33d337356/moddefs/"
-  scrpfile = MD+"trip1degmask.SCRIP.nc"
-       sf       = addfile(scrpfile,"r")
-       x        = sf->grid_center_lon
-       y        = sf->grid_center_lat
-       cx       = sf->grid_corner_lon(:,:)
-       cy       = sf->grid_corner_lat(:,:)
-       cx@units = "degrees_east"
-       cy@units = "degress_north"
+ ;scrpfile = MD+"trip1degmask.SCRIP.nc"
+ ;scrpfile = MD+"exp.wise.tnx1v4.100k.SCRIP.nc"
+ ;scrpfile = MD+"exp.wise.tnx1v4p.100k.SCRIP.nc"
+       ;sf       = addfile(scrpfile,"r")
+       ;x        = sf->grid_center_lon
+       ;y        = sf->grid_center_lat
+       ;cx       = sf->grid_corner_lon(:,0:5)
+       ;cy       = sf->grid_corner_lat(:,0:5)
+       ;cx@units = "degrees_east"
+       ;cy@units = "degress_north"
        ;printVarSummary(cx)
 
-       RT = "/glade/scratch/worthen/addunstr.2acd891b.ww.33d337356/CPLD/base/"
+    ;   RT = "/glade/scratch/worthen/addunstr.2acd891b.ww.33d337356/CPLD/base/"
+    ;   RT = "/glade/scratch/worthen/addunstr.2acd891b.ww.33d337356/ATMW/OPT/base/"
 
+       RT = "/glade/scratch/worthen/addunstr.2acd891b.ww.33d337356/ATMW/base/"
+       title="global_270k.msh"
+
+       ;RT = "/glade/scratch/worthen/addunstr.2acd891b.ww.33d337356/ATMW/base.noresmP/"
+       ;title="GLOBAL_100k_with_tnx1v4maskP.msh"
      filetype="wave history"
      ;filetype="wave coupler"
      ;filetype="meshdecomp"
 
+     ; minlat = 66.0
+     ; zoom in
+     minlat = 88.0
+     ;minlat = 80.0
+
      if (filetype .eq. "wave history") then
         date="2021-03-22-"
-        time="25200"
-        fname="ufs.cpld.ww3.hi."+date+time+".nc"
+        time="26640"
+        fname="ufs.atmw.ww3.hi."+date+time+".nc"
+        ;fname="ufs.cpld.ww3.hi."+date+time+".nc"
         f = addfile(RT+fname,"r")
         ;vname = "UAX"
         ;levs = (/-20,20,1.0/)
@@ -38,11 +52,13 @@ begin
         ;vname = "DW"
         ;levs = (/0,8000.0,500.0/)
 
-        ;vname = "HS"
-        ;levs = (/0,.50,.05/)
+        vname = "HS"
+        levs = (/0,.50,.05/)
+        ;levs = (/0,1.0,0.01/)
+        ;levs = (/0.,5.0,.5/)
 
-        vname = "ICE"
-        levs = (/0.0, 1.0, 0.1/)
+        ;vname = "ICE"
+        ;levs = (/0.0, 1.0, 0.1/)
 
         ;vname = "USTX"
         ;levs = (/-1.,1.,0.1/)
@@ -52,7 +68,9 @@ begin
         ;lats = f->lat(0,:)
         data@lon1d = f->lon(0,:)
         data@lat1d = f->lat(0,:)
-
+        ;cx = transpose(f->clon(:,0,:))
+        ;cy = transpose(f->clat(:,0,:))
+        ;cx = f->clo
         ;f2=addfile(RT+"mesh.with_land_CardDeck.nc","r")
         ;lats = f2->wavExp_lat(0,0,:)
         ;DW
@@ -64,7 +82,7 @@ begin
 
      if (filetype .eq. "wave coupler") then
        date="2021-03-22-"
-       time="25200"
+       time="43200"
        fname="ufs.cpld.cpl.hi.wav."+date+time+".nc"
        f = addfile(RT+fname,"r")
         ;vname="wavExp_Sa_u10m"
@@ -109,7 +127,8 @@ begin
 
   ;res@cnFillMode = "MeshFill"
   res@cnFillMode = "RasterFill"
-  res@mpFillOn   = True
+  res@mpFillOn   = False
+  res@mpOutlineOn = False
 
   res@vpWidthF          = 0.70
   res@vpHeightF         = 0.40
@@ -118,7 +137,7 @@ begin
   res@cnMissingValPerimOn     = False            ; turn on the missing value perimeter
   ;res@cnMissingValPerimColor  = "black"           ; outline the perimeter red
   ;res@cnMissingValFillPattern = 0               ; choose fill pattern 0 (solid fill)
-  res@cnMissingValFillColor   = "white"          ; color fill missing areas blue
+  res@cnMissingValFillColor   = "gray"          ; color fill missing areas blue
 
   res@cnFillDrawOrder   = "PreDraw"             ; draw contours first
   res@cnFillOn          = True                 ; color fill
@@ -137,17 +156,18 @@ begin
   ;res@cnFillPalette   = "MPL_rainbow"
   res@cnFillPalette   = "WhiteBlueGreenYellowRed"
   res@tiMainFontHeightF = .010
-  res@tiMainString = "test"
+  res@tiMainString = title
   res@gsnPolar   =  "NH"                         ; specify the hemisphere
-  res@mpMinLatF  =  46.0                    ; minimum lat to plot
- ;  res@mpMinLatF  =  80.0                    ; minimum lat to plot
+  res@mpMinLatF  =  minlat                   ; minimum lat to plot
   res@mpCenterLonF = -45
 
+  res@sfElementNodes = f->nconn
+  res@sfFirstNodeIndex = 1
   ; polar plots are distorted with these included
-  ; if (filetype .eq. "wave history")then
- ;   res@sfXCellBounds = cx
- ;   res@sfYCellBounds = cy
-   ;end if
+   if (filetype .eq. "wave history")then
+;    res@sfXCellBounds = cx
+;    res@sfYCellBounds = cy
+   end if
     res@gsnLeftString = date+time
 
 ;************************************************

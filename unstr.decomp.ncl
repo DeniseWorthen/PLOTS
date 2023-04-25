@@ -17,7 +17,7 @@ begin
   dirsrc        = "ATMW/base/"
   ;dirsrc = "CPLD/cd/"
 
-  plotlab = (/"Unstr DomainDecomp, 10PE"/)
+  plotlab = (/"Unstr DomainDecomp, 5PE"/)
 
   dcmpfile = "emesh.decomp.nc"
   fdcmp = addfile(RT+dirsrc+dcmpfile,"r")

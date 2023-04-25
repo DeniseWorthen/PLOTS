@@ -1,42 +1,28 @@
 ;**********************************************************
-; re-write CMEPS coupler history fields for Atm
-; imports, exports and masks to tiled files for
 ;
-; adapted from code originally written by
-; Ufuk Turuncoglu turuncu@ucar.edu
-
-  load "dststatus_counts.ncl"
-
 ;**********************************************************
 begin
-
-  MD = "/glade/scratch/worthen/addunstr.2acd891b.ww.33d337356/moddefs/"
-  scrpfile = MD+"trip1degmask.SCRIP.nc"
-  ;MD       = "/glade/work/worthen/WaveIn_unstruc2/moddefs/"
-  ;scrpfile = MD+"no_land_CardDeck.SCRIP.nc"
-       ;print(scrpfile)
-       ;sf       = addfile(scrpfile,"r")
-       ;x        = sf->grid_center_lon
-       ;y        = sf->grid_center_lat
-       ;cx       = sf->grid_corner_lon(:,0:5)
-       ;cy       = sf->grid_corner_lat(:,0:5)
-       ;cx@units = "degrees_east"
-       ;cy@units = "degress_north"
-       ;printVarSummary(cx)
 
      ;RT = "/glade/scratch/worthen/WaveUnstr/str3PE/"
      ;RT = "/glade/scratch/worthen/WaveUnstr/unstrnoland3PE/"
      ;RT = "/glade/scratch/worthen/WaveUnstr2/pdlib2PE/"
      ;RT = "/glade/scratch/worthen/WaveUnstr/pdlibnoland3PE/"
-      RT = "/glade/scratch/worthen/addunstr.2acd891b.ww.33d337356/ATMW/base/"
+      RT = "/glade/scratch/worthen/addunstr.2acd891b.ww.33d337356/ATMW/base.noresmP/"
 
      filetype="wave history"
      ;filetype="wave coupler"
-     ;filetype="meshdecomp"
+
+     ;polar="false"
+     polar="true"
+     ; minlat = 66.0
+     ; zoom in
+     minlat = 88.0
+     ;minlat = 80.0
 
      if (filetype .eq. "wave history") then
-        time="25200"
-        f = addfile(RT+"ufs.atmw.ww3.hi.2021-03-22-"+time+".nc","r")
+       time="68400"
+       fname = "ufs.atmw.ww3.hi.2021-03-25-"+time+".nc"
+       f = addfile(RT+fname,"r")
         ;vname = "UAX"
         ;levs = (/-20,20,1.0/)
 
@@ -45,6 +31,11 @@ begin
 
         vname = "HS"
         levs = (/0,2.0,.2/)
+        ;levs = (/0,.5,.05/)
+        ;levs = (/0.,1.,.1/)
+
+       ;vname = "mapsta"
+       ;levs = (/-2,2,1/)
 
         ;vname = "ICE"
         ;levs = (/0.0, 1.0, 0.1/)
@@ -56,37 +47,16 @@ begin
         ;vname = "USTX"
         ;levs = (/-1.,1.,0.1/)
 
-        ;dims = dimsizes(f->lon)
-        ;print(dims)
-        ;delete(dims)
-        ;dims = dimsizes(f->clon)
-        ;print(dims)
-
         data = f->$vname$(0,0,:)
-        ;lons = f->lon(0,:)
-                                ;lats = f->lat(0,:)
-        ;printVarSummary(data)
         data@lon1d = f->lon(0,:)
         data@lat1d = f->lat(0,:)
-        ;crx = transpose(f->clon(:,0,:))
-        ;cry = transpose(f->clat(:,0,:))
-        ;cx = f->clon(:,0,:)
-        ;cy = f->clat(:,0,:)
-        ;printVarSummary(data)
-        ;printVarSummary(cx)
-
-        ;f2=addfile(RT+"mesh.with_land_CardDeck.nc","r")
-        ;lats = f2->wavExp_lat(0,0,:)
-        ;DW
-        ;mdata = data
-        ;data = where(mdata .lt. 9.0, mdata@_FillValue, mdata)
-        ;printVarSummary(data)
-        print("plotting "+vname+" from "+RT+"ufs.cpld.ww3.hi.2021-03-22-"+time+".nc")
+        print("plotting "+vname+" from "+RT+fname)
      end if
 
      if (filetype .eq. "wave coupler") then
-        time = "25200"
-        f = addfile(RT+"ufs.atmw.cpl.hi.wav.2021-03-22-"+time+".nc","r")
+       time = "25200"
+       fname = "ufs.atmw.cpl.hi.wav.2021-03-22-"+time+".nc"
+        f = addfile(RT+fname,"r")
         ;vname="wavExp_Sa_u10m"
         ;data = f->$vname$(0,0,:)
         ;levs = (/-20,20,1/)
@@ -108,24 +78,13 @@ begin
         data@lat1d = f->wavImp_lat(0,0,:)
      end if
 
-     if (filetype .eq. "meshdecomp")then
-       mskfile = "emesh.decomp.nc"
-       fmsk = addfile(RT+mskfile,"r")
-       vname="decomp"
-       data = fmsk->$vname$
-       data@lon1d = fmsk->coordx
-       data@lat1d = fmsk->coordy
-
-       levs = (/0,4,1/)
-    end if
-
 ;************************************************
 ; define the map
 ;************************************************
 
   wkstype="X11"
   ;wkstype="png"
-  wkstitle="test"
+  wkstitle="unstr.wave"
   wkstype@wkWidth=1200
   wkstype@wkHeight=1200
   wks   = gsn_open_wks (wkstype,wkstitle)              ; send graphics to X11 window
@@ -136,9 +95,6 @@ begin
 
   ;res@cnFillMode = "MeshFill"
   res@cnFillMode = "RasterFill"
-
-  res@vpWidthF          = 0.70
-  res@vpHeightF         = 0.40
 
   res@gsnStringFontHeightF = 0.01
   res@cnMissingValPerimOn     = False            ; turn on the missing value perimeter
@@ -164,34 +120,53 @@ begin
   res@cnFillPalette   = "WhiteBlueGreenYellowRed"
   ;res@cnFillPalette    = "cb_9step"
   res@tiMainFontHeightF = .010
-  res@tiMainString = "test"
+  res@tiMainString = fname
+  if (filetype .eq. "wave history") then
+    res@sfElementNodes = f->nconn
+    res@sfFirstNodeIndex = 1
+    res@mpFillOn             = False
+    res@mpOutlineOn          = False
+    res@mpFillOn             = False
+  else
+    res@mpFillOn             = True
+    res@mpOutlineOn          = True
+  end if
 
-  ;res@trGridType           = "TriangularMesh"  ; This is required to allow
-  ;                                             ; missing coordinates.
-  ;res@sfXArray = loncell
-  ;res@sfYArray = latcell
-  ;res@sfElementNodes = f->nconn
-  ;res@sfFirstNodeIndex = 1
-  ;res@mpFillOn             = False
-  ;res@mpOutlineOn          = False
-
+  if(polar .eq. "true")then
+    res@mpMinLatF    =  minlat                    ; minimum lat to plot
+    res@mpCenterLonF = -45
+    res@gsnPolar   =  "NH"                        ; specify the hemisphere
+  else
+    res@vpWidthF          = 0.70
+    res@vpHeightF         = 0.40
+  end if
   ;res@mpMinLatF            = -30      ; range to zoom in on
   ;res@mpMaxLatF            =  0.
   ;res@mpMinLonF            = -90.
   ;res@mpMaxLonF            = -70.
 
-  ;res@sfXArray = cx
-  ;res@sfYArray = cy
-  ;res@sfXCellBounds        = crx
-  ;res@sfYCellBounds        = cry
+;************************************************
+; add coord marks
+;************************************************
+
+  mkres = True
+  mkres@gsMarkerSizeF = 5.
+  mkres@gsnFrame        = False
+  mkres@gsnDraw         = False
+  mkres@gsnCoordsAttach = True
+
 ;************************************************
 ;
 ;************************************************
 
     res@gsnAddCyclic         = False
 
- plot = gsn_csm_contour_map(wks,data,res)    ; create the plot
- ;plot = gsn_csm_contour(wks,data,res)    ; create the plot
+    if(polar .eq. "true")then
+      plot = gsn_csm_contour_map_polar(wks,data,res)    ; create the plot
+      ;gsn_coordinates(wks,plot,data,mkres)
+    else
+      plot = gsn_csm_contour_map(wks,data,res)    ; create the plot
+    end if
 
   draw(plot)
   frame(wks)
