@@ -5,37 +5,24 @@
 
 ;************************************************
 
-
- ;MD = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/WW3_input_data_20220624/"
- ;scrpfile   = "no_land_CardDeck.SCRIP.nc"
- ;MD = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/WaveUnstr2/moddefs3/"
- ;scrpfile   = "trip1deg_noland.SCRIP.nc"
-
-  scrpfile = "trip1degmask.SCRIP.nc"
-  MD = "/glade/scratch/worthen/addunstr.2acd891b.ww.33d337356/moddefs/"
-  sfile      = addfile(MD+scrpfile,"r")
-  x          = sfile->grid_center_lon
-  y          = sfile->grid_center_lat
-  cx         = sfile->grid_corner_lon
-  cy         = sfile->grid_corner_lat
-
   ; cheyenne
   RT1 = "/glade/scratch/worthen/addunstr.2acd891b.ww.33d337356/ATMW/"
   ; hera
   ;RT1 = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/WaveUnstr2/atmwtrip/"
 
-  gridtype = (/"unstructured"           , "unstructured"           , "structured" /)
-  plotlabs = (/"Unstr DomainDecomp, 10PE", "Unstr Card Deck, 10PE"   , "Struc, 10PE" /)
-  ;rts =      (/"ustjsea.nofix/base/"    , "ustjsea.nofix/cd.base/" , "ustjsea.nofix/str/"  /)
-  rts =      (/"base/"    , "cd.base/" , "str/"  /)
+  ;polar="false"
+  polar="true"
+   minlat = 66.0
+  ; zoom in
+  ;minlat = 88.0
+  ;minlat = 85.0
 
-  ;gridtype = (/  "unstructured"           , "structured" /)
-  ;plotlabs = (/ "Unstr Card Deck, 5PE"   , "Struc, 5PE" /)
-  ;rts =      (/"ustjsea.nofix/base/"    , "ustjsea.nofix/cd.base/" , "ustjsea.nofix/str/"  /)
-  ;rts =      (/ "cd.base/" , "str/"  /)
+  gridtype = (/"unstructured" , "structured" /)
+  plotlabs = (/"Unstr DomainDecomp", "Structured" /)
+  rts =      (/"base.noresmP/", "base.mx100/"  /)
 
-  date = "2021-03-22-"
-  time = "25920"
+  date = "2021-03-25-"
+  time = "21600"
   fsrc = "ufs.atmw.ww3.hi."
 
   fnames = RT1+rts+fsrc+date+time+".nc"
@@ -46,10 +33,12 @@
            "USSPX", \
            "ICE"  , \
            "USTX" , \
-           "UAX"   /)
+           "UAX"  , \
+           "HS"/)
 
  fldwgts = (/1.0e10, \
              1.0e2,  \
+             1.0e0,  \
              1.0e0,  \
              1.0e0,  \
              1.0e0   /)
@@ -68,19 +57,19 @@
   plotlevs( 2,:) = (/   0.0,    1.0,  0.1/)   ; ice
   plotlevs( 3,:) = (/  -1.0,    1.0,  0.1/)   ; ustx
   plotlevs( 4,:) = (/ -20.0,    20.0,  2./)   ; uax
+  plotlevs( 5,:) = (/  0.0,    5.0,  0.5/)   ; hs
 ;************************************************
 ;
 ;************************************************
 
   ; pick a field to plot
-  fldtoplot = 3
+  fldtoplot = 5
   levs = plotlevs(fldtoplot,:)
   wgt = fldwgts(fldtoplot)
   wkstitle = flds(fldtoplot)+"_"+date+time
-  ;wkstitle = plotlabs(0)
 
- ;  cmap = "WhiteBlueGreenYellowRed"
-   cmap = "BlueWhiteOrangeRed"
+   cmap = "WhiteBlueGreenYellowRed"
+ ;  cmap = "BlueWhiteOrangeRed"
 
    plottitle=flds(fldtoplot)
 
@@ -100,9 +89,6 @@
   res@gsnDraw              = False		; do not draw until the end
   res@gsnFrame             = False		; do not automatically advance 'frame'
 
-  res@vpWidthF          = 0.70
-  res@vpHeightF         = 0.40
-
   ;res@cnFillMode = "MeshFill"
   res@cnFillMode = "RasterFill"
 
@@ -113,9 +99,16 @@
   res@lbLabelBarOn       = False                ; turn off individual colorbars
   res@cnInfoLabelOn      = False		; turn off cn info label
 
-  ;res@mpFillOn           = False
-  ;res@mpOutlineOn        = False
   res@cnMissingValFillColor   = "gray"          ; color fill missing areas blue
+
+  if(polar .eq. "true")then
+    res@mpMinLatF    =  minlat                    ; minimum lat to plot
+    res@mpCenterLonF = -45
+    res@gsnPolar   =  "NH"                        ; specify the hemisphere
+  else
+    res@vpWidthF          = 0.70
+    res@vpHeightF         = 0.40
+  end if
 
 ;************************************************
 ; the subplot call
@@ -128,31 +121,23 @@ begin
   res@cnLevelSpacingF      = pltlevs(2)            ; set the interval between contours
   res@cnFillPalette        = palette
 
-  if (gtype .eq. "unstructured") then
-    res@sfXCellBounds = cx(:,0:5)
-    res@sfYCellBounds = cy(:,0:5)
-  end if
-
   res@gsnCenterStringFontHeightF      = 0.012
   res@gsnCenterString                 = name
   ;res@gsnCenterStringOrthogonalPosF   = -.05
 
+  if (gtype .eq. "unstructured") then
+    res@sfElementNodes = files[ii]->nconn
+    res@sfFirstNodeIndex = 1
+    res@mpFillOn             = False
+  else
+    res@mpFillOn             = True
+  end if
+  res@mpOutlineOn          = False
+
   pltvar@units = ""
   pltvar@long_name = ""
 
-  if (gtype .eq. "structured") then
-    res@mpCenterLonF       = 180
-    res@mpFillOn           = False
-    res@mpOutlineOn        = False
-    splot = gsn_csm_contour_map(wks,pltvar,res)    ; create the plot
-    delete(res@mpCenterLonF)
-    delete(res@mpFillOn)
-    delete(res@mpOutlineOn)
-  else
-    splot = gsn_csm_contour(wks,pltvar,res)    ; create the plot
-  end if
-  ;delete(res@cnLevels)
-  ;delete(res@lbLabelStrings)
+  splot = gsn_csm_contour_map(wks,pltvar,res)    ; create the plot
   return(splot)
 end
 ; ***************************************************
@@ -178,7 +163,7 @@ end
 ;
 ; ***************************************************
 
-      k = 28
+      ;k = 28
       do ii = 0,nplots-1
         vname = flds(fldtoplot)
         gtype = gridtype(ii)
@@ -188,7 +173,6 @@ end
         data@lon2d = files[ii]->$lonname$(:,:)
         data@lat2d = files[ii]->$latname$(:,:)
       else
-        ;printVarSummary(files[ii]->$vname$)
         ;data = files[ii]->$vname$(0,k-1,0,:)
         data = files[ii]->$vname$(0,0,:)
         data = data*wgt

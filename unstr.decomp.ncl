@@ -14,7 +14,7 @@ begin
   ;MD            = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/WaveUnstr2/moddefs3/"
   RT            = "/glade/scratch/worthen/addunstr.2acd891b.ww.33d337356/"
   MD            = "/glade/scratch/worthen/addunstr.2acd891b.ww.33d337356/"
-  dirsrc        = "ATMW/base/"
+  dirsrc        = "ATMW/base.noresmP/"
   ;dirsrc = "CPLD/cd/"
 
   plotlab = (/"Unstr DomainDecomp, 5PE"/)
@@ -32,7 +32,8 @@ begin
   levs		= (/1,1+dmax,1/)
   ;print(fdcmp)
 
-  scrpfile   = "trip1degmask.SCRIP.nc"
+  scrpfile = "moddefs/exp.wise.tnx1v4p.100k.SCRIP.nc"
+  ;scrpfile   = "trip1degmask.SCRIP.nc"
      sfile	= addfile(MD+scrpfile,"r")
      x		= sfile->grid_center_lon
      y		= sfile->grid_center_lat

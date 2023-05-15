@@ -7,7 +7,7 @@ begin
      ;RT = "/glade/scratch/worthen/WaveUnstr/unstrnoland3PE/"
      ;RT = "/glade/scratch/worthen/WaveUnstr2/pdlib2PE/"
      ;RT = "/glade/scratch/worthen/WaveUnstr/pdlibnoland3PE/"
-      RT = "/glade/scratch/worthen/addunstr.2acd891b.ww.33d337356/ATMW/base.noresmP/"
+      RT = "/glade/scratch/worthen/addunstr.2acd891b.ww.33d337356/ATMW/base.noresm89.5/"
 
      filetype="wave history"
      ;filetype="wave coupler"
@@ -17,23 +17,26 @@ begin
      ; minlat = 66.0
      ; zoom in
      minlat = 88.0
-     ;minlat = 80.0
+     ;minlat = 85.0
 
      if (filetype .eq. "wave history") then
-       time="68400"
-       fname = "ufs.atmw.ww3.hi.2021-03-25-"+time+".nc"
+       time="21600"
+       fname = "ufs.atmw.ww3.hi.2021-03-27-"+time+".nc"
        f = addfile(RT+fname,"r")
         ;vname = "UAX"
-        ;levs = (/-20,20,1.0/)
+        ;levs = (/-2,2,.22/)
 
         ;vname = "DW"
-        ;levs = (/0,8000.0,500.0/)
-
+        ;levs = (/0,4000.0,200.0/)
+        ;levs = (/0.0,100.0,10.0/)
         vname = "HS"
-        levs = (/0,2.0,.2/)
-        ;levs = (/0,.5,.05/)
-        ;levs = (/0.,1.,.1/)
+        ;levs = (/0,2.0,.02/)
+        ;levs = (/0,.5,.01/)
+        levs = (/0.,1.,.05/)
+        ;levs = (/0.,5.0,0.1/)
 
+       ;vname="EF"
+       ;levs = (/0,2.,.1/)
        ;vname = "mapsta"
        ;levs = (/-2,2,1/)
 
@@ -48,14 +51,15 @@ begin
         ;levs = (/-1.,1.,0.1/)
 
         data = f->$vname$(0,0,:)
+        ;data = f->$vname$(0,18,0,:)
         data@lon1d = f->lon(0,:)
         data@lat1d = f->lat(0,:)
         print("plotting "+vname+" from "+RT+fname)
      end if
 
      if (filetype .eq. "wave coupler") then
-       time = "25200"
-       fname = "ufs.atmw.cpl.hi.wav.2021-03-22-"+time+".nc"
+       time = "21600"
+       fname = "ufs.atmw.cpl.hi.wav.2021-03-23-"+time+".nc"
         f = addfile(RT+fname,"r")
         ;vname="wavExp_Sa_u10m"
         ;data = f->$vname$(0,0,:)
@@ -150,14 +154,25 @@ begin
 ;************************************************
 
   mkres = True
-  mkres@gsMarkerSizeF = 5.
+  mkres@gsMarkerSizeF = 2.
   mkres@gsnFrame        = False
   mkres@gsnDraw         = False
   mkres@gsnCoordsAttach = True
 
+  ;mkres@gsnCoordsMaxLat = 80.0
+  ;mskdata=data
+  ;printVarSummary(mskdata)
+  ;mskdata=where(data@lat1d .ge. 80, data@_FillValue, data)
+  ;npole=mask(data,mskdata,0.0)
+  ;npole@lat1d=f->lat(0,:)
+  ;npole@lon1d=f->lon(0,:)
 ;************************************************
 ;
 ;************************************************
+
+  ;mskdata = data
+  ;mskdata = where(mskdata@lat1d .le. 89.0, mskdata, mskdata@_FillValue)
+  ;data = mskdata
 
     res@gsnAddCyclic         = False
 
