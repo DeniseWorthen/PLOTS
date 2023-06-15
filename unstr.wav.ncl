@@ -30,7 +30,8 @@ begin
      ;scrpfile   = "no_land_CardDeck.SCRIP.nc"
      ;scrpfile   = "trip1degmask.SCRIP.nc"
      ;scrpfile   = "trip15minmask_dd.SCRIP.nc"
-  scrpfile = "exp.global_270k.SCRIP.nc"
+  ;scrpfile = "exp.global_270k.SCRIP.nc"
+     scrpfile = "trip1degmask.SCRIP.nc"
 
      sfile      = addfile(MD+scrpfile,"r")
      x          = sfile->grid_center_lon
@@ -50,7 +51,7 @@ begin
     ;dirsrc        = "tripnoland/"
     ;dirsrc        = "pdlibnoland3PE/"
 
-    ;dirsrc         = "base.cd/"
+    ;dirsrc         = "base/"
     ;plotlab       =  "unstr card deck"
     ;dirsrc         = "base.dd20/"
     ;plotlab       =  "unstr domain decomp"
@@ -60,9 +61,14 @@ begin
     ;dirsrc        = "atmwav_unstr_control_noaero_p8/"
     ;plotlab       = "unstr noland"
 
-     plotlab = "pdlib270k"
-     dirsrc = "pdlib270k/"
+     ;plotlab = "pdlib270k"
+     ;dirsrc = "pdlib270k/"
 
+     plotlab = "unstr"
+     dirsrc = "unstr.hiice/"
+
+     ;plotlab = "base"
+     ;dirsrc = "base/"
      filetype="wave history"
      ;fsrc="ufs.atmw.ww3.hi."
      ;fsrc="ufs.cpld.ww3.hi."
@@ -75,8 +81,8 @@ begin
      ;time="64800"
      ;time="60480"
      ;fname=RT+dirsrc+fsrc+date+time+".nc"
-     date="20210824"
-     time="060000"
+     date="20210819"
+     time="180000"
      fsrc=".out_grd.ww3.nc"
      fname = RT+dirsrc+date+"."+time+fsrc
      f = addfile(fname,"r")
@@ -89,14 +95,14 @@ begin
         ;levs = (/0,8000.0,500.0/)
 
         vname = "HS"
-;        levs = (/0,4.00,.05/)
-        levs = (/0,10.0, .1/)
+        levs = (/0,4.00,.05/)
+;        levs = (/0,10.0, .1/)
 
 ;        vname = "ICE"
 ;        levs = (/0,1.00,.1/)
 
-        ;vname = "USTX"
-        ;levs = (/-1.,1.,0.1/)
+;        vname = "USTX"
+;        levs = (/-1.,1.,0.1/)
 
         ;vname = "PHS"
         ;levs = (/0.,2,.02/)
@@ -192,7 +198,8 @@ begin
   res@mpOutlineOn          = False
 
    res@gsnPolar   =  "NH"                         ; specify the hemisphere
-   res@mpMinLatF  =  66.0                    ; minimum lat to plot
+ res@mpMinLatF  =  66.0                    ; minimum lat to plot
+ ;  res@mpMinLatF  =  80.0                    ; minimum lat to plot
    res@mpCenterLonF = -45
 
   ;res@mpMinLatF            = -30      ; range to zoom in on
@@ -225,7 +232,9 @@ begin
   ores@gsnRightString   = ""
   ;ores@lbLabelBarOn       = False                 ; turn off individual colorbars
   ores@cnLevelSelectionMode = "ExplicitLevels"     ; set the contour levels with the following 3 resources
-  ores@cnLevels         = (/0.75/)
+  ores@cnLevels         = (/0.15/)
+  ores@sfXCellBounds = cx(:,0:5)
+  ores@sfYCellBounds = cy(:,0:5)
 
 ;************************************************
 ;

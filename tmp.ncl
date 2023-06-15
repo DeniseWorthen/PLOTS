@@ -3,264 +3,208 @@
 ; load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_code.ncl"
 ; load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl"
 
-  load "tilegrid.ncl"
-
 ;************************************************
 
-  ; gaea
-  RT = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/"
+  ;MD = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/rt_wavunstr/moddefs/"
+  ;MD = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/addunstr.2acd891b.ww.33d337356/"
+  ;MD = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/waveice/ice0/"
 
-  hemi = "NH"
- ; hemi = "SH"
- ; hemi = "none"
+  ; cheyenne
+  ;RT1 = "/glade/scratch/worthen/WaveUnstr/"
+  ; hera
+  ;RT1 = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/rt_wavunstr2/"
+  ;RT1="/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/addunstr.2acd891b.ww.33d337356/"
+  RT1="/scratch1/NCEPDEV/stmp2/Denise.Worthen/waveice/"
 
-  rad2deg=180.d0/acos(-1.0d0)
+  gridtype  = "unstructured"
+   ;plotlabs = "Card Deck Unstr 1deg 20PE"
+   ; plotlabs = "Domain Decomp Unstr 1deg 3PE, iostyp 0"
+  ;plotlabs ="atmw.pdlib.fix1"
+  plotlabs = "base"
+
+   ;     rts = "base48.dd30/"
+   ;     rts = "base.dd3.iostyp0/"
+   ; rts = "atmw.pdlib.fix1/"
+  rts = "base/"
+
+  date = "20210617."
+  ;date = "2021-06-17-"
+  ;times = (/"59760","64080", "64800", "65520"/)
+  ;times = (/"23760", "24480", "25200", "25920"/)
+  times = (/"120000"/)
+  ;fsrc = "ufs.atmw.ww3.hi."
+  ;fsrc = "ufs.cpld.ww3.hi.
+  timelabs = date+times
+
+  ;fnames = RT1+rts+fsrc+date+times+".nc"
+  fnames = RT1+rts+date+times+".out_grd.ww3.nc"
+  files  = addfiles(fnames,"r")
+  print(fnames)
+
+  flds = (/"PHS"  , \
+           "EF"   , \
+           "HS"   , \
+           "CHARN", \
+           "USTX" , \
+         "TAUWNY"   /)
+
+  fldwgts = (/1.0, \
+              1.0, \
+              1.0, \
+              1.0e2, \
+              1.0,   \
+              1.0e8  /)
+
+  flddims = (/4, \
+              4, \
+              3, \
+              3, \
+              3, \
+              3  /)
+
+  lonname = "lon"
+  latname = "lat"
+
+  nflds = dimsizes(flds)
+  nplots = dimsizes(times)
+
+  ; plot levels
+  plotlevs = new((/nflds,3/), float)
+  plotlevs( 0,:) = (/   0.0,    0.5,  0.05/)   ; phs
+  plotlevs( 1,:) = (/   0.0,    3.0,  0.05/)   ; ef, k=28
+  plotlevs( 2,:) = (/   0.0,    1.0,  0.10/)   ; hs
+  plotlevs( 3,:) = (/   0.9,    2.0,  0.02/)   ; charn
+  plotlevs( 4,:) = (/  -1.0,    1.0,  0.10/)   ; ustx
+  plotlevs( 5,:) = (/  -1.0,    1.0,  0.10/)   ; tauwnx
 
 ;************************************************
 ;
 ;************************************************
 
-  lstep=0
-  if(hemi .eq. "none")then
-    tile = "tile4"
-  else
-   if(hemi .eq. "NH")then
-    tile = "tile3"
-  end if
-  if(hemi .eq. "SH")then
-    tile = "tile6"
-  end if
- end if
+  ; pick a field to plot
+  fldtoplot = 2
+  levs = plotlevs(fldtoplot,:)
+  wgt = fldwgts(fldtoplot)
+  ndims = flddims(fldtoplot)
+  wkstitle = flds(fldtoplot)
+  gtype = gridtype
+  ;wkstitle = plotlabs(0)
 
- ; in coupler history files
-    tlonname = "grid_xt"
-    tlatname = "grid_yt"
-
- wkstitle = "cpldcontrol"
-  runlabs = (/"Control","Restart"/)
- dirs = (/"restarts/ca_on/base/", "restarts/ca_on/rest/" /)
- ;dirs = (/"restarts/base/", "restarts/rest/" /)
-  time = "2021-03-22-32700."
-  fsrc = "ufs.cpld.cpl.hi."
- ndirs = dimsizes(dirs)
-   nts = dimsizes(time)
-
-  ; add cpl history files on tile
-  files=addfiles(RT+dirs+fsrc+time+tile+".nc","r")
-  print(files)
-
-  ; set plot limits if not polar
-  tilecorners = tilegrid(files[0]->$tlonname$,files[0]->$tlatname$,tile)
-  if(hemi .eq. "none")then
-   minlon = tilecorners[0]
-   minlat = tilecorners[1]
-   maxlon = tilecorners[2]
-   maxlat = tilecorners[3]
-   midlon = minlon + 0.5*(maxlon - minlon)
-   print(minlat+"   "+maxlat)
-   print(minlon+"   "+maxlon+"  "+midlon+"  "+0.5*(maxlon - minlon))
-  else
-   if(hemi .eq. "NH")then
-    minlat =  50.0
-    midlon = -45.0
-   else
-    maxlat = -50.0
-    midlon =   0.0
-   end if
-  end if
-
-  ;palette="BlueWhiteOrangeRed"
-  palette="BlWhRe"
-
-  ; atm fields
-  ;atmflds = (/ "atmImp_Faxa_rain",  \
-  ;             "atmImp_Sa_pbot",    \
-  ;             "atmImp_Sa_shum",    \
-  ;             "atmImp_Sa_tbot",    \
-  ;             "atmImp_Sa_z",       \
-  ;             "atmImp_Faxa_lwnet"  \
-  ;          /)
-  atmflds = (/ "atmImp_Faxa_lwnet" /)
-  nflds = dimsizes(atmflds)
-
-  ; easier plots
-  ;atmwgts = (/1.e4, \
-  ;            1.00, \
-  ;            1.e4, \
-  ;            1.00, \
-  ;            1.00, \
-  ;            1.00 \
-  ;          /)
-  atmwgts = (/1.e12/)
-
-  plotlevs = new((/nflds,3/), float)
-  ;plotlevs( 0,:) = (/  -0.02,  0.02, 0.002/) ; rain
-  ;plotlevs( 1,:) = (/  -0.02,  0.02, 0.002/) ; pbot
-  ;plotlevs( 2,:) = (/  -0.02,  0.02, 0.002/) ; shum
-  ;plotlevs( 3,:) = (/  -0.02,  0.02, 0.002/) ; tbot
-  ;plotlevs( 4,:) = (/  -0.02,  0.02, 0.002/) ; zbot
-  ;plotlevs( 5,:) = (/  -0.02,  0.02, 0.002/) ; lwnet
-  plotlevs( 0,:) = (/  -0.02,  0.02, 0.002/) ; lwnet
-
-  ; atm fields
-  ;atmflds = (/"aod550",     \
-  ;            "bc_aod550",  \
-  ;            "du_aod550",  \
-  ;            "oc_aod550",  \
-  ;            "ss_aod550",  \
-  ;            "su_aod550"   \
-  ;            /)
-  ;nflds = dimsizes(atmflds)
-
-  ;plotlevs = new((/nflds,3/), float)
-  ;plotlevs( 0,:) = (/  0.0,  1.00, 0.100/)
-  ;plotlevs( 1,:) = (/  0.0,  0.02, 0.001/)  ; bc
-  ;plotlevs( 2,:) = (/  0.0,  1.00, 0.100/)  ; du
-  ;plotlevs( 3,:) = (/  0.0,  0.20, 0.010/)  ; oc
-  ;plotlevs( 4,:) = (/  0.0,  0.20, 0.010/)  ; ss
-  ;plotlevs( 5,:) = (/  0.0,  0.20, 0.010/)  ; su
-  
-  ; retrieve orodata file from INPUT directory for masking
-  ofile = addfile(RT+dirs(0)+"INPUT/oro_data."+tile+".nc","r")
-  mskname = "slmsk"
-  msklonname = "geolon"
-  msklatname = "geolat"
-  mskvar = ofile->$mskname$(:,:)
-  mskvar@lon2d = ofile->$msklonname$
-  mskvar@lat2d = ofile->$msklatname$
-
-  plottitle=runlabs(1)+" - "+runlabs(0)+"  "+tile
+   cmap = "WhBlGrYeRe"
+   ;cmap = "WhiteBlueGreenYellowRed"
+   plottitle=flds(fldtoplot)+";  "+plotlabs
 
 ;************************************************
 ; define the map
 ;************************************************
 
   wkstype="X11"
-  ;wkstype="png"
-  wkstype@wkWidth=800
-  wkstype@wkHeight=800
-  wks   = gsn_open_wks (wkstype,wkstitle)              ; send graphics to X11 window
+						; wkstype="png"
+  wkstype@wkWidth=1200
+  wkstype@wkHeight=1200
+  wks   = gsn_open_wks (wkstype,wkstitle)       ; send graphics to X11 window
+  ; drawNDCGrid(wks)
+  plot = new(nplots,graphic)
 
-  res                      = True        ; plot mods desired
-  res@gsnDraw              = False       ; do not draw until the end
-  res@gsnFrame             = False       ; do not automatically advance 'frame'
+  res                      = True		; plot mods desired
+  res@gsnDraw              = False		; do not draw until the end
+  res@gsnFrame             = False		; do not automatically advance 'frame'
+
+  res@vpWidthF          = 0.70
+  res@vpHeightF         = 0.40
 
   ;res@cnFillMode = "MeshFill"
   res@cnFillMode = "RasterFill"
-  res@mpFillOn   = False
-  res@mpOutlineOn   = False
 
-  plot = new(nflds,graphic)
+  ;res@cnFillDrawOrder   = "PreDraw"             ; draw contours first
+  res@cnFillOn           = True                 ; color fill
+  res@cnLinesOn          = False                ; no contour lines
+  res@cnLineLabelsOn     = False                ; no contour lines
+  res@lbLabelBarOn       = False                ; turn off individual colorbars
+  res@cnInfoLabelOn      = False		; turn off cn info label
 
-  if(hemi .ne. "none")then
-   res@gsnPolar   =  hemi                         ; specify the hemisphere
-   if(hemi .eq. "NH")then
-    res@mpMinLatF    =  minlat                          ; minimum lat to plot
-    res@mpCenterLonF =  midlon
-   end if
-   if(hemi .eq. "SH")then
-    res@mpMaxLatF    = maxlat                            ; minimum lat to plot
-    res@mpCenterLonF = midlon
-   end if
-  else
-   res@mpMinLatF            =  minlat      ; range to zoom in on
-   res@mpMaxLatF            =  maxlat
-   res@mpMinLonF            =  minlon
-   res@mpMaxLonF            =  maxlon
-   res@mpCenterLonF         =  midlon
-  end if
-
-  res@cnFillDrawOrder   = "PreDraw"             ; draw contours first
-  res@cnFillOn          = True                  ; color fill
-  res@cnLinesOn         = False                 ; no contour lines
-  res@cnLineLabelsOn    = False
-  res@lbLabelBarOn      = True
-  res@cnFillPalette     = palette
- 
-  res@cnMissingValFillPattern = 0               ; choose fill pattern 0 (solid fill)
-  res@cnMissingValFillColor   = "gray"          ; color fill missing areas blue
+  ;res@mpFillOn           = False
+  ;res@mpOutlineOn        = False
+  ; res@cnMissingValFillColor   = "gray"          ; color fill missing areas blue
 
 ;************************************************
 ; the subplot call
 ;************************************************
-;function subplot(ii,name,pltvar,pltlevs,palette,hemi)
-;begin
-;   res@cnLevelSelectionMode = "ManualLevels"        ; set the contour levels with the following 3 resources
-;   res@cnMinLevelValF       = pltlevs(0)            ; set the minimum contour level
-;   res@cnMaxLevelValF       = pltlevs(1)            ; set the maximum contour level
-;   res@cnLevelSpacingF      = pltlevs(2)            ; set the interval between contours
-;   res@cnFillPalette        = palette
-;
-;  res@gsnCenterStringFontHeightF      = 0.020
-;  res@gsnCenterString                 = name
-;  res@gsnCenterStringOrthogonalPosF   = 0.12
-;
-;  if(hemi .eq. "none" .or. hemi .eq. "global")then
-;   splot = gsn_csm_contour_map(wks,pltvar,res)    ; create the plot
-;  else
-;   splot = gsn_csm_contour_map_polar(wks,plotvar,res)    ; create the plot
-;  end if
-;  return(splot)
-;end
+function subplot(ii,gtype,pltvar,pltlevs,palette)
+begin
+  res@cnLevelSelectionMode = "ManualLevels"        ; set the contour levels with the following 3 resources
+  res@cnMinLevelValF       = pltlevs(0)            ; set the minimum contour level
+  res@cnMaxLevelValF       = pltlevs(1)            ; set the maximum contour level
+  res@cnLevelSpacingF      = pltlevs(2)            ; set the interval between contours
+  res@cnFillPalette        = palette
 
-;************************************************
-;
-;************************************************
+  if (gtype .eq. "unstructured") then
+    res@sfElementNodes = files[ii]->nconn
+    res@sfFirstNodeIndex = 1
+    res@mpFillOn             = False
+  else
+    res@mpFillOn             = True
+  end if
 
-  do ii = 0,nflds-1
-   aname = atmflds(ii)
-     wgt = atmwgts(ii)
-   print("variable "+aname+"  weight "+wgt)
+  pltvar@units = ""
+  pltvar@long_name = ""
 
-    avar = files[1]->$aname$(:,:)-files[0]->$aname$(:,:)
-
-    lndonly = avar
-    lndonly = mask(avar*wgt,mskvar,1.0)  ; land only
-    ocnonly = avar
-    ocnonly = mask(avar*wgt,mskvar,0.0)  ; ocean only
-
-    if(plottype .eq. "land")then
-     avar = lndonly
-     msklab = "Land Points Only"
-    else
-     avar = ocnonly
-     msklab = "Ocean Points Only"
-    end if
-    levs = plotlevs(ii,:)
-    avar@lon2d = files[0]->$tlonname$
-    avar@lat2d = files[0]->$tlatname$
-
-    res@cnLevelSelectionMode = "ManualLevels"     ; set the contour levels with the following 3 resources
-    res@cnMinLevelValF  = levs(0)                      ; set the minimum contour level
-    res@cnMaxLevelValF  = levs(1)                      ; set the maximum contour level
-    res@cnLevelSpacingF = levs(2)                      ; set the interval between contours
-
-    res@gsnCenterString                 = aname
-    if(hemi .eq. "none")then
-      plot(ii) = gsn_csm_contour_map(wks,avar,res)    ; create the plot
-    else
-      plot(ii) = gsn_csm_contour_map(wks,avar,res)    ; create the plot
-    end if
- end do
-
+  splot = gsn_csm_contour(wks,pltvar,res)    ; create the plot
+  return(splot)
+end
 ; ***************************************************
 ; panel resources
 ; **************************************************
 
-  resP                       = True                 ; modify the panel plot
-  resP@gsnMaximize           = True                 ; maximize in frame
-  resP@gsnFrame              = False                ; don't advance frame yet
-  resP@gsnPanelLabelBar      = False                 ; turn on a common labelbar for the entire panel plot
+  resP                       = True     ; modify the panel plot
+  resP@gsnMaximize           = True     ; maximize in frame
+  resP@gsnFrame              = False    ; don't advance frame yet
+  resP@gsnPanelYWhiteSpacePercent = 5
+  resP@gsnPanelYWhiteSpacePercent = 8
+  resP@gsnPanelLabelBar      = True     ; turn on a common labelbar for the entire panel plot
 
-  resP@gsnPanelMainFontHeightF = 0.020           ; new resource added in NCL V6.4.0
-  resP@gsnPanelMainString = plottitle + ",  "+msklab
+  resP@gsnPanelMainFontHeightF = 0.010  ; new resource added in NCL V6.4.0
+  resP@gsnPanelMainString = plottitle
+  resP@gsnMaximize        = True        ; use full page
+
+  resP@gsnPanelFigureStrings = timelabs
+  resP@amJust = "TopLeft"
+  resP@gsnPanelFigureStringsFontHeightF = 0.008
+
+; ***************************************************
+;
+; ***************************************************
+
+     klev=0
+     ii = 0
+     do ii = 0,nplots-1
+          vname = flds(fldtoplot)
+          if (gtype .eq. "structured")then
+            if (ndims .eq. 4) then
+              data = files[ii]->$vname$(0,klev,:,:)
+            else
+              data = files[ii]->$vname$(0,:,:)
+           end if
+           data = data*wgt
+         else
+           if (ndims .eq. 4) then
+             data = files[ii]->$vname$(0,klev,0,:)
+           else
+             data = files[ii]->$vname$(0,0,:)
+           end if
+           data = data*wgt
+           data@lon1d = files[ii]->$lonname$(0,:)
+           data@lat1d = files[ii]->$latname$(0,:)
+         end if
+          plot(ii) = subplot(ii,gtype,data,levs,cmap)
+        delete(data)
+     end do
 
 ;************************************************
 ; make the panel
 ;************************************************
 
-  ;gsn_panel(wks,plot,(/2,3/),resP)
-  gsn_panel(wks,plot,(/1,1/),resP)
+   gsn_panel(wks,plot,(/nplots,1/),resP)
 
   frame(wks)
 
@@ -270,6 +214,8 @@
 
   if(wkstype .eq. "png")then
    imcmd = "convert -trim "+wkstitle+".png "+wkstitle+".jpg"
+   system(imcmd)
+   imcmd = "convert -bordercolor white -border 0x10 "+wkstitle+".jpg "+wkstitle+".jpg"
    system(imcmd)
   end if
 

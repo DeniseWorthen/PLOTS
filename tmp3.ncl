@@ -17,10 +17,6 @@
   ;    hemi = "SH"
   varnames = (/"HS"/)
   plotlevs = (/0.0,4.0,.05/)
-  cmap = "WhiteBlueGreenYellowRed"
-  ;varnames = (/"USSPX"/)
-  ;plotlevs = (/-0.02, 0.02, .002/)
-  ;cmap = "BlueWhiteOrangeRed"
 
   if(hemi .eq. "wedge")then
    minlat =  60.0
@@ -29,7 +25,7 @@
    maxlon = 90.0
   else
     if(hemi .eq. "NH")then
-      minlat = 70.0
+      minlat = 66.0
     else
       maxlat = -50.0
     end if
@@ -42,7 +38,7 @@
 
   cyear = "2021"
    cmon = "08"
-   cday = "17"
+   cday = "24"
    hour = "060000"
   cdate = cyear+cmon+cday+"."+hour
   lstep = 1-1
@@ -51,10 +47,10 @@
 ; read in netCDF file
 ;************************************************
 
-   rtname1 = "pr1_usp"
+   rtname1 = "base"
     rtsrc1 = RT2+"testpr1/"
 
-   rtname2 = "base_usp"
+   rtname2 = "pr1"
     rtsrc2 = RT2+"testpr1/"
 
        dir1 = rtsrc1+rtname1+"/"
@@ -67,8 +63,9 @@
 
   filelist = addfiles(fnames,"r")
   ;print(filelist)
-  wkstitle = "mesh.mx100.nc"
-  plottitle = "WW3 Structured Mesh, matches MOM6 Tripole Grid"
+  wkstitle = "testpr1"
+  plottitle = "testpr1"
+  cmap = "WhBlGrYeRe"
   nplots=2
 
 ;************************************************
@@ -85,8 +82,8 @@
 ; define the map
 ;************************************************
 
-  ;wkstype="X11"
-  wkstype="png"
+  wkstype="X11"
+  ;wkstype="png"
   wkstype@wkWidth=800
   wkstype@wkHeight=800
   wks   = gsn_open_wks (wkstype,wkstitle)
@@ -139,7 +136,6 @@
   ;res@cnMissingValPerimColor  = "black"           ; outline the perimeter red
   ;res@cnMissingValFillPattern = 0               ; choose fill pattern 0 (solid fill)
   ;res@cnMissingValFillColor   = "gray"          ; color fill missing areas blue
-  res@cnFillPalette   = "WhiteBlueGreenYellowRed"
 
 ;************************************************
 ; Resources for the polyline
@@ -177,14 +173,14 @@ end
   resP                       = True     ; modify the panel plot
   resP@gsnMaximize           = True     ; maximize in frame
   resP@gsnFrame              = False    ; don't advance frame yet
-  ;resP@gsnPanelYWhiteSpacePercent = 5
   resP@gsnPanelYWhiteSpacePercent = 5
+  resP@gsnPanelYWhiteSpacePercent = 8
   resP@gsnPanelLabelBar      = True     ; turn on a common labelbar for the entire panel plot
 
-  resP@gsnPanelMainFontHeightF = 0.015  ; new resource added in NCL V6.4.0
-  ;resP@gsnPanelMainString = plottitle
+  resP@gsnPanelMainFontHeightF = 0.010  ; new resource added in NCL V6.4.0
+  resP@gsnPanelMainString = plottitle
   resP@gsnMaximize        = True        ; use full page
-  resP@gsnPanelFigureStrings = (/"PR1","PR3"/)
+  resP@gsnPanelFigureStrings = (/"PR3","PR1"/)
   resP@amJust = "TopLeft"
 
 ;************************************************
@@ -223,7 +219,6 @@ end
      ii = 0
      do ii = 0,nplots-1
        vname = varnames(0)
-       ;data = filelist[ii]->$vname$(0,1,:,:)
        data = filelist[ii]->$vname$(0,:,:)
        mskvar = filelist[ii]->ICE(0,:,:)
        data@long_name=""
@@ -242,12 +237,7 @@ end
 ; make the panel
 ;************************************************
 
-     if (hemi .eq. "wedge") then
-       gsn_panel(wks,plot,(/nplots,1/),resP)
-     else
-       gsn_panel(wks,plot,(/1,nplots/),resP)
-     end if
-   ;gsn_panel(wks,plot,(/1,1/),resP)
+   gsn_panel(wks,plot,(/nplots,1/),resP)
 
  frame(wks)
   if(wkstype .eq. "png")then

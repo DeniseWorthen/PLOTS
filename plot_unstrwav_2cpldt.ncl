@@ -6,7 +6,9 @@
 ;************************************************
 
   ;MD = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/rt_wavunstr2/moddefs/"
-  MD="/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/addunstr.2acd891b.ww.33d337356/moddefs/"
+  ;MD="/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/addunstr.2acd891b.ww.33d337356/moddefs/"
+
+  MD="/scratch1/NCEPDEV/stmp2/Denise.Worthen/atmwsandbox/"
 
   scrpfile   = "trip1degmask.SCRIP.nc"
   sfile      = addfile(MD+scrpfile,"r")
@@ -19,11 +21,12 @@
   ;RT1 = "/glade/scratch/worthen/WaveUnstr/"
   ; hera
   ;RT1 = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/rt_wavunstr2/"
-  RT1 = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/addunstr.2acd891b.ww.33d337356/"
+  ;RT1 = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/addunstr.2acd891b.ww.33d337356/"
+  RT1="/scratch1/NCEPDEV/stmp2/Denise.Worthen/atmwsandbox/"
 
   gridtype  = "unstructured"
-  ;cpltype = "ufs.atmw."
-  cpltype = "ufs.cpld."
+  cpltype = "ufs.atmw."
+  ;cpltype = "ufs.cpld."
 
    ;plotlabs = "Card Deck Unstr 1deg 20PE"
     plotlabs = "Domain Decomp Unstr 1deg 30PE, explicit"
@@ -37,13 +40,20 @@
   date = "2021-03-22-"
   ;times = (/"41760", "42480", "43200", "43920"/)
   ;times = (/"24480", "25200", "25920"/)
-  times = (/"28080", "28800", "29520"/)
+  ;times = (/"28080", "28800", "29520"/)
   ;times = (/"26640", "27360", "28080"/)
   ;times = (/"29520", "30240", "30960"/)
   ;times = (/"59760","64080", "64800", "65520"/)
 
   fsrc = cpltype+"cpl.hi.wav."
 
+  dt=720
+  dtrest=3600
+  time0=21600
+  trest=time0+1*dtrest
+  itimes = (/trest-dt, trest, trest+dt/)
+  times = sprinti("%d", itimes)
+  ;print(times)
   timelabs = date+times
 
   fnames = RT1+rts+fsrc+date+times+".nc"

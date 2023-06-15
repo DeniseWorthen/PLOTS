@@ -1,7 +1,7 @@
 ;************************************************
 ; These files are loaded by default in NCL V6.2.0 and newer
 ; load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_code.ncl"
-; load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl" 
+; load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl"
 
   load "$NCARG_ROOT/lib/ncarg/nclscripts/contrib/cd_string.ncl"
   load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/shea_util.ncl"
@@ -17,8 +17,8 @@
   fancylevs = "yes"
        hemi = "NH"
   ;    hemi = "SH"
-  ;varnames = (/"aice", "hi"/)
-  varnames = (/"aice", "Tsfc"/)
+  varnames = (/"aice", "hi"/)
+  ;varnames = (/"aice", "Tsfc"/)
   ;varnames = (/"hs", "hi"/)
   ; varnames = (/"hs", "albsni"/)
   ; varnames = (/"meltt", "meltb"/)
@@ -41,13 +41,13 @@
    ulatname="ULAT"
    ulonname="ULON"
 
-  cyear = "2012"
+  cyear = "2021"
    cmon = "07"
-   cday = "21"
+   cday = "08"
   ;idate = cyear+cmon+iday+"00"
   ;cdate = cyear+cmon+cday+".01."+idate
   cdate = cyear+"-"+cmon+"-"+cday+"-00000"
-  idate = cyear+"-"+cmon+"-"+"01-00000"
+  idate = "2021-06-15-21600"
   lstep = 1-1
 
 ;************************************************
@@ -62,13 +62,13 @@
    ; rtsrc2 = RT4+"CMEPS_update/2012070100_20d/"
    ;  cset2 = "tmp/cpld_fv3_384_mom6_cice_warm_bm2/"
 
-   rtname1 = "BM2-CMEPS-update; ktherm=1"
-    rtsrc1 = RT3+"CMEPS_update/2012070100_20d/"
-     cset1 = "tmp/cpld_fv3_384_mom6_cice_warm_bm2/"
+   rtname1 = "base"
+    rtsrc1 = RT2+"waveice/"
+     cset1 = "base/"
 
-   rtname2 = "BM2-CMEPS-update; mushy"
-    rtsrc2 = RT3+"CMEPS_update/2012070100_20d_mushy"
-     cset2 = "tmp/cpld_fv3_384_mom6_cice_warm_bm2/"
+   rtname2 = "ice0"
+    rtsrc2 = RT2+"waveice/"
+     cset2 = "ice0/"
 
    ; use one file for grid
    ;     gf = addfile(rtsrc2+"iceh_ic."+cyear+iday+".nc","r")
@@ -81,8 +81,8 @@
 
      fnames = new((/2/),string)
   ;fnames(0) = dirs(0)+"ice2013080100.01.2013070100.nc"
-  fnames(0) = dirs(0)+"history/iceh_06h."+cdate+".nc"
-  fnames(1) = dirs(1)+"history/iceh_06h."+cdate+".nc"
+  fnames(0) = dirs(0)+"history/iceh_inst."+cdate+".nc"
+  fnames(1) = dirs(1)+"history/iceh_inst."+cdate+".nc"
   print(fnames(0))
   print(fnames(1))
 
@@ -105,8 +105,8 @@
 ; define the map
 ;************************************************
 
-  ;wkstype="X11"
-  wkstype="png"
+  wkstype="X11"
+  ;wkstype="png"
   wkstype@wkWidth=800
   wkstype@wkHeight=800
   wks   = gsn_open_wks (wkstype,wkstitle)
@@ -138,7 +138,7 @@
    res@mpCenterLonF = -45
   end if
   if(hemi .eq. "SH")then
-   res@mpMaxLatF    = maxlat  
+   res@mpMaxLatF    = maxlat
    res@mpCenterLonF = 0.0
   end if
 
@@ -147,11 +147,11 @@
 
   res@gsnPolarLabelFontHeightF = 0.020           ; change font height of labels
   res@gsnStringFontHeightF     = 0.025
-  res@lbLabelFontHeightF       = 0.020     
+  res@lbLabelFontHeightF       = 0.020
 
   res@cnMissingValPerimOn     = False            ; turn on the missing value perimeter
   ;res@cnMissingValPerimColor  = "black"           ; outline the perimeter red
-  res@cnMissingValFillPattern = 0               ; choose fill pattern 0 (solid fill) 
+  res@cnMissingValFillPattern = 0               ; choose fill pattern 0 (solid fill)
   res@cnMissingValFillColor   = "gray"          ; color fill missing areas blue
 
 ;************************************************
@@ -204,7 +204,7 @@ begin
   return(plot)
 end
 ;************************************************
-; left plot and colorbar, same variable 
+; left plot and colorbar, same variable
 ; (same field, same timestep, 2 runs)
 ;************************************************
 
@@ -300,7 +300,7 @@ end
 
  resP2                  = True                ; mods desired
  resP2@gsnFrame         = False               ; save panel until both ready
- resP2@gsnPanelLeft     = 0.5		      ; draw from center to right edge 
+ resP2@gsnPanelLeft     = 0.5		      ; draw from center to right edge
  resP2@gsnPanelLabelBar = True		      ; commom label bar
 
  resP1@gsnPanelYWhiteSpacePercent = 10
@@ -318,11 +318,11 @@ end
   txres@txFontHeightF = 0.015                     ; font smaller. default big
 
 ; page coordinates are normalized. go from 0->1 not 0->8" etc.
-  gsn_text_ndc(wks,rtname1+" "+cdate,0.5,0.98,txres) 
-  gsn_text_ndc(wks,rtname2+" "+cdate,0.5,0.58,txres) 
+  gsn_text_ndc(wks,rtname1+" "+cdate,0.5,0.98,txres)
+  gsn_text_ndc(wks,rtname2+" "+cdate,0.5,0.58,txres)
 
-  gsn_text_ndc(wks,labelstrings(0),0.25,0.03,txres) 
-  gsn_text_ndc(wks,labelstrings(1),0.75,0.03,txres) 
+  gsn_text_ndc(wks,labelstrings(0),0.25,0.03,txres)
+  gsn_text_ndc(wks,labelstrings(1),0.75,0.03,txres)
  frame(wks)
 exit
 end

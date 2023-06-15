@@ -5,101 +5,80 @@
 
 ;************************************************
 
-  ;MD = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/rt_wavunstr/moddefs/"
-  ;MD = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/addunstr.2acd891b.ww.33d337356/"
-  ;MD = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/waveice/ice0/"
-
   ; cheyenne
-  ;RT1 = "/glade/scratch/worthen/WaveUnstr/"
+  ;RT1 = "/glade/scratch/worthen/addunstr.2acd891b.ww.33d337356/ATMW/"
   ; hera
-  ;RT1 = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/rt_wavunstr2/"
-  ;RT1="/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/addunstr.2acd891b.ww.33d337356/"
-  RT1="/scratch1/NCEPDEV/stmp2/Denise.Worthen/waveice/"
+  RT1 = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/waveice/"
 
-  gridtype  = "unstructured"
-   ;plotlabs = "Card Deck Unstr 1deg 20PE"
-   ; plotlabs = "Domain Decomp Unstr 1deg 3PE, iostyp 0"
-  ;plotlabs ="atmw.pdlib.fix1"
-  plotlabs = "base"
+  ;polar="false"
+  polar="true"
+  ; minlat = 66.0
+  ; zoom in
+  ;minlat = 88.0
+  minlat = 70.0
 
-   ;     rts = "base48.dd30/"
-   ;     rts = "base.dd3.iostyp0/"
-   ; rts = "atmw.pdlib.fix1/"
-  rts = "base/"
+  gridtype = (/"unstructured" , "unstructured" /)
+  plotlabs = (/"IC0", "IC4" /)
+  rts =      (/"base/", "ice0/"  /)
 
-  date = "20210617."
-  ;date = "2021-06-17-"
-  ;times = (/"59760","64080", "64800", "65520"/)
-  ;times = (/"23760", "24480", "25200", "25920"/)
-  times = (/"120000"/)
-  ;fsrc = "ufs.atmw.ww3.hi."
-  ;fsrc = "ufs.cpld.ww3.hi.
-  timelabs = date+times
+  date = "2021-07-08-"
+  time = "21600"
+  fsrc = "ufs.cpld.ww3.hi."
 
-  ;fnames = RT1+rts+fsrc+date+times+".nc"
-  fnames = RT1+rts+date+times+".out_grd.ww3.nc"
+  fnames = RT1+rts+fsrc+date+time+".nc"
   files  = addfiles(fnames,"r")
   print(fnames)
 
-  flds = (/"PHS"  , \
-           "EF"   , \
-           "HS"   , \
-           "CHARN", \
+  flds = (/"EF"   , \
+           "USSPX", \
+           "ICE"  , \
            "USTX" , \
-         "TAUWNY"   /)
+           "UAX"  , \
+           "HS"/)
 
-  fldwgts = (/1.0, \
-              1.0, \
-              1.0, \
-              1.0e2, \
-              1.0,   \
-              1.0e8  /)
-
-  flddims = (/4, \
-              4, \
-              3, \
-              3, \
-              3, \
-              3  /)
-
+ fldwgts = (/1.0e10, \
+             1.0e2,  \
+             1.0e0,  \
+             1.0e0,  \
+             1.0e0,  \
+             1.0e0   /)
   lonname = "lon"
   latname = "lat"
 
   nflds = dimsizes(flds)
-  nplots = dimsizes(times)
+  nplots = dimsizes(gridtype)
 
   ; plot levels
   plotlevs = new((/nflds,3/), float)
-  plotlevs( 0,:) = (/   0.0,    0.5,  0.05/)   ; phs
-  plotlevs( 1,:) = (/   0.0,    3.0,  0.05/)   ; ef, k=28
-  plotlevs( 2,:) = (/   0.0,    1.0,  0.10/)   ; hs
-  plotlevs( 3,:) = (/   0.9,    2.0,  0.02/)   ; charn
-  plotlevs( 4,:) = (/  -1.0,    1.0,  0.10/)   ; ustx
-  plotlevs( 5,:) = (/  -1.0,    1.0,  0.10/)   ; tauwnx
-
+  plotlevs( 0,:) = (/   0.0,    3.0,  0.05/)   ; k=28
+  ;plotlevs( 0,:) = (/   0.0,    2.0,  0.20/)   ; k=29
+  ;plotlevs( 0,:) = (/   0.0,    1.0,  0.01/)   ; k=30
+  plotlevs( 1,:) = (/   -2.0,    2.0,  0.02/)   ; k=3 stokes
+  plotlevs( 2,:) = (/   0.0,    1.0,  0.1/)   ; ice
+  plotlevs( 3,:) = (/  -1.0,    1.0,  0.1/)   ; ustx
+  plotlevs( 4,:) = (/ -20.0,    20.0,  2./)   ; uax
+  plotlevs( 5,:) = (/  0.0,    1.0,  0.05/)   ; hs
 ;************************************************
 ;
 ;************************************************
 
   ; pick a field to plot
-  fldtoplot = 2
+  fldtoplot = 5
   levs = plotlevs(fldtoplot,:)
   wgt = fldwgts(fldtoplot)
-  ndims = flddims(fldtoplot)
-  wkstitle = flds(fldtoplot)
-  gtype = gridtype
-  ;wkstitle = plotlabs(0)
+  wkstitle = flds(fldtoplot)+"_"+date+time
 
-   cmap = "WhBlGrYeRe"
-   ;cmap = "WhiteBlueGreenYellowRed"
-   plottitle=flds(fldtoplot)+";  "+plotlabs
+   cmap = "WhiteBlueGreenYellowRed"
+ ;  cmap = "BlueWhiteOrangeRed"
+
+   plottitle=flds(fldtoplot)
 
 ;************************************************
 ; define the map
 ;************************************************
 
   wkstype="X11"
-						; wkstype="png"
+ ; wkstype="png"
   wkstype@wkWidth=1200
   wkstype@wkHeight=1200
   wks   = gsn_open_wks (wkstype,wkstitle)       ; send graphics to X11 window
@@ -110,33 +89,41 @@
   res@gsnDraw              = False		; do not draw until the end
   res@gsnFrame             = False		; do not automatically advance 'frame'
 
-  res@vpWidthF          = 0.70
-  res@vpHeightF         = 0.40
-
   ;res@cnFillMode = "MeshFill"
   res@cnFillMode = "RasterFill"
 
-  ;res@cnFillDrawOrder   = "PreDraw"             ; draw contours first
+  res@cnFillDrawOrder   = "PreDraw"             ; draw contours first
   res@cnFillOn           = True                 ; color fill
   res@cnLinesOn          = False                ; no contour lines
   res@cnLineLabelsOn     = False                ; no contour lines
   res@lbLabelBarOn       = False                ; turn off individual colorbars
   res@cnInfoLabelOn      = False		; turn off cn info label
 
-  ;res@mpFillOn           = False
-  ;res@mpOutlineOn        = False
-  ; res@cnMissingValFillColor   = "gray"          ; color fill missing areas blue
+  ;res@cnMissingValFillColor   = "gray"          ; color fill missing areas blue
+
+  if(polar .eq. "true")then
+    res@mpMinLatF    =  minlat                    ; minimum lat to plot
+    res@mpCenterLonF = -45
+    res@gsnPolar   =  "NH"                        ; specify the hemisphere
+  else
+    res@vpWidthF          = 0.70
+    res@vpHeightF         = 0.40
+  end if
 
 ;************************************************
 ; the subplot call
 ;************************************************
-function subplot(ii,gtype,pltvar,pltlevs,palette)
+function subplot(ii,name,gtype,pltvar,pltlevs,palette)
 begin
   res@cnLevelSelectionMode = "ManualLevels"        ; set the contour levels with the following 3 resources
   res@cnMinLevelValF       = pltlevs(0)            ; set the minimum contour level
   res@cnMaxLevelValF       = pltlevs(1)            ; set the maximum contour level
   res@cnLevelSpacingF      = pltlevs(2)            ; set the interval between contours
   res@cnFillPalette        = palette
+
+  res@gsnCenterStringFontHeightF      = 0.015
+  res@gsnCenterString                 = name
+  ;res@gsnCenterStringOrthogonalPosF   = -.05
 
   if (gtype .eq. "unstructured") then
     res@sfElementNodes = files[ii]->nconn
@@ -145,11 +132,12 @@ begin
   else
     res@mpFillOn             = True
   end if
+  res@mpOutlineOn          = False
 
   pltvar@units = ""
   pltvar@long_name = ""
 
-  splot = gsn_csm_contour(wks,pltvar,res)    ; create the plot
+  splot = gsn_csm_contour_map(wks,pltvar,res)    ; create the plot
   return(splot)
 end
 ; ***************************************************
@@ -159,15 +147,15 @@ end
   resP                       = True     ; modify the panel plot
   resP@gsnMaximize           = True     ; maximize in frame
   resP@gsnFrame              = False    ; don't advance frame yet
+  ;resP@gsnPanelYWhiteSpacePercent = 5
   resP@gsnPanelYWhiteSpacePercent = 5
-  resP@gsnPanelYWhiteSpacePercent = 8
   resP@gsnPanelLabelBar      = True     ; turn on a common labelbar for the entire panel plot
 
-  resP@gsnPanelMainFontHeightF = 0.010  ; new resource added in NCL V6.4.0
+  resP@gsnPanelMainFontHeightF = 0.015  ; new resource added in NCL V6.4.0
   resP@gsnPanelMainString = plottitle
   resP@gsnMaximize        = True        ; use full page
 
-  resP@gsnPanelFigureStrings = timelabs
+  resP@gsnPanelFigureStrings = (/date+time,date+time,date+time/)
   resP@amJust = "TopLeft"
   resP@gsnPanelFigureStringsFontHeightF = 0.008
 
@@ -175,30 +163,25 @@ end
 ;
 ; ***************************************************
 
-     klev=0
-     ii = 0
-     do ii = 0,nplots-1
-          vname = flds(fldtoplot)
-          if (gtype .eq. "structured")then
-            if (ndims .eq. 4) then
-              data = files[ii]->$vname$(0,klev,:,:)
-            else
-              data = files[ii]->$vname$(0,:,:)
-           end if
-           data = data*wgt
-         else
-           if (ndims .eq. 4) then
-             data = files[ii]->$vname$(0,klev,0,:)
-           else
-             data = files[ii]->$vname$(0,0,:)
-           end if
-           data = data*wgt
-           data@lon1d = files[ii]->$lonname$(0,:)
-           data@lat1d = files[ii]->$latname$(0,:)
-         end if
-          plot(ii) = subplot(ii,gtype,data,levs,cmap)
-        delete(data)
-     end do
+      ;k = 28
+      do ii = 0,nplots-1
+        vname = flds(fldtoplot)
+        gtype = gridtype(ii)
+        if (gtype .eq. "structured")then
+        data = files[ii]->$vname$(0,:,:)
+        data = data*wgt
+        data@lon2d = files[ii]->$lonname$(:,:)
+        data@lat2d = files[ii]->$latname$(:,:)
+      else
+        ;data = files[ii]->$vname$(0,k-1,0,:)
+        data = files[ii]->$vname$(0,0,:)
+        data = data*wgt
+        data@lon1d = files[ii]->$lonname$(0,:)
+        data@lat1d = files[ii]->$latname$(0,:)
+      end if
+      plot(ii) = subplot(ii,plotlabs(ii),gtype,data,levs,cmap)
+      delete(data)
+    end do
 
 ;************************************************
 ; make the panel

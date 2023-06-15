@@ -21,7 +21,7 @@ begin
   ;dirsrc        = "pdlibnolandtrip3PE/"
   ;dirsrc        = "tripnoland/"
   ;dirsrc        = "base.dd3.iostyp0/"
-  dirsrc = "pdlib270k/"
+  dirsrc = "unstr.hiice/"
 
   dcmpfile	= "emesh.decomp.nc"
   fdcmp		= addfile(RT+dirsrc+dcmpfile,"r")
@@ -33,7 +33,7 @@ begin
   levs          = (/1,41,1/)
   ;print(fdcmp)
 
-  doffile	= "dof.wav.nc"
+  doffile	= "emesh.decomp.nc"
     fdof	= addfile(RT+dirsrc+doffile,"r")
     vname	= "dof"
       dof	= fdof->$vname$(:)
@@ -42,8 +42,8 @@ begin
 
      ;scrpfile	= "with_land_CardDeck.SCRIP.nc"
      ;scrpfile	= "no_land_CardDeck.SCRIP.nc"
-     ;scrpfile   = "trip1degmask.SCRIP.nc"
-       scrpfile = "exp.global_270k.SCRIP.nc"
+     scrpfile   = "trip1degmask.SCRIP.nc"
+       ;scrpfile = "exp.global_270k.SCRIP.nc"
 
      sfile	= addfile(MD+scrpfile,"r")
      x		= sfile->grid_center_lon
@@ -53,9 +53,9 @@ begin
      ;printVarSummary(x)
      ;printVarSummary(cx)
      ;print(sfile)
-     var1d_sort = var1d
-     var1d_sort = var1d(ip)
-     var1d      = var1d_sort
+     ;var1d_sort = var1d
+     ;var1d_sort = var1d(ip)
+     ;var1d      = var1d_sort
      ;printVarSummary(var1d)
 
      var1d@lon1d = x

@@ -9,7 +9,8 @@
 ;************************************************
 
   ; gaea
-  RT = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/DECOMP96/frac_grid_on/"
+  ;RT = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/DECOMP96/frac_grid_on/"
+  RT = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/rt_12453/"
 
   ;plottype = "land"
   ;plottype = "not land"
@@ -29,14 +30,13 @@
     tlonname = "grid_xt"
     tlatname = "grid_yt"
 
- wkstitle = "control_p7"
-  runlabs = (/"Control","Decomp"/)
- dirs = (/"base/", "decomp/" /)
-  time = "f000."
+ wkstitle = "test"
+  runlabs = (/"control","control_noa"/)
+ dirs = (/"cpld_control_p8_intel/", "cpld_control_noaero_p8_intel/" /)
+  time = "f024."
   fsrc = "sfc"
  ndirs = dimsizes(dirs)
    nts = dimsizes(time)
-
 
   ;palette="BlueWhiteOrangeRed"
   palette="BlWhRe"
@@ -59,7 +59,7 @@
               1.e14, \
               1.e3, \
               1.e2, \
-              1.e3, \
+              1.00, \
               1.00, \
               1.00  \
             /)
@@ -91,7 +91,7 @@
   ;plotlevs( 3,:) = (/  0.0,  0.20, 0.010/)  ; oc
   ;plotlevs( 4,:) = (/  0.0,  0.20, 0.010/)  ; ss
   ;plotlevs( 5,:) = (/  0.0,  0.20, 0.010/)  ; su
-  
+
   ; retrieve orodata file from INPUT directory for getting dims
   ofile = addfile(RT+dirs(0)+"INPUT/oro_data.tile1.nc","r")
   mskname = "slmsk"
@@ -110,7 +110,7 @@
 ;************************************************
 
   ; make 6 tiled plot of given field diff
-  ii = 0
+  ii = 5
      data = new((/ ntiles, ny, nx/), "double")
   mskdata = new((/ ntiles, ny, nx/), "double")
 
@@ -118,8 +118,8 @@
   ; add history files on tile
    tile="tile"+sprinti("%d",kk+1)
    files=addfiles(RT+dirs+fsrc+time+tile+".nc","r")
-   print(files)
-   
+   ;print(files)
+
    ofile = addfile(RT+dirs(0)+"INPUT/oro_data."+tile+".nc","r")
    ;print(ofile)
    mskname = "slmsk"
@@ -208,7 +208,7 @@
   res@cnLineLabelsOn    = False
   res@cnInfoLabelOn     = False
   res@cnFillPalette     = palette
- 
+
   res@cnMissingValFillPattern = 0               ; choose fill pattern 0 (solid fill)
   res@cnMissingValFillColor   = "gray"          ; color fill missing areas blue
 
@@ -232,7 +232,8 @@
   ores@cnLineLabelsOn = False
   ores@cnLevels = (/ 0.999999 /)
   ores@cnInfoLabelOn = False
-  ores@cnLineThicknessF = 0.1
+  ores@cnLineThicknessF = 0.5
+  ores@cnLineColor = "green"
 
   ; text resources
   txres = True
@@ -281,6 +282,7 @@
     txres@txAngleF = 0
     txres@txFont = 22
     txres@txFontHeightF = 0.015
+    txres@txFontColor = "green"
     text = gsn_create_text(wks, sprinti("%d", kk+1), txres)
     draw(text)
   end do

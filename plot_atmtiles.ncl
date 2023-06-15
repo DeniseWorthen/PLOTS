@@ -9,22 +9,22 @@
 ;**********************************************************
 begin
 
-   ;RT="/scratch1/NCEPDEV/stmp2/Denise.Worthen/WaveUnstr2/"
-  RT="/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/rt_wavunstr2/"
+   RT="/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/rt_31222/"
+  ;RT="/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/rt_wavunstr2/"
 
    nl = str_get_nl()
    nflags = 9
    date = "2021-03-22-"
    ;time = "64080"
    ;time = "64800"
-   time = 65520
+   time = "54000"
     atmres = 96
 
  ;   atmres = 192
  ;   atmres = 384
 
    ;dirs = (/"unstrnoland3PE/"/)
-    dirs = (/"base48h.dd20/"/)
+    dirs = (/"testcosz/"/)
    ; dirs = (/"tripnoland/"/)
    wkstitle="new"
 
@@ -48,11 +48,12 @@ begin
 ;************************************************
 
   dirsrc = RT+dirs(0)
-    fname=dirsrc+"ufs.atmw.cpl.hi.atm."+date+time+".nc"
-    ;fname=dirsrc+"ufs.cpld.cpl.hi.atm."+date+time+".nc"
+    ;fname=dirsrc+"ufs.atmw.cpl.hi.atm."+date+time+".nc"
+    fname=dirsrc+"ufs.cpld.cpl.hi.atm."+date+time+".nc"
     print(fname)
        ff = addfile(fname, "r")
-     vname="atmExp_Sw_z0"
+     ;vname="atmExp_Sw_z0"
+       vname = "atmImp_Faxa_swndr"
      data = ff->$vname$(0,:,:,:)
      dtmp = data
      dtmp = 1.0e3*data
@@ -60,7 +61,7 @@ begin
      data@units=""
      ;data = where(abs(dtmp) .gt. 1.0e3, dtmp@_FillValue, dtmp*1.0e3)
      ;data = where(dtmp .lt. 0.0 .or. dtmp .gt. 1.0e3, default_fillvalue(typeof(dtmp)), dtmp*1.0e3)
-     levs=(/0,0.5,.05/)
+     levs=(/0,1.0,.1/)
      ;printVarSummary(data)
 
      ;vname="atmImp_Sa_u10m"

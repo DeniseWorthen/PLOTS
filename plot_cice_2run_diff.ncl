@@ -14,10 +14,10 @@
   RT3 = "/scratch2/NCEPDEV/stmp3/Denise.Worthen/"
   RT4 = "/scratch1/NCEPDEV/stmp4/Denise.Worthen/"
 
- ;   hemi = "NH"
-    hemi = "SH"
+    hemi = "NH"
+ ;   hemi = "SH"
  if(hemi .eq. "NH")then
-  minlat =  66.0
+  minlat =  50.0
   midlon = -45.0
  else
   maxlat = -50.0
@@ -37,19 +37,15 @@
 
      lstep = 1-1
      cyear = "2021"
-      cmon = "04"
-      cday = "01"
-      csec = "21600"
+      cmon = "07"
+      cday = "08"
+      csec = "00000"
      cdate = cyear+"-"+cmon+"-"+cday+"-"+csec
 
   runname = (/"cice6-dev", "cice6-waveice"/)
-  ;    rts = (/"FV3_RT/devcice/test_tauxo0/","FV3_RT/Cgrid/testX2Y_tauxyo0/"/)
-      rts = (/"WAVEICE/waveice.10d/","WAVEICE/nowaveice.10d/"/)
-  ;   cset = "/test/"
+      rts = (/"waveice/base/","waveice/ice0/"/)
 
-     files = addfiles(RT2+rts+"history/iceh_06h."+cyear+"-"+cmon+"-"+cday+"-00000.nc","r")
-     ;files = addfiles(RT2+rts+cset+"ufs.cpld.cpl.hi.ice."+cyear+"-"+cmon+"-"+cday+"-"+csec+".nc","r")
-     ;files = addfiles(RT2+rts+"ufs.cpld.cpl.hi.ice."+cyear+"-"+cmon+"-"+cday+"-"+csec+".nc","r")
+     files = addfiles(RT2+rts+"history/iceh_inst."+cyear+"-"+cmon+"-"+cday+"-"+csec+".nc","r")
      fland = addfile(RT2+rts(0)+"kmtu_cice_NEMS_mx100.nc","r")
 
      print(rts(1)+" - "+rts(0))
@@ -85,7 +81,7 @@
   ;drawNDCGrid(wks)
    plot = new(2,graphic)
     dum = new(2,graphic)
- 
+
   res                      = True        ; plot mods desired
   res@gsnDraw              = False       ; do not draw until the end
   res@gsnFrame             = False       ; do not automatically advance 'frame'
@@ -169,7 +165,7 @@ end
 ;************************************************
 ;
 ;************************************************
- 
+
          pltlevs = new((/3/),float)
     labelstrings = new((/2/),string)
     colormap = "BlueDarkRed18"
@@ -190,7 +186,7 @@ end
   ;ivar = ivar*1.0e14
   imask = tofloat(fland->kmt)
   ivar = mask(ivar, (imask .eq. 1.0), default_fillvalue(typeof(files[0]->$vname$)))
-  printVarSummary(ivar)
+  ;printVarSummary(ivar)
   ivar@lon2d = files[0]->$tlonname$(:,:)*rfactor
   ivar@lat2d = files[0]->$tlatname$(:,:)*rfactor
 
@@ -209,7 +205,7 @@ end
   ;ivar = ivar*1.0e14
   imask = tofloat(fland->kmt)
   ivar = mask(ivar, (imask .eq. 1.0), default_fillvalue(typeof(files[0]->$vname$)))
-  printVarSummary(ivar)
+  ;printVarSummary(ivar)
   ivar@lon2d = files[0]->$tlonname$(:,:)*rfactor
   ivar@lat2d = files[0]->$tlatname$(:,:)*rfactor
 
