@@ -10,7 +10,7 @@
 
   RT = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/mean2inst/"
 
-  plottype = "land"
+  ;plottype = "land"
   ;plottype = "not land"
   ;plottype = "all"
 
@@ -25,13 +25,12 @@
   ntiles=6
 
  ; in coupler history files
-    tlonname = "Med_frac_atm_lon"
-    tlatname = "Med_frac_atm_lat"
+  tlonname = "Med_frac_atm_lon"
+  tlatname = "Med_frac_atm_lat"
 
- wkstitle = "Faxa_sen"
-  runlabs = (/"Mean","Inst"/)
- dirs = (/"base/", "inst_sens/" /)
-  time = "2021-03-22-32400."
+ wkstitle = "mean2inst"
+ dirs = (/"base/"/)
+  time = "2021-03-22-36000.nc"
   fsrc = "ufs.cpld.cpl.hi.atm."
  ndirs = dimsizes(dirs)
    nts = dimsizes(time)
@@ -39,135 +38,95 @@
   ;palette="BlueWhiteOrangeRed"
   palette="BlWhRe"
 
-  ; atm fields
-  atmflds = (/ "atmImp_Faxa_sen",  \
-               "atmImp_Sa_pbot",    \
-               "atmImp_Sa_shum",    \
-               "atmImp_Sa_tbot",    \
-               "atmImp_Sa_z",       \
-               "atmImp_Faxa_lwnet"  \
-            /)
+  ; mean fields
+  meanflds = (/ "atmImp_Faxa_taux" , \
+                "atmImp_Faxa_tauy" , \
+                "atmImp_Faxa_sen"  , \
+                "atmImp_Faxa_evap" , \
+                "atmImp_Faxa_lwdn" , \
+                "atmImp_Faxa_lwnet", \
+                "atmImp_Faxa_swnet", \
+                "atmImp_Faxa_swndr", \
+                "atmImp_Faxa_swvdr"  \
+             /)
 
-  ; from sfc file
-  ;atmflds = (/ "shtfl",  \
-  ;             "dlwrf_ave",    \
-  ;             "ulwrf_ave",    \
-  ;             "lhtfl",    \
-  ;             "tmpsfc",       \
-  ;             "spfh2m"  \
-  ;          /)
-  nflds = dimsizes(atmflds)
+  ; inst fields
+  instflds = (/ "atmImp_inst_zonal_moment_flx",   \
+                "atmImp_inst_merid_moment_flx",   \
+                "atmImp_inst_sensi_heat_flx"  ,   \
+                "atmImp_inst_evap_rate"       ,   \
+                "atmImp_inst_down_lw_flx"     ,   \
+                "atmImp_inst_net_lw_flx"      ,   \
+                "atmImp_inst_net_sw_flx"      ,   \
+                "atmImp_inst_down_sw_ir_dir_flx", \
+                "atmImp_inst_down_sw_ir_dir_flx"  \
+                /)
+  nflds = dimsizes(meanflds)
 
   ; easier plots
-  atmwgts = (/1.e0, \
-              1.00, \
-              1.e4, \
-              1.e3, \
-              1.e2, \
-              1.00 \
+  atmwgts = (/1.e16, \
+              1.e16, \
+              1.e14, \
+              1.e14, \
+              1.e14, \
+              1.e14, \
+              1.e14, \
+              1.e14, \
+              1.e14  \
             /)
-  ;atmwgts = (/1.e12/)
 
   plotlevs = new((/nflds,3/), float)
-  plotlevs( 0,:) = (/  -1.0,  1.0, 0.1/) ; sen
-  plotlevs( 1,:) = (/  -0.02,  0.02, 0.002/) ; pbot
-  plotlevs( 2,:) = (/  -0.02,  0.02, 0.002/) ; shum
-  plotlevs( 3,:) = (/  -0.02,  0.02, 0.002/) ; tbot
-  plotlevs( 4,:) = (/  -0.02,  0.02, 0.002/) ; zbot
-  plotlevs( 5,:) = (/  -0.02,  0.02, 0.002/) ; lwnet
-  ;plotlevs( 0,:) = (/  -0.02,  0.02, 0.002/) ; lwnet
-
-  ; atm fields
-  ;atmflds = (/"aod550",     \
-  ;            "bc_aod550",  \
-  ;            "du_aod550",  \
-  ;            "oc_aod550",  \
-  ;            "ss_aod550",  \
-  ;            "su_aod550"   \
-  ;            /)
-  ;nflds = dimsizes(atmflds)
-
-  ;plotlevs = new((/nflds,3/), float)
-  ;plotlevs( 0,:) = (/  0.0,  1.00, 0.100/)
-  ;plotlevs( 1,:) = (/  0.0,  0.02, 0.001/)  ; bc
-  ;plotlevs( 2,:) = (/  0.0,  1.00, 0.100/)  ; du
-  ;plotlevs( 3,:) = (/  0.0,  0.20, 0.010/)  ; oc
-  ;plotlevs( 4,:) = (/  0.0,  0.20, 0.010/)  ; ss
-  ;plotlevs( 5,:) = (/  0.0,  0.20, 0.010/)  ; su
-
-  ; retrieve orodata file from INPUT directory for getting dims
-  filelist = systemfunc("ls "+RT+dirs(0)+"INPUT/oro_data.tile*.nc")
-  print(filelist)
-  ofiles = addfiles(filelist,"r")
-  ListSetType(ofiles,"join")
-  mskname = "slmsk"
-  msklonname = "geolon"
-  msklatname = "geolat"
-  mskvar = ofiles[:]->$mskname$
-  mskvar@lon2d = ofiles[0]->$msklonname$
-  mskvar@lat2d = ofiles[0]->$msklatname$
-  ;printVarSummary(mskvar)
-  ndims = dimsizes(mskvar)
-  ny = ndims(1)
-  nx = ndims(2)
+  plotlevs( 0,:) = (/  -1.0,  1.0, 0.1/)
+  plotlevs( 1,:) = (/  -1.0,  1.0, 0.1/)
+  plotlevs( 2,:) = (/  -1.0,  1.0, 0.1/)
+  plotlevs( 3,:) = (/  -1.0,  1.0, 0.1/)
+  plotlevs( 4,:) = (/  -1.0,  1.0, 0.1/)
+  plotlevs( 5,:) = (/  -1.0,  1.0, 0.1/)
+  plotlevs( 6,:) = (/  -1.0,  1.0, 0.1/)
+  plotlevs( 7,:) = (/  -1.0,  1.0, 0.1/)
+  plotlevs( 8,:) = (/  -1.0,  1.0, 0.1/)
 
 ;************************************************
 ;
 ;************************************************
 
   ; make 6 tiled plot of given field diff
-  ii = 0
+  fld2plot = 0
 
-  fname=fsrc+time+"nc"
+  fname=fsrc+time
   files=addfiles(RT+dirs+fname,"r")
   print(fname)
 
-   aname = atmflds(ii)
-     wgt = atmwgts(ii)
-   print("variable "+aname+"  weight "+wgt)
+   mname = meanflds(fld2plot)
+   iname = instflds(fld2plot)
+     wgt = atmwgts(fld2plot)
+   print("variable "+mname+"  "+iname+"  weight "+wgt)
 
-   data = files[1]->$aname$(0,:,:,:) - files[0]->$aname$(0,:,:,:)
-   data = where(abs(data) .gt. 1.0e6, default_fillvalue(typeof(data)), data)
-   ;printVarSummary(data)
+   mdata = files[0]->$mname$(0,:,:,:)
+   mdata = where(abs(mdata) .gt. 1.0e35, 0.0, mdata)
+   idata = files[0]->$iname$(0,:,:,:)
+   idata = where(abs(idata) .gt. 1.0e35, 0.0, idata)
 
-    lndonly = data
-    lndonly = mask(data*wgt,mskvar,1.0)  ; land only
-    ocnonly = data
-    ocnonly = mask(data*wgt,mskvar,0.0)  ; not land only
-
-    if(plottype .eq. "land")then
-     data = lndonly
-     msklab = "Land Points Only"
-    end if
-    if(plottype .eq. "not land")then
-     data = ocnonly
-     msklab = "Non-Land Points Only"
-    end if
-    if(plottype .eq. "all")then
-     data = data*wgt
-     msklab = "All points"
-    end if
+   data = idata
+   data = mdata - idata
+   data = data*wgt
 
     do kk = 0,ntiles-1
 ;--- special care for following tiles ---
       if any((kk .eq. (/ 3, 4 /))) then
         data(kk,:,:) = (/ transpose(data(kk,:,:)) /)
         data(kk,:,:) = data(kk,::-1,:)
-        mskvar(kk,:,:) = (/ transpose(mskvar(kk,:,:)) /)
-        mskvar(kk,:,:) = mskvar(kk,::-1,:)
 
       end if
       if any((kk .eq. (/ 2 /))) then
         data(kk,:,:) = (/ transpose(data(kk,:,:)) /)
         data(kk,:,:) = data(kk,::-1,:)
-        mskvar(kk,:,:) = (/ transpose(mskvar(kk,:,:)) /)
-        mskvar(kk,:,:) = mskvar(kk,::-1,:)
       end if
   end do  ; kk
-  plottitle=runlabs(1)+" - "+runlabs(0)+"  "+aname+",  "+msklab+",  "+time
+  plottitle=mname+" -  "+iname+"  "+data@units
+  data@units = ""
 
-  levs = plotlevs(ii,:)
-
+  levs = plotlevs(fld2plot,:)
 ;************************************************
 ; define the map
 ;************************************************
@@ -264,8 +223,6 @@
     ;printVarSummary(data(kk,:,:))
     plot1 = gsn_csm_contour(wks, data(kk,:,:), res)
     draw(plot1)
-    oplot = gsn_csm_contour(wks, mskvar(kk,:,:), ores)
-    draw(oplot)
 
     if (kk .eq. 2) then
     txres@txPosXF = xpos(kk)+0.01

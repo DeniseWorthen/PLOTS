@@ -1,31 +1,23 @@
-;**********************************************************
+0;95;0c;**********************************************************
 ; re-write CMEPS dststatus files for atm
 ;
 ; adapted from code originally written by
 ; Ufuk Turuncoglu turuncu@ucar.edu
-
-  load "dststatus_counts.ncl"
-
 ;**********************************************************
 begin
 
-   RT="/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/rt_31222/"
-  ;RT="/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/rt_wavunstr2/"
+   RT="/scratch1/NCEPDEV/stmp2/Denise.Worthen/mean2inst/"
 
    nl = str_get_nl()
    nflags = 9
    date = "2021-03-22-"
-   ;time = "64080"
-   ;time = "64800"
-   time = "54000"
-    atmres = 96
+   time = "64800"
+   atmres = 96
 
  ;   atmres = 192
  ;   atmres = 384
 
-   ;dirs = (/"unstrnoland3PE/"/)
-    dirs = (/"testcosz/"/)
-   ; dirs = (/"tripnoland/"/)
+    dirs = (/"inst_sens/"/)
    wkstitle="new"
 
   ntile = 6

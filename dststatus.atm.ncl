@@ -14,7 +14,7 @@ begin
 
    nl = str_get_nl()
    nflags = 9
-     RT = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/rt_wavunstr/"
+     RT = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/bilin/"
    date = "2021-03-22-"
 
     atmres = 96
@@ -25,8 +25,9 @@ begin
    ;dirs=(/"unstrnoland3PE/"/)
 
    plotlab="dststatus"
-   dirs=(/"dststatus/"/)
-
+   ;dirs=(/"base/", "bugfix.nobilin/", "bugfix.bilin/"/)
+   dirs=(/"bugfix.bilin.esmf8.5/"/)
+   ;dirs=(/"bugfix.bilin/"/)
 
    ;plotlab="mx050"
    ;plotlab="mx025"
@@ -41,9 +42,10 @@ begin
 
    vname = "dststatus"
    levs = (/0,9,1/)
-   fsrc = vname+".wav.atm.nstod_consf"
+   ;fsrc = vname+".wav.atm.nstod_consf"
    ;fsrc = vname+".ocn.atm.consd"
-   ;fsrc = vname+".ocn.atm.consf"
+   fsrc = vname+".ocn.atm.consf"
+   ;fsrc = vname+".ocn.atm.bilnr_nstod"
    ;fsrc = vname+".wav.atm.bilnr_nstod"
 
   ntile = 6
@@ -68,7 +70,7 @@ begin
 ;**********************************************************
 
   ;fname = "/glade/scratch/worthen/FV3_RT/wave_test/base/ufs.cpld.cpl.hi.atm."+date+"22320.nc"
-  fname = RT+dirs(0)+"ufs.cpld.cpl.hi.atm."+date+"25200.nc"
+  fname = RT+dirs(0)+"ufs.cpld.cpl.hi.atm."+date+"22320.nc"
   ;fname = RT+dirs(0)+"ufs.atmw.cpl.hi.atm."+date+"22320.nc"
   print("input file "+fname)
   ff = addfile(fname,"r")
@@ -199,7 +201,7 @@ if(makeplot .eq. "yes") then
      data = ff->$vname$
 
      ocnonly = data
-     ocnonly = mask(data,mskvar,0.0)
+     ;ocnonly = mask(data,mskvar,0.0)
      data = ocnonly
 
     ;if(1.eq.0)then

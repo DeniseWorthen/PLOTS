@@ -8,11 +8,12 @@
 ; script
 ;************************************************
 
-  RT = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/mean2inst/"
+  ;RT = "/work/noaa/epic-ps/jongkim/butterfly_exp/"
+  RT = "/scratch1/NCEPDEV/stmp2/Jong.Kim/FV3_RT/"
 
-  plottype = "land"
+  ;plottype = "land"
   ;plottype = "not land"
-  ;plottype = "all"
+  plottype = "all"
 
   rad2deg=180.d0/acos(-1.0d0)
   icemin = 1.0e-6
@@ -24,92 +25,40 @@
   lstep=0
   ntiles=6
 
- ; in coupler history files
-    tlonname = "Med_frac_atm_lon"
-    tlatname = "Med_frac_atm_lat"
+ ; in forecast history files
+    tlonname = "grid_xt"
+    tlatname = "grid_yt"
 
- wkstitle = "Faxa_sen"
-  runlabs = (/"Mean","Inst"/)
- dirs = (/"base/", "inst_sens/" /)
-  time = "2021-03-22-32400."
-  fsrc = "ufs.cpld.cpl.hi.atm."
+ wkstitle = "butterfly test"
+  runlabs = (/"control","exp"/)
+ dirs = (/"develop_control/cpld_control_p8_intel/", "develop_exp/cpld_control_p8_intel/" /)
+  time = "f024."
+  fsrc = "atm"
  ndirs = dimsizes(dirs)
    nts = dimsizes(time)
 
   ;palette="BlueWhiteOrangeRed"
   palette="BlWhRe"
 
-  ; atm fields
-  atmflds = (/ "atmImp_Faxa_sen",  \
-               "atmImp_Sa_pbot",    \
-               "atmImp_Sa_shum",    \
-               "atmImp_Sa_tbot",    \
-               "atmImp_Sa_z",       \
-               "atmImp_Faxa_lwnet"  \
-            /)
-
-  ; from sfc file
-  ;atmflds = (/ "shtfl",  \
-  ;             "dlwrf_ave",    \
-  ;             "ulwrf_ave",    \
-  ;             "lhtfl",    \
-  ;             "tmpsfc",       \
-  ;             "spfh2m"  \
-  ;          /)
+  atmflds = (/"tmp"/)
+  atmwgts = (/1.0/)
   nflds = dimsizes(atmflds)
 
-  ; easier plots
-  atmwgts = (/1.e0, \
-              1.00, \
-              1.e4, \
-              1.e3, \
-              1.e2, \
-              1.00 \
-            /)
-  ;atmwgts = (/1.e12/)
-
   plotlevs = new((/nflds,3/), float)
-  plotlevs( 0,:) = (/  -1.0,  1.0, 0.1/) ; sen
-  plotlevs( 1,:) = (/  -0.02,  0.02, 0.002/) ; pbot
-  plotlevs( 2,:) = (/  -0.02,  0.02, 0.002/) ; shum
-  plotlevs( 3,:) = (/  -0.02,  0.02, 0.002/) ; tbot
-  plotlevs( 4,:) = (/  -0.02,  0.02, 0.002/) ; zbot
-  plotlevs( 5,:) = (/  -0.02,  0.02, 0.002/) ; lwnet
-  ;plotlevs( 0,:) = (/  -0.02,  0.02, 0.002/) ; lwnet
-
-  ; atm fields
-  ;atmflds = (/"aod550",     \
-  ;            "bc_aod550",  \
-  ;            "du_aod550",  \
-  ;            "oc_aod550",  \
-  ;            "ss_aod550",  \
-  ;            "su_aod550"   \
-  ;            /)
-  ;nflds = dimsizes(atmflds)
-
-  ;plotlevs = new((/nflds,3/), float)
-  ;plotlevs( 0,:) = (/  0.0,  1.00, 0.100/)
-  ;plotlevs( 1,:) = (/  0.0,  0.02, 0.001/)  ; bc
-  ;plotlevs( 2,:) = (/  0.0,  1.00, 0.100/)  ; du
-  ;plotlevs( 3,:) = (/  0.0,  0.20, 0.010/)  ; oc
-  ;plotlevs( 4,:) = (/  0.0,  0.20, 0.010/)  ; ss
-  ;plotlevs( 5,:) = (/  0.0,  0.20, 0.010/)  ; su
+  plotlevs( 0,:) = (/  -2.0,  2.0, 0.2/) ; tmp@k=76
 
   ; retrieve orodata file from INPUT directory for getting dims
-  filelist = systemfunc("ls "+RT+dirs(0)+"INPUT/oro_data.tile*.nc")
-  print(filelist)
-  ofiles = addfiles(filelist,"r")
-  ListSetType(ofiles,"join")
+  ofile = addfile(RT+dirs(0)+"INPUT/oro_data.tile1.nc","r")
   mskname = "slmsk"
   msklonname = "geolon"
   msklatname = "geolat"
-  mskvar = ofiles[:]->$mskname$
-  mskvar@lon2d = ofiles[0]->$msklonname$
-  mskvar@lat2d = ofiles[0]->$msklatname$
-  ;printVarSummary(mskvar)
+  mskvar = ofile->$mskname$(:,:)
+  mskvar@lon2d = ofile->$msklonname$
+  mskvar@lat2d = ofile->$msklatname$
   ndims = dimsizes(mskvar)
-  ny = ndims(1)
-  nx = ndims(2)
+  ny = ndims(0)
+  nx = ndims(1)
+  delete ([/mskvar,ndims/])
 
 ;************************************************
 ;
@@ -117,53 +66,71 @@
 
   ; make 6 tiled plot of given field diff
   ii = 0
+     data = new((/ ntiles, ny, nx/), "double")
+  mskdata = new((/ ntiles, ny, nx/), "double")
 
-  fname=fsrc+time+"nc"
-  files=addfiles(RT+dirs+fname,"r")
-  print(fname)
+  do kk = 0,ntiles-1
+  ; add history files on tile
+   tile="tile"+sprinti("%d",kk+1)
+   files=addfiles(RT+dirs+fsrc+time+tile+".nc","r")
+   print(files)
+
+   ofile = addfile(RT+dirs(0)+"INPUT/oro_data."+tile+".nc","r")
+   ;print(ofile)
+   mskname = "slmsk"
+   msklonname = "geolon"
+   msklatname = "geolat"
+   mskvar = ofile->$mskname$(:,:)
+   mskvar@lon2d = ofile->$msklonname$
+   mskvar@lat2d = ofile->$msklatname$
 
    aname = atmflds(ii)
      wgt = atmwgts(ii)
    print("variable "+aname+"  weight "+wgt)
 
-   data = files[1]->$aname$(0,:,:,:) - files[0]->$aname$(0,:,:,:)
-   data = where(abs(data) .gt. 1.0e6, default_fillvalue(typeof(data)), data)
-   ;printVarSummary(data)
-
-    lndonly = data
-    lndonly = mask(data*wgt,mskvar,1.0)  ; land only
-    ocnonly = data
-    ocnonly = mask(data*wgt,mskvar,0.0)  ; not land only
+   ; vertical level 76
+    avar = files[1]->$aname$(0,75,:,:)-files[0]->$aname$(0,75,:,:)
+    avar@lon2d = files[0]->$tlonname$
+    avar@lat2d = files[0]->$tlatname$
+    ;printVarSummary(avar)
+    lndonly = avar
+    lndonly = mask(avar*wgt,mskvar,1.0)  ; land only
+    ocnonly = avar
+    ocnonly = mask(avar*wgt,mskvar,0.0)  ; not land only
 
     if(plottype .eq. "land")then
-     data = lndonly
+     avar = lndonly
      msklab = "Land Points Only"
     end if
     if(plottype .eq. "not land")then
-     data = ocnonly
+     avar = ocnonly
      msklab = "Non-Land Points Only"
     end if
     if(plottype .eq. "all")then
-     data = data*wgt
+     avar = avar*wgt
      msklab = "All points"
     end if
 
-    do kk = 0,ntiles-1
-;--- special care for following tiles ---
-      if any((kk .eq. (/ 3, 4 /))) then
-        data(kk,:,:) = (/ transpose(data(kk,:,:)) /)
-        data(kk,:,:) = data(kk,::-1,:)
-        mskvar(kk,:,:) = (/ transpose(mskvar(kk,:,:)) /)
-        mskvar(kk,:,:) = mskvar(kk,::-1,:)
+       data(kk,:,:) = (/avar(:,:)/)
+    mskdata(kk,:,:) = (/mskvar(:,:)/)
 
-      end if
-      if any((kk .eq. (/ 2 /))) then
-        data(kk,:,:) = (/ transpose(data(kk,:,:)) /)
-        data(kk,:,:) = data(kk,::-1,:)
-        mskvar(kk,:,:) = (/ transpose(mskvar(kk,:,:)) /)
-        mskvar(kk,:,:) = mskvar(kk,::-1,:)
-      end if
+    ;--- special care for following tiles ---
+    if any((kk .eq. (/ 3, 4 /))) then
+         data(kk,:,:) = (/ transpose(data(kk,:,:)) /)
+         data(kk,:,:) = data(kk,::-1,:)
+      mskdata(kk,:,:) = (/ transpose(mskdata(kk,:,:)) /)
+      mskdata(kk,:,:) = mskdata(kk,::-1,:)
+
+    end if
+    if any((kk .eq. (/ 2 /))) then
+         data(kk,:,:) = (/ transpose(data(kk,:,:)) /)
+         data(kk,:,:) = data(kk,:,::-1)
+      mskdata(kk,:,:) = (/ transpose(mskdata(kk,:,:)) /)
+      mskdata(kk,:,:) = mskdata(kk,:,::-1)
+    end if
+    delete ([/avar,mskvar,lndonly,ocnonly/])
   end do  ; kk
+  ;print(data(:,45,45))
   plottitle=runlabs(1)+" - "+runlabs(0)+"  "+aname+",  "+msklab+",  "+time
 
   levs = plotlevs(ii,:)
@@ -174,8 +141,8 @@
 
   wkstype="X11"
   ;wkstype="png"
-  wkstype@wkWidth=800
-  wkstype@wkHeight=800
+  wkstype@wkWidth=1200
+  wkstype@wkHeight=1200
   wks   = gsn_open_wks (wkstype,wkstitle)              ; send graphics to X11 window
 
   res                      = True        ; plot mods desired
@@ -222,7 +189,8 @@
   ores@cnLineLabelsOn = False
   ores@cnLevels = (/ 0.999999 /)
   ores@cnInfoLabelOn = False
-  ores@cnLineThicknessF = 0.1
+  ores@cnLineThicknessF = 0.5
+  ores@cnLineColor = "green"
 
   ; text resources
   txres = True
@@ -261,21 +229,19 @@
     else
      res@gsnLeftString = ""
     end if
-    ;printVarSummary(data(kk,:,:))
     plot1 = gsn_csm_contour(wks, data(kk,:,:), res)
     draw(plot1)
-    oplot = gsn_csm_contour(wks, mskvar(kk,:,:), ores)
+    oplot = gsn_csm_contour(wks, mskdata(kk,:,:), ores)
     draw(oplot)
 
-    if (kk .eq. 2) then
     txres@txPosXF = xpos(kk)+0.01
     txres@txPosYF = ypos(kk)-0.01
     txres@txAngleF = 0
     txres@txFont = 22
     txres@txFontHeightF = 0.015
+    txres@txFontColor = "green"
     text = gsn_create_text(wks, sprinti("%d", kk+1), txres)
     draw(text)
-    end if
   end do
 
   frame(wks)

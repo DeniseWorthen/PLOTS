@@ -7,18 +7,18 @@
 ;**********************************************************
 begin
 
-     RT = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/test_input/"
+     RT = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/bilin/"
 
-   dirs = (/"cpld_controlfrac_debug/"/)
+   dirs = (/"bugfix.bilin.esmf8.5/"/)
    ;dirs = (/"testmask/", "testmaskall/"/)
-  ;   fsrc = "dststatus.atm.ocn.bilnr_nstod.nc"
-     fsrc = "dststatus.atm.ocn.consf.nc"
-  doffile = "dof.ocn.nc"
+     fsrc = "dststatus.atm.ocn.bilnr.nc"
+  ;   fsrc = "dststatus.atm.ocn.consf.nc"
+  ;doffile = "dof.ocn.nc"
   ;   fsrc = "dststatus.atm.ice.bilnr.nc"
   ;doffile = "dof.ice.nc"
   ;   fsrc = "dststatus.atm.ocn.nstod_consf.nc"
   ;   fsrc = "dststatus.atm.ocn.consf.nc"
-  ;doffile = "dof.ocn.nc"
+  doffile = "dof.ocn.nc"
   ;   fsrc = "unityone.atm.ocn.bilnr.nc"
   ;doffile = "dof.ocn.nc"
 

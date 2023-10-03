@@ -7,12 +7,11 @@
 
 ;************************************************
 
-  ; gaea
-  RT = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/REST192/"
+  RT = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/fixsigns/"
 
-  hemi = "NH"
+  ;hemi = "NH"
   ;hemi = "SH"
-  ;hemi = "none"
+  hemi = "none"
 
  ;plottype = "unmasked"
  ;plottype = "land"
@@ -40,17 +39,14 @@
     tlonname = "ocnExp_lon"
     tlatname = "ocnExp_lat"
 
- wkstitle = "c192_p7"
-  runlabs = (/"Control","Restart"/)
- dirs = (/"base/", "rest/" /)
- ;dirs = (/"restarts/base/", "restarts/rest/" /)
-  time = "2021-03-22-65400."
-  fsrc = "ufs.cpld.cpl.hi."
+ wkstitle = "signs_units"
+  runlabs = (/"Lat->Evap conversion in CMEPS","Direct Evap flux export"/)
+ dirs = (/"cpld.base/", "cpld.sign/" /)
+  fsrc = "ocn.hi"
  ndirs = dimsizes(dirs)
-   nts = dimsizes(time)
 
   ; add cpl history files on tile
-  files=addfiles(RT+dirs+fsrc+time+"nc","r")
+  files=addfiles(RT+dirs+fsrc+".nc","r")
   print(files)
 
   ; set plot limits if not polar
@@ -74,38 +70,39 @@
    end if
   end if
 
-  ;palette="BlueWhiteOrangeRed"
-  palette="BlWhRe"
+  palette="BlueWhiteOrangeRed"
+  ;palette="BlWhRe"
 
   ; ocn fields
-  ;ocnflds = (/ "ocnExp_Faxa_rain",  \
-  ;             "ocnExp_Sa_pbot",    \
-  ;             "ocnExp_Sa_shum",    \
-  ;             "ocnExp_Sa_tbot",    \
-  ;             "ocnExp_Sa_z",       \
-  ;             "ocnExp_Faxa_lwnet"  \
-  ;          /)
-  ocnflds = (/ "ocnExp_Faxa_lwnet"/)
+  ocnflds = (/ "ocnExp_Faxa_rain",  \
+               "ocnExp_Sa_pbot",    \
+               "ocnExp_Sa_shum",    \
+               "ocnExp_Sa_tbot",    \
+               "ocnExp_Sa_z",       \
+               "ocnExp_Faxa_lwnet", \
+               "ocnExp_Faxa_evap"   \
+            /)
+
   nflds = dimsizes(ocnflds)
 
   ; easier plots
-  ;ocnwgts = (/1.e4, \
-  ;            1.00, \
-  ;            1.e4, \
-  ;            1.00, \
-  ;            1.00, \
-  ;            1.00 \
-  ;          /)
-  ocnwgts = (/1.0e8/)
+  ocnwgts = (/1.e4, \
+              1.00, \
+              1.e4, \
+              1.00, \
+              1.00, \
+              1.00, \
+              86400.\     ; kg/m2/s->mm day
+            /)
 
   plotlevs = new((/nflds,3/), float)
-  ;plotlevs( 0,:) = (/  -0.02,  0.02, 0.002/) ; rain
-  ;plotlevs( 1,:) = (/  -0.02,  0.02, 0.002/) ; pbot
-  ;plotlevs( 2,:) = (/  -0.02,  0.02, 0.002/) ; shum
-  ;plotlevs( 3,:) = (/  -0.02,  0.02, 0.002/) ; tbot
-  ;plotlevs( 4,:) = (/  -0.02,  0.02, 0.002/) ; zbot
-  ;plotlevs( 5,:) = (/  -0.02,  0.02, 0.002/) ; lwnet
-  plotlevs( 0,:) = (/  -0.02,  0.02, 0.002/) ; lwnet
+  plotlevs( 0,:) = (/  -0.02,  0.02, 0.002/) ; rain
+  plotlevs( 1,:) = (/  -0.02,  0.02, 0.002/) ; pbot
+  plotlevs( 2,:) = (/  -0.02,  0.02, 0.002/) ; shum
+  plotlevs( 3,:) = (/  -0.02,  0.02, 0.002/) ; tbot
+  plotlevs( 4,:) = (/  -0.02,  0.02, 0.002/) ; zbot
+  plotlevs( 5,:) = (/  -0.02,  0.02, 0.002/) ; lwnet
+  plotlevs( 6,:) = (/  -0.02,  0.02, 0.002/) ; evap
 
   ; retrieve masking
   mskname = "ocnImp_So_omask"
@@ -114,8 +111,9 @@
   mskvar = files[1]->$mskname$(0,:,:)
   mskvar@lon2d = files[1]->$msklonname$(0,:,:)
   mskvar@lat2d = files[1]->$msklatname$(0,:,:)
+  printVarSummary(mskvar)
 
-  plottitle=runlabs(1)+" - "+runlabs(0)+"  "+tile
+  plottitle=runlabs(1)+" - "+runlabs(0)
 
 ;************************************************
 ; define the map
@@ -136,7 +134,8 @@
   res@mpFillOn   = False
   res@mpOutlineOn   = False
 
-  plot = new(nflds,graphic)
+  ;plot = new(nflds,graphic)
+  plot = new(1,graphic)
 
   if(hemi .ne. "none")then
    res@gsnPolar   =  hemi                         ; specify the hemisphere
@@ -149,11 +148,11 @@
     res@mpCenterLonF = midlon
    end if
   else
-   res@mpMinLatF            =  minlat      ; range to zoom in on
-   res@mpMaxLatF            =  maxlat
-   res@mpMinLonF            =  minlon
-   res@mpMaxLonF            =  maxlon
-   res@mpCenterLonF         =  midlon
+  ; res@mpMinLatF            =  minlat      ; range to zoom in on
+  ; res@mpMaxLatF            =  maxlat
+  ; res@mpMinLonF            =  minlon
+  ; res@mpMaxLonF            =  maxlon
+  ; res@mpCenterLonF         =  midlon
   end if
 
   res@cnFillDrawOrder   = "PreDraw"             ; draw contours first
@@ -162,7 +161,7 @@
   res@cnLineLabelsOn    = False
   res@lbLabelBarOn      = True
   res@cnFillPalette     = palette
- 
+
   res@cnMissingValFillPattern = 0               ; choose fill pattern 0 (solid fill)
   res@cnMissingValFillColor   = "gray"          ; color fill missing areas blue
 
@@ -193,30 +192,40 @@
 ;
 ;************************************************
 
-  do ii = 0,nflds-1
-   aname = ocnflds(ii)
-     wgt = ocnwgts(ii)
-   print("variable "+aname+"  weight "+wgt)
-    avar = files[1]->$aname$(0,:,:)-files[0]->$aname$(0,:,:)
-    printVarSummary(avar)
+  lstep = 6-1
+  variable_to_plot=6
+  aname = ocnflds(variable_to_plot)
+  wgt = ocnwgts(variable_to_plot)
+  print("variable "+aname+"  weight "+wgt)
 
+  ; first plot, control values
+  ii = 0
+  var = files[0]->$aname$(lstep,:,:)
+  levs = plotlevs(variable_to_plot,:)
+  var@lon2d = files[0]->$tlonname$(0,:,:)
+  var@lat2d = files[0]->$tlatname$(0,:,:)
+  plot(ii) = subplot(
+
+    var = files[1]->$aname$(lstep,:,:)-files[0]->$aname$(lstep,:,:)
+    printVarSummary(var)
+    avar = var
     lndonly = avar
     lndonly = mask(avar*wgt,mskvar,0.0)  ; land only
     ocnonly = avar
     ocnonly = mask(avar*wgt,mskvar,1.0)  ; ocean only
 
     if(plottype .eq. "land")then
-     avar = lndonly
-     msklab = "Land Points Only"
+      avar = lndonly
+      msklab = "Land Points Only"
     else if(plottype .eq. "ocean")then
-     avar = ocnonly
-     msklab = "Ocean Points Only"
+      avar = ocnonly
+      msklab = "Ocean Points Only"
     else
-     avar = avar*wgt
-     msklab = "All Points"
+      avar = var*wgt
+      msklab = "All Points"
     end if
     end if
-    levs = plotlevs(ii,:)
+    levs = plotlevs(variable_to_plot,:)
     avar@lon2d = files[0]->$tlonname$(0,:,:)
     avar@lat2d = files[0]->$tlatname$(0,:,:)
 
@@ -227,11 +236,11 @@
 
     res@gsnCenterString                 = aname
     ;if(hemi .eq. "none")then
-      plot(ii) = gsn_csm_contour_map(wks,avar,res)    ; create the plot
+      plot(0) = gsn_csm_contour_map(wks,avar,res)    ; create the plot
     ;else
     ;  plot(ii) = gsn_csm_contour_map(wks,avar,res)    ; create the plot
     ;end if
- end do
+ ;end do
 
 ; ***************************************************
 ; panel resources
@@ -242,14 +251,14 @@
   resP@gsnFrame              = False                ; don't advance frame yet
   resP@gsnPanelLabelBar      = False                 ; turn on a common labelbar for the entire panel plot
 
-  resP@gsnPanelMainFontHeightF = 0.020           ; new resource added in NCL V6.4.0
+  ;resP@gsnPanelMainFontHeightF = 0.020           ; new resource added in NCL V6.4.0
   resP@gsnPanelMainString = plottitle + ",  "+msklab
 
 ;************************************************
 ; make the panel
 ;************************************************
 
-  ;gsn_panel(wks,plot,(/2,3/),resP)
+  ;gsn_panel(wks,plot,(/3,3/),resP)
   gsn_panel(wks,plot,(/1,1/),resP)
 
   frame(wks)
