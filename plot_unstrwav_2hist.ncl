@@ -8,14 +8,15 @@
   ; cheyenne
   ;RT1 = "/glade/scratch/worthen/addunstr.2acd891b.ww.33d337356/ATMW/"
   ; hera
-  RT1 = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/waveice/"
+  ;RT1 = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/waveice/"
+  RT1 = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/atmwsandbox/base.noresmP/"
 
-  ;polar="false"
-  polar="true"
+  polar="false"
+  ;polar="true"
   ; minlat = 66.0
   ; zoom in
   ;minlat = 88.0
-  minlat = 70.0
+  ;minlat = 70.0
 
   gridtype = (/"unstructured" , "unstructured" /)
   plotlabs = (/"IC0", "IC4" /)

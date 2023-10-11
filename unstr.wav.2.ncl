@@ -7,21 +7,22 @@ begin
      ;RT = "/glade/scratch/worthen/WaveUnstr/unstrnoland3PE/"
      ;RT = "/glade/scratch/worthen/WaveUnstr2/pdlib2PE/"
      ;RT = "/glade/scratch/worthen/WaveUnstr/pdlibnoland3PE/"
-      RT = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/atmwsandbox/test/"
+      RT = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/rt_18762/cpld_control_pdlib_p8_intel/"
 
      filetype="wave history"
      ;filetype="wave coupler"
 
-     ;polar="false"
-     polar="true"
-      minlat = 66.0
+     polar="false"
+     ;polar="true"
+     ; minlat = 66.0
      ; zoom in
      ;minlat = 88.0
      ;minlat = 80.0
 
      if (filetype .eq. "wave history") then
-       time="21600"
-       fname = "ufs.atmw.ww3.hi.2021-03-23-"+time+".nc"
+       ;time="32400"
+       ;fname = "ufs.atmw.ww3.hi.2021-03-22-"+time+".nc"
+       fname="20210322.090000.out_grd.ww3.nc"
        f = addfile(RT+fname,"r")
         ;vname = "UAX"
         ;levs = (/-20,20,1.0/)
@@ -98,10 +99,10 @@ begin
   res@cnFillMode = "RasterFill"
 
   res@gsnStringFontHeightF = 0.01
-  res@cnMissingValPerimOn     = True            ; turn on the missing value perimeter
-  res@cnMissingValPerimColor  = "black"           ; outline the perimeter red
-  res@cnMissingValFillPattern = 0               ; choose fill pattern 0 (solid fill)
-  res@cnMissingValFillColor   = "gray"          ; color fill missing areas blue
+  ;res@cnMissingValPerimOn     = True            ; turn on the missing value perimeter
+  ;res@cnMissingValPerimColor  = "black"           ; outline the perimeter red
+  ;res@cnMissingValFillPattern = 0               ; choose fill pattern 0 (solid fill)
+  ;res@cnMissingValFillColor   = "gray"          ; color fill missing areas blue
 
   res@cnFillDrawOrder   = "PreDraw"             ; draw contours first
   res@cnFillOn          = True                 ; color fill

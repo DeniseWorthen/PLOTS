@@ -8,7 +8,7 @@
 ; script
 ;************************************************
 
-  RT = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/mean2inst/"
+  RT = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/rt_142039/cpld_control_nowave_noaero_p8_intel/"
 
   ;plottype = "land"
   ;plottype = "not land"
@@ -29,8 +29,8 @@
   tlatname = "Med_frac_atm_lat"
 
  wkstitle = "mean2inst"
- dirs = (/"base/"/)
-  time = "2021-03-22-36000.nc"
+ dirs = (/"/"/)
+  time = "2021-03-23-21600.nc"
   fsrc = "ufs.cpld.cpl.hi.atm."
  ndirs = dimsizes(dirs)
    nts = dimsizes(time)
@@ -64,15 +64,15 @@
   nflds = dimsizes(meanflds)
 
   ; easier plots
-  atmwgts = (/1.e16, \
-              1.e16, \
-              1.e14, \
-              1.e14, \
-              1.e14, \
-              1.e14, \
-              1.e14, \
-              1.e14, \
-              1.e14  \
+  atmwgts = (/1.e12, \
+              1.e12, \
+              1.e13, \
+              1.e12, \
+              1.e12, \
+              1.e12, \
+              1.e12, \
+              1.e12, \
+              1.e12  \
             /)
 
   plotlevs = new((/nflds,3/), float)
@@ -91,7 +91,7 @@
 ;************************************************
 
   ; make 6 tiled plot of given field diff
-  fld2plot = 0
+  fld2plot = 2
 
   fname=fsrc+time
   files=addfiles(RT+dirs+fname,"r")
