@@ -7,16 +7,20 @@
 ;**********************************************************
 begin
 
-  RT = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/rt_2185/"
-  dirout = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/rt_2185/"
+  ;RT = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/rt_2185/"
+  ;dirout = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/rt_2185/"
+  ;date = "2019-08-29-"
+
+  RT = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/use_inst/"
+  dirout = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/use_inst/"
   date = "2019-08-29-"
 
   ntile = 1
   nax = 720
   nay = 600
-  dir = (/"base/"/)
+  dir = (/"hafs_regional_atm_ocn_wav_intel/"/)
 
-  time = 10080
+  time = "21600"
   fsrc = "ufs.hafs.cpl.hi.atm."
 
   ndirs = dimsizes(dir)

@@ -28,7 +28,7 @@
   tlonname = "Med_frac_atm_lon"
   tlatname = "Med_frac_atm_lat"
 
- wkstitle = "mean2inst"
+
  dirs = (/"/"/)
   time = "2021-03-23-21600.nc"
   fsrc = "ufs.cpld.cpl.hi.atm."
@@ -59,7 +59,7 @@
                 "atmImp_inst_net_lw_flx"      ,   \
                 "atmImp_inst_net_sw_flx"      ,   \
                 "atmImp_inst_down_sw_ir_dir_flx", \
-                "atmImp_inst_down_sw_ir_dir_flx"  \
+                "atmImp_inst_down_sw_vis_dir_flx"  \
                 /)
   nflds = dimsizes(meanflds)
 
@@ -71,8 +71,8 @@
               1.e12, \
               1.e12, \
               1.e12, \
-              1.e12, \
-              1.e12  \
+              1.e13, \
+              1.e13  \
             /)
 
   plotlevs = new((/nflds,3/), float)
@@ -91,7 +91,7 @@
 ;************************************************
 
   ; make 6 tiled plot of given field diff
-  fld2plot = 2
+  fld2plot = 0
 
   fname=fsrc+time
   files=addfiles(RT+dirs+fname,"r")
@@ -102,6 +102,7 @@
      wgt = atmwgts(fld2plot)
    print("variable "+mname+"  "+iname+"  weight "+wgt)
 
+   wkstitle = str_sub_str(mname,12,strlen(mname))
    mdata = files[0]->$mname$(0,:,:,:)
    mdata = where(abs(mdata) .gt. 1.0e35, 0.0, mdata)
    idata = files[0]->$iname$(0,:,:,:)
@@ -123,7 +124,7 @@
         data(kk,:,:) = data(kk,::-1,:)
       end if
   end do  ; kk
-  plottitle=mname+" -  "+iname+"  "+data@units
+  plottitle=mname+" - "+iname+"  ("+data@units+")  scale = "+wgt
   data@units = ""
 
   levs = plotlevs(fld2plot,:)
@@ -131,8 +132,8 @@
 ; define the map
 ;************************************************
 
-  wkstype="X11"
-  ;wkstype="png"
+  ;wkstype="X11"
+  wkstype="png"
   wkstype@wkWidth=800
   wkstype@wkHeight=800
   wks   = gsn_open_wks (wkstype,wkstitle)              ; send graphics to X11 window
@@ -224,7 +225,6 @@
     plot1 = gsn_csm_contour(wks, data(kk,:,:), res)
     draw(plot1)
 
-    if (kk .eq. 2) then
     txres@txPosXF = xpos(kk)+0.01
     txres@txPosYF = ypos(kk)-0.01
     txres@txAngleF = 0
@@ -232,7 +232,6 @@
     txres@txFontHeightF = 0.015
     text = gsn_create_text(wks, sprinti("%d", kk+1), txres)
     draw(text)
-    end if
   end do
 
   frame(wks)
