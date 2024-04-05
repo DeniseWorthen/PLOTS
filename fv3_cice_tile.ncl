@@ -2,6 +2,8 @@
 ; These files are loaded by default in NCL V6.2.0 and newer
 ; load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_code.ncl"
 ; load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl"
+
+  load "$NCARG_ROOT/lib/ncarg/nclscripts/contrib/cd_string.ncl"
 ;************************************************
 
   rtsrc = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/sfctemp/"
@@ -23,62 +25,49 @@
 
   rad2deg=180/3.14
 
-  filetype="medhistory"
-  ;filetype=""
 ;************************************************
 ;
 ;************************************************
 
-  dirsrc="base.nsst/"
+  dirsrc="base.nsst2/"
+  afile=addfile(rtsrc+dirsrc+"tile3.nc","r")
+  ;aname="tmpsfc"
+  ;aname="tisfc"
+  aname="shtfl_ave"
+  afname="icec"
+
+  ifile=addfile(rtsrc+dirsrc+"ice.nc","r")
+  printVarSummary(ifile)
+  ;iname="Tsfc_h"
+  iname="fsens_h"
+  ifname="aice_h"
+
   lstep=54-1
+  ivar = ifile->$iname$(lstep,:,:)
+  ifrac = ifile->$ifname$(lstep,:,:)
+  ivar = where(ifrac .gt. 0.90, ivar, ivar@_FillValue)
+  ivar = (-1.0)*ivar
+  ivar@lon2d = ifile->TLON(:,:)
+  ivar@lat2d = ifile->TLAT(:,:)
 
-  if(filetype .eq. "medhistory") then
-    afile=addfile(rtsrc+dirsrc+"hi.atm.nc","r")
-    aname="atmExp_Si_t"
-    afname="atmExp_Si_ifrac"
-    ifile=addfile(rtsrc+dirsrc+"hi.ice.nc","r")
-    iname="iceImp_Si_t"
-    ifname="iceImp_Si_ifrac"
+  ainame = "icec"
+  afrac = afile->$afname$(lstep,:,:)
+  avar = afile->$aname$(lstep,:,:)
+  ;avar = where(afrac .gt. 0.80, avar-273.15, avar@_FillValue)
+  avar = where(afrac .gt. 0.90, avar, avar@_FillValue)
+  avar@lon2d = afile->grid_xt(:,:)
+  avar@lat2d = afile->grid_yt(:,:)
+  ;avar@units = "C"
 
-    ivar = ifile->$iname$(lstep,:,:)
-    ifrac= ifile->$ifname$(lstep,:,:)
-    ivar = where(ifrac .ge. 0.80, ivar, ivar@_FillValue)
-    ivar = ivar-273.15
-    ivar@lon2d = ifile->iceExp_lon(0,:,:)
-    ivar@lat2d = ifile->iceExp_lat(0,:,:)
+  ;levs = (/-10.00,1.0,0.5/)
+  ;levs = (/0.0,300.0,10.0/)
+  levs = (/-20.0, 20.0, 1.0/)
 
-    tile=3-1
-    avar = afile->$aname$(lstep,tile,:,:)
-    afrac= afile->$afname$(lstep,tile,:,:)
-    avar = where(afrac .ge. 0.80, avar, avar@_FillValue)
-    avar = avar-273.15
-    avar@lon2d = afile->atmExp_lon(0,tile,:,:)*rad2deg
-    avar@lat2d = afile->atmExp_lat(0,tile,:,:)*rad2deg
-  else
-    afile=addfile(rtsrc+dirsrc+"tile3.nc","r")
-    aname="tmpsfc"
-    afname="icec"
-    ifile=addfile(rtsrc+dirsrc+"ice.nc","r")
-    iname="Tsfc_h"
-    ifname="aice_h"
-
-    ivar = ifile->$iname$(lstep,:,:)
-    ifrac= ifile->$ifname$(lstep,:,:)
-    ivar = where(ifrac .ge. 0.80, ivar, ivar@_FillValue)
-    ivar@lon2d = ifile->TLON(:,:)
-    ivar@lat2d = ifile->TLAT(:,:)
-
-    avar = afile->$aname$(lstep,:,:)
-    afrac= afile->$afname$(lstep,:,:)
-    avar = where(afrac .ge. 0.80, avar, avar@_FillValue)
-    avar = avar-273.15
-    avar@lon2d = afile->grid_xt(:,:)
-    avar@lat2d = afile->grid_yt(:,:)
-  end if
-
-  levs = (/-10.00,1.0,0.5/)
-
-  plottitle=dirsrc
+  ; Get the time axis
+  times= ifile->time
+  timeUnits = ifile->time@units
+  timeCalendar = ifile->time@calendar
+  ;print(times)
 
 ;************************************************
 ; add a poly line showing the polar seem along
@@ -178,7 +167,7 @@
   resP@gsnPanelYWhiteSpacePercent = 10
   resP@gsnPanelLabelBar      = True                 ; turn on a common labelbar for the entire panel plot
 
-  resP@gsnPanelMainString  = plottitle
+  resP@gsnPanelMainString  = cd_string(times(lstep),"%Y%N%D")
   resP@gsnPanelMainFontHeightF = 0.010            ; new resource added in NCL V6.4.0
 
   xx = -10.5

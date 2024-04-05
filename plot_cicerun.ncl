@@ -21,25 +21,28 @@ begin
   ;minlon =  140.0
   ;maxlon =  270.0
 
-  RT1 = "/scratch2/NCEPDEV/stmp1/Denise.Worthen/"
+  ;RT1 = "/scratch2/NCEPDEV/stmp1/Denise.Worthen/"
   RT2 = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/"
-  RT3 = "/scratch2/NCEPDEV/stmp3/Denise.Worthen/"
-  RT4 = "/scratch1/NCEPDEV/stmp4/Denise.Worthen/"
+  ;RT3 = "/scratch2/NCEPDEV/stmp3/Denise.Worthen/"
+  ;RT4 = "/scratch1/NCEPDEV/stmp4/Denise.Worthen/"
+  ;RT="/scratch1/NCEPDEV/stmp2/Lydia.B.Stefanova/fromHPSS/ufs_hr1/20200707/gfs.20200707/00/ice/"
 
 ;************************************************
 ; read in netCDF file
 ;************************************************
 
-   idate = "2021010100"
-   cyear = "2021"
-    cmon = "08"
-    cday = "24"
-   cdate = cyear+"-"+cmon+"-"+cday
-   rtsrc = RT2+"testpr1/pdlib270k/"
+   ;idate = "2021"
+   ;cyear = "2021"
+   ; cmon = "08"
+   ; cday = "24"
+   ;cdate = cyear+"-"+cmon+"-"+cday
+   ;rtsrc = RT2+"testpr1/pdlib270k/"
 
+   rtsrc=RT2
    ; use one file for grid
    ;gf =addfile(rtsrc+"iceic"+idate+"00.01."+idate+"00.nc","r")
-   gf =addfile(rtsrc+"history/iceh_inst."+cyear+"-"+cmon+"-24-21600.nc","r")
+   ;icef =addfile(rtsrc+"ice2020071800.01.2020070700.nc","r")
+   icef = addfile(rtsrc+"FV3_RT/cicepr.netcdf.cdf1/cpld_control_p8_intel/history/iceh_ic.2021-03-22-21600.nc","r")
    ;print(gf)
    tlatname="TLAT"
    tlonname="TLON"
@@ -52,10 +55,10 @@ begin
 ;************************************************
 
   lstep=1-1
-  print("cdate = "+cdate)
+  ;print("cdate = "+cdate)
 
   ; ice field
-  varname="aice_h"
+  varname="aice"
   ;levs=(/0.97,1.0,0.001/)
   ;levs=(/0.87,0.95,0.0010/)
   ;levs=(/0.50,1.00,0.010/)
@@ -92,12 +95,18 @@ begin
   ;varname="hs_h"
   ;levs=(/0.0,0.42,0.02/)
 
-   icef =addfile(rtsrc+"history/iceh_inst."+cyear+"-"+cmon+"-24-21600.nc","r")
+  ; icef =addfile(rtsrc+"history/iceh_inst."+cyear+"-"+cmon+"-24-21600.nc","r")
   ;  icef = addfile(rtsrc+"history/iceh_06h."+cdate+"-00000.nc","r")
-  icevar = icef->$varname$(lstep,:,:)
+  ;icevar = icef->$varname$(lstep,:,:)
   ;icevar = icevar/100.0
-  icevar@lon2d=gf->$tlonname$*rfactor
-  icevar@lat2d=gf->$tlatname$*rfactor
+
+  sst=icef->sst_h(lstep,:,:)
+  icon=icef->aice_h(lstep,:,:)
+  sit=icef->Tsfc_h(lstep,:,:)
+  icevar=(1.0-icon)*sst + icon*sit
+  levs=(/-2.0,1.0,.1/)
+  icevar@lon2d=icef->$tlonname$*rfactor
+  icevar@lat2d=icef->$tlatname$*rfactor
   printVarSummary(icevar)
   icevar@units=""
   icevar@long_name=""
@@ -130,8 +139,8 @@ begin
 ;************************************************
   wkstype="X11"
   ;wkstype="png"
-  wkstype@wkWidth=800
-  wkstype@wkHeight=800
+  wkstype@wkWidth=1200
+  wkstype@wkHeight=1200
   wks   = gsn_open_wks (wkstype,"cice5")              ; send graphics to X11 window
 
   ;gsn_define_colormap(wks,"MPL_Blues")
@@ -172,10 +181,10 @@ begin
 
   ;res@cnFillOn          = False                  ; color fill
 
-  ;res@cnLevelSelectionMode = "ManualLevels"     ; set the contour levels with the following 3 resources
-  ;res@cnMinLevelValF  = levs(0)                      ; set the minimum contour level
-  ;res@cnMaxLevelValF  = levs(1)                      ; set the maximum contour level
-  ;res@cnLevelSpacingF = levs(2)                      ; set the interval between contours
+  res@cnLevelSelectionMode = "ManualLevels"     ; set the contour levels with the following 3 resources
+  res@cnMinLevelValF  = levs(0)                      ; set the minimum contour level
+  res@cnMaxLevelValF  = levs(1)                      ; set the maximum contour level
+  res@cnLevelSpacingF = levs(2)                      ; set the interval between contours
 
   ; res@cnLevelSelectionMode        = "ExplicitLevels"
   ; res@cnLevels                    = (/     0.15,0.50,0.7,0.8,0.85,0.9,0.950/)
@@ -188,8 +197,8 @@ begin
   ;res@cnFillPalette        = "WhBlGrYeRe"              ; choose colormap
 
   ;res@tiMainString = dirname+" "+cday
-  res@tiMainString = rtsrc+" "+cdate+" "+varname
-  res@tiMainFontHeightF = .01
+  ;res@tiMainString = rtsrc+" "+cdate+" "+varname
+  ;res@tiMainFontHeightF = .01
 
   ;res@gsnCenterStringOrthogonalPosF = .15	    ; raise the CenterString slightly
   ;res@gsnStringFontHeightF = 0.01

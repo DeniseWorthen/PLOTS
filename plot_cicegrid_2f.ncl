@@ -44,16 +44,7 @@ begin
   ;levs=(/9200.0, 12200.0, 100.0/)
   ;minlat=82.0
 
-  varname="angle"
-  lonname="lonBu"
-  latname="latBu"
-
-  var = gr->$varname$
-  ;var@lon2d=gr->$lonname$*rad2deg
-  ;var@lat2d=gr->$latname$*rad2deg
-  var@lon2d=gr->$lonname$
-  var@lat2d=gr->$latname$
-  levs=(/-1.6,1.6,.1/)
+  ;levs=(/-1.6,1.6,.1/)
   minlat = 89.5
 
 ;************************************************
@@ -75,6 +66,10 @@ begin
   wkstype@wkHeight=800
   wks   = gsn_open_wks (wkstype,"grid")              ; send graphics to X11 window
 
+
+  plot = new(2,graphic)
+  dum = new(2,graphic)
+
   res                      = True        ; plot mods desired
   res@gsnDraw              = False       ; do not draw until the end
   res@gsnFrame             = False       ; do not automatically advance 'frame'
@@ -93,10 +88,10 @@ begin
   res@cnLinesOn         = False                 ; no contour lines
   res@cnLineLabelsOn    = False
 
-  res@cnLevelSelectionMode = "ManualLevels"     ; set the contour levels with the following 3 resources
-  res@cnMinLevelValF  = levs(0)                      ; set the minimum contour level
-  res@cnMaxLevelValF  = levs(1)                      ; set the maximum contour level
-  res@cnLevelSpacingF = levs(2)                      ; set the interval between contours
+  ;res@cnLevelSelectionMode = "ManualLevels"     ; set the contour levels with the following 3 resources
+  ;res@cnMinLevelValF  = levs(0)                      ; set the minimum contour level
+  ;res@cnMaxLevelValF  = levs(1)                      ; set the maximum contour level
+  ;res@cnLevelSpacingF = levs(2)                      ; set the interval between contours
 
   res@cnFillPalette        = "NCV_jet"              ; choose colormap
   ;res@cnFillPalette        = "BlueWhiteOrangeRed"              ; choose colormap
@@ -116,14 +111,53 @@ begin
   pres@gsLineDashPattern =  1            ; dashes
   ;pres@tfPolyDrawOrder = "postDraw"
 
+; ***************************************************
+; panel resources
+; **************************************************
+
+  resP                       = True                 ; modify the panel plot
+  resP@gsnMaximize           = True                 ; maximize in frame
+  resP@gsnFrame              = False                ; don't advance frame yet
+  resP@gsnPanelYWhiteSpacePercent = 10
+  resP@gsnPanelYWhiteSpacePercent = 10
+  resP@gsnPanelLabelBar      = False                 ; turn on a common labelbar for the entire panel plot
+
+  resP@gsnPanelMainFontHeightF = 0.015           ; new resource added in NCL V6.4.0
+  ;resP@gsnPanelMainString = plottitle
+
 ;************************************************
 ;
 ;************************************************
 
-  plot = gsn_csm_contour_map_polar(wks,var,res)    ; create the plot
-  dum= gsn_add_polyline(wks,plot,(/lon1, lon2/) , (/lat1, lat2/) ,pres)
+  varname="lonBu"
+  lonname="lonBu"
+  latname="latBu"
 
-  draw(plot)
+  ii=0
+  var = gr->$varname$
+  var@lon2d=gr->$lonname$
+  var@lat2d=gr->$latname$
+  plot(ii) = gsn_csm_contour_map_polar(wks,var,res)    ; create the plot
+  dum(ii) = gsn_add_polyline(wks,plot(ii),(/lon1, lon2/) , (/lat1, lat2/) ,pres)
+
+  ; in tripole file, anglet=(-1)*angle
+  ii=1
+  varname="latBu"
+  lonname="lonBu"
+  latname="latBu"
+  var = gr->$varname$
+  var = -1.0*var
+  var@lon2d=gr->$lonname$
+  var@lat2d=gr->$latname$
+  plot(ii) = gsn_csm_contour_map_polar(wks,var,res)    ; create the plot
+  dum(ii) = gsn_add_polyline(wks,plot(ii),(/lon1, lon2/) , (/lat1, lat2/) ,pres)
+
+;************************************************
+; make the panel
+;************************************************
+
+  gsn_panel(wks,plot,(/1,2/),resP)
+
   frame(wks)
-
+exit
 end

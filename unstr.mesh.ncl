@@ -51,7 +51,7 @@ begin
 
      ;var1d@lon1d = x
      ;var1d@lat1d = y
-     
+
 ;************************************************
 ; define the map
 ;************************************************
@@ -97,10 +97,10 @@ begin
   res@tiMainString = dirsrc
   res@mpFillOn             = False
 
-  res@mpMinLatF            = -30      ; range to zoom in on
-  res@mpMaxLatF            =  30.
-  res@mpMinLonF            = -60.
-  res@mpMaxLonF            =  30.
+  ;res@mpMinLatF            = -30      ; range to zoom in on
+  ;res@mpMaxLatF            =  30.
+  ;res@mpMinLonF            = -60.
+  ;res@mpMaxLonF            =  30.
 
   res@SfXCellBounds = cx
   res@SfYCellBounds = cy
