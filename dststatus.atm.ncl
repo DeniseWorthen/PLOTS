@@ -14,7 +14,7 @@ begin
 
    nl = str_get_nl()
    nflags = 9
-     RT = "/glade/scratch/worthen/FV3_RT/bilin/"
+     RT = "/glade/derecho/scratch/worthen/FV3_RT/rt_26609/"
    date = "2021-03-22-"
 
     atmres = 96
@@ -25,7 +25,7 @@ begin
    ;dirs=(/"unstrnoland3PE/"/)
 
    plotlab="dststatus"
-   dirs=(/"base/"/)
+   dirs=(/"lnd.db/"/)
 
    ;plotlab="mx050"
    ;plotlab="mx025"
@@ -42,9 +42,10 @@ begin
    levs = (/0,9,1/)
    ;fsrc = vname+".wav.atm.nstod_consf"
    ;fsrc = vname+".ocn.atm.consd"
-   fsrc = vname+".ocn.atm.consf"
+   ;fsrc = vname+".ocn.atm.consf"
    ;fsrc = vname+".wav.atm.bilnr_nstod"
-
+   fsrc = vname+".lnd.atm.consd"
+   ;fsrc = vname+".atm.lnd.consd"
   ntile = 6
   ndirs = dimsizes(dirs)
 
@@ -67,8 +68,8 @@ begin
 ;**********************************************************
 
   ;fname = "/glade/scratch/worthen/FV3_RT/wave_test/base/ufs.cpld.cpl.hi.atm."+date+"22320.nc"
-  fname = RT+dirs(0)+"ufs.cpld.cpl.hi.atm."+date+"22320.nc"
-  ;fname = RT+dirs(0)+"ufs.atmw.cpl.hi.atm."+date+"22320.nc"
+  fname = RT+dirs(0)+"ufs.cpld.cpl.hi."+date+"22320.nc"
+  ;fname = RT+dirs(0)+"ufs.atmw.cpl.hi."+date+"22320.nc"
   print("input file "+fname)
   ff = addfile(fname,"r")
 
@@ -117,6 +118,7 @@ do nd = 0,ndirs-1
 
   ; get the index seq to resort
   doffile = dirsrc+"dof.atm.nc"
+  ;doffile = dirsrc+"dof.lnd.nc"
   ;doffile = dirsrc+"dof.nc"
   doff = addfile(doffile,"r")
   dof = doff->dof(:)
@@ -232,8 +234,8 @@ if(makeplot .eq. "yes") then
 
      wkstype="X11"
      ;wkstype="png"
-     wkstype@wkWidth=1600
-     wkstype@wkHeight=1600
+     wkstype@wkWidth=800
+     wkstype@wkHeight=800
      wks   = gsn_open_wks (wkstype,wkstitle)              ; send graphics to X11 window
      gsn_define_colormap(wks,palette)
 

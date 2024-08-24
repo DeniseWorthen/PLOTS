@@ -9,13 +9,12 @@
 ;**********************************************************
 begin
 
-   RT="/glade/scratch/worthen/WaveUnstr/unstrnoland3PE/"
-   ;RT="/glade/scratch/worthen/WaveUnstr/pdlib5PE/"
+   RT="/glade/scratch/worthen/fix_sw/base/"
 
    nl = str_get_nl()
    nflags = 9
    date = "2021-03-22-"
-   time = "25200"
+   time = "36000"
     atmres = 96
 
  ;   atmres = 192
@@ -44,23 +43,24 @@ begin
 ;************************************************
 
   dirsrc = RT+dirs(0)
-    fname=dirsrc+"ufs.atmw.cpl.hi.atm."+date+time+".nc"
+    fname=dirsrc+"ufs.cpld.cpl.hi.atm."+date+time+".nc"
     print(fname)
        ff = addfile(fname, "r")
-     vname="atmExp_Sw_z0"
+     vname="atmImp_Faxa_swvdr"
      data = ff->$vname$(0,:,:,:)
+     ;data = data*1.e02
      ;dtmp = data
      ;data = where(abs(dtmp) .gt. 1.0e3, dtmp@_FillValue, dtmp*1.0e3)
      ;data = where(dtmp .lt. 0.0 .or. dtmp .gt. 1.0e3, default_fillvalue(typeof(dtmp)), dtmp*1.0e3)
-     ;levs=(/0,0.5,.05/)
+     levs=(/0,400.,10./)
      ;printVarSummary(data)
 
      ;vname="atmImp_Sa_u10m"
      ;data = ff->$vname$(0,:,:,:)
      ;levs = (/-20.0, 20.0, 1.0/)
-     ;ocnonly = data
-     ;ocnonly = mask(data,mskvar,0.0)
-     ;data = ocnonly
+     ocnonly = data
+     ocnonly = mask(data,mskvar,0.0)
+     data = ocnonly
 
     ;if(1.eq.0)then
      ; re-arrange tiles that are on their side
@@ -115,10 +115,10 @@ begin
      res@cnMissingValFillPattern = 0               ; choose fill pattern 0 (solid fill)
      res@cnMissingValFillColor   = "gray"          ; color fill missing areas blue
 
-    ; res@cnLevelSelectionMode = "ManualLevels"     ; set the contour levels with the following 3 resources
-    ; res@cnMinLevelValF  = levs(0)                      ; set the minimum contour level
-    ; res@cnMaxLevelValF  = levs(1)                      ; set the maximum contour level
-    ; res@cnLevelSpacingF = levs(2)                      ; set the interval between contours
+     res@cnLevelSelectionMode = "ManualLevels"     ; set the contour levels with the following 3 resources
+     res@cnMinLevelValF  = levs(0)                      ; set the minimum contour level
+     res@cnMaxLevelValF  = levs(1)                      ; set the maximum contour level
+     res@cnLevelSpacingF = levs(2)                      ; set the interval between contours
 
      res@tmYROn = False
      res@tmXTOn = False

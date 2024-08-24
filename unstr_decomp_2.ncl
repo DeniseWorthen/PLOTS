@@ -13,10 +13,10 @@
   ;RT = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/addunstr.2acd891b.ww.33d337356/"
   ;MD = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/addunstr.2acd891b.ww.33d337356/"
 
-  RT = "/glade/scratch/worthen/addunstr.2acd891b.ww.33d337356/"
-  MD = "/glade/scratch/worthen/addunstr.2acd891b.ww.33d337356/"
+  RT = "/glade/derecho/scratch/worthen/ptout/"
+  MD = "/glade/derecho/scratch/worthen/ptout/mod_defs/"
 
-  scrpfile   = "trip1degmask.SCRIP.nc"
+  scrpfile   = "exp.wise.global_270k.SCRIP.nc"
 
   sfile      = addfile(MD+scrpfile,"r")
   x          = sfile->grid_center_lon
@@ -24,29 +24,11 @@
   cx         = sfile->grid_corner_lon
   cy         = sfile->grid_corner_lat
 
- ;gridtype  = (/"unstructured", \
- ;              "unstructured", \
- ;              "unstructured", \
- ;              "unstructured"  /)
+ gridtype  = (/"unstructured"/)
 
- ;plotlabs = (/"Unstr DomainDecomp, no UST, 3PE",   \
- ;             "Unstr Domain Decomp, with UST, 3PE", \
- ;             "Unstr Domain Decomp, with UST, 5PE", \
- ;             "Unstr Domain Decomp, with UST, 6PE"/)
+ plotlabs = (/"Unstr, 30PE"/)
 
- ;    rts = (/"noust3PE/",      \
- ;             "withust3PE/", \
- ;             "withust5PE/", \
- ;             "withust6PE/"  /)
-
- gridtype  = (/"unstructured", "unstructured"/)
-
- plotlabs = (/"Unstr, 10PE", \
-              "Unstr, 5PE"/)
-
-  ;rts = (/"ATMW/base/", "ATMW/mpi/"/)
-  ;rts = (/"CPLD/base/", "CPLD/mpi/"/)
-  rts = (/"ATMW/IMP/base/", "ATMW/IMP/mpi/"/)
+  rts = (/"base.pdlib/"/)
   fnames = RT+rts+"emesh.decomp.nc"
   files  = addfiles(fnames,"r")
   nplots = dimsizes(gridtype)

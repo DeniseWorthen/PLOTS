@@ -14,81 +14,47 @@ begin
 
      polar="false"
      ;polar="true"
-     ; minlat = 66.0
+      minlat = 66.0
      ; zoom in
      ;minlat = 88.0
      ;minlat = 85.0
+     vmag = 0.20
+     vthn = 0.020
 
      if (filetype .eq. "wave history") then
-       time="61200"
-       ;fname = "ufs.atmw.ww3.hi.2021-03-25-"+time+".nc"
-       fname="avg.nc"
+       time="43200"
+       fname = "ufs.atmw.ww3.hi.2021-03-22-"+time+".nc"
        f = addfile(RT+fname,"r")
-        ;vname = "UAX"
-        ;levs = (/-2,2,.22/)
 
-        ;vname = "DW"
-        ;levs = (/0,4000.0,200.0/)
-        ;levs = (/0.0,100.0,10.0/)
-        ;vname = "HS"
-        ;levs = (/0,2.0,.02/)
-        ;levs = (/0,.5,.01/)
-        ;levs = (/0.,1.,.05/)
-        ;levs = (/0.,5.0,0.1/)
-
-       ;vname="EF"
-       ;levs = (/0,2.,.1/)
-       ;vname = "mapsta"
-       ;levs = (/-2,2,1/)
-
-        ;vname = "ICE"
-        ;levs = (/0.0, 1.0, 0.1/)
-        ;vname = "mapsta"
-        ;levs = (/-3,3,1/)
-        ;vname = "maptmp"
-        ;levs = (/-5, 3, 1/)
-
-        ;vname = "USTX"
-        ;levs = (/-1.,1.,0.1/)
-
-        ;vname = "WCC"
-        ;levs = (/0.0, 1., 0.1/)
        vname = "THM"
-       levs = (/-3.0,3.0,0.1/)
+       levs = (/0.0, 1.00, 0.1/)
 
-        data = f->$vname$(0,0,:)
-        ;data = data*100.0
-        ;data = f->$vname$(0,18,0,:)
-        data@lon1d = f->lon(0,:)
-        data@lat1d = f->lat(0,:)
-        print("plotting "+vname+" from "+RT+fname)
+       data = f->$vname$(0,:,:)
+       ;data = f->$vname$(0,0,:)
+       data@lon2d = f->lon(:,:)
+       data@lat2d = f->lat(:,:)
+       print("plotting "+vname+" from "+RT+fname)
      end if
-
-     if (filetype .eq. "wave coupler") then
-       time = "21600"
-       fname = "ufs.atmw.cpl.hi.wav.2021-03-23-"+time+".nc"
-        f = addfile(RT+fname,"r")
-        ;vname="wavExp_Sa_u10m"
-        ;data = f->$vname$(0,0,:)
-        ;levs = (/-20,20,1/)
-
-        ;vname="wavExp_Sa_tbot"
-        ;data = f->$vname$(0,0,:)
-        ;data = data-273.15
-        ;levs = (/-40,40,.5/)
-        ;levs = (/230,320,1/)
-
-        vname="wavImp_Sw_z0"
-        data = f->$vname$(0,0,:)
-        ;data = where(data .lt. 0.0 .or. data .gt. 1.0e3, default_fillvalue(typeof(data)), data*1.0e3)
-        ;data = where(abs(data) .ge. 2.0, data@_FillValue, data)
-        data = data*1.0e3
-        levs = (/0.0, 0.5, 0.05/)
-
-        data@lon1d = f->wavImp_lon(0,0,:)
-        data@lat1d = f->wavImp_lat(0,0,:)
+     printVarSummary(data)
+     ;printVarSummary(f->lon)
+ ; copy metadata
+     uvec = data
+     vvec = data
+     uvec = cos(data)
+     vvec = sin(data)
+     print(uvec(0,1:10))
+     if (polar .eq. "true") then
+       uvec = where(data@lat2d .ge. minlat, -1.*uvec, data@_FillValue)
+       vvec = where(data@lat2d .ge. minlat, -1.*vvec, data@_FillValue)
      end if
-
+     ;uvec@lat1d = f->lat(:,:)
+     ;uvec@lon1d = f->lon(:,:)
+     ;vvec@lat1d = f->lat(:,:)
+     ;vvec@lon1d = f->lon(:,:)
+     ;printVarSummary(f->lat)
+     printVarSummary(uvec)
+     printVarSummary(vvec)
+     if(1 .eq. 0) then
 ;************************************************
 ; define the map
 ;************************************************
@@ -156,6 +122,12 @@ begin
   ;res@mpMinLonF            = -90.
   ;res@mpMaxLonF            = -70.
 
+  res@vcRefMagnitudeF       = vmag              ; vec magnitude
+  res@vcRefLengthF          = 0.10              ; size of ref vector
+  ;res@vcMonoLineArrowColor  = True             ; multiple colors desired
+  res@vcMinDistanceF        = vthn              ; thins arrows near pole
+  res@vcGlyphStyle          = "CurlyVector"
+
 ;************************************************
 ; add coord marks
 ;************************************************
@@ -184,10 +156,10 @@ begin
     res@gsnAddCyclic         = False
 
     if(polar .eq. "true")then
-      plot = gsn_csm_contour_map_polar(wks,data,res)    ; create the plot
+      plot = gsn_csm_vector_map_polar(wks,uvec,vvec,res)    ; create the plot
       ;gsn_coordinates(wks,plot,data,mkres)
     else
-      plot = gsn_csm_contour_map(wks,data,res)    ; create the plot
+      plot = gsn_csm_vector_map(wks,uvec,vvec,res)    ; create the plot
     end if
 
   draw(plot)
@@ -198,5 +170,6 @@ begin
    system(imcmd)
   end if
 
+  end if
 exit
 end

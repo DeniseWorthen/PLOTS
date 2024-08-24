@@ -12,12 +12,12 @@ begin
 
     ; RT = "/glade/scratch/worthen/FV3_RT/rt_22529/"
     ; RT = "/glade/scratch/worthen/FV3_RT/wave_test/"
-     RT = "/glade/scratch/worthen/WaveUnstr/"
+     RT = "/glade/derecho/scratch/worthen/waveice/"
 
    nl = str_get_nl()
    nflags = 9
-   dirs = (/"unstr_noland/"/)
-  ; dirs = (/"./"/)
+   dirs = (/"base.ic4/"/)
+   ;dirs = (/"./"/)
   ;   fsrc = "dststatus.atm.ocn.bilnr.nc"
   ;doffile = "dof.ocn.nc"
   ;   fsrc = "dststatus.atm.ice.consf.nc"
@@ -31,11 +31,11 @@ begin
    ;  fsrc = "dststatus.atm.wav.consf.nc"
    ;  fsrc = "dststatus.ice.wav.bilnr_nstod.nc"
    ;  fsrc = "dststatus.atm.wav.fillv_bilnr.nc"
-     fsrc = "dststatus.atm.wav.bilinr_nstod.nc"
+     fsrc = "dststatus.wav.ice.bilnr_nstod.nc"
    ;  vname = "mask"
    ;   levs = (/0,2,1/)
    ;  fsrc = "meshmask.nc"
-  doffile = "dof.wav.nc"
+  doffile = "dof.ice.nc"
 
     vname = "dststatus"
      levs = (/0,9,1/)
@@ -62,8 +62,8 @@ begin
   ;ni = 720
   ;nj = 321
   ; mx100
-  ;ni = 360
-  ;nj = 320
+  ni = 360
+  nj = 320
   ; mx050
   ;ni = 720
   ;nj = 576

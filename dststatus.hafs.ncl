@@ -10,16 +10,14 @@
 ;**********************************************************
 begin
 
-     RT = "/glade/scratch/worthen/FV3_RT/rt_63201/"
-     ;RT = "/glade/scratch/worthen/FV3_RT/wave_hafs2/"
-     ;RT = "/glade/scratch/worthen/FV3_RT/hafs_newold/"
+     RT = "/glade/derecho/scratch/worthen/hafs_mom6/"
 
    nl = str_get_nl()
    nflags = 9
    ;dirs = (/"test3/"/)
-   dirs = (/"hafs_regional_atm_ocn_wav/"/)
+   dirs = (/"base.ufsw/"/)
    ;dirs = (/"oldcap/","newcap/"/)
-     fsrc = "dststatus.atm.wav.fillv_bilnr.nc"
+     fsrc = "dststatus.ocn.wav.bilnr_nstod.nc"
      ;fsrc = "meshmask.nc"
   doffile = "dof.wav.nc"
      ;fsrc = "dststatus.atm.wav.fillv_bilnr.nc"

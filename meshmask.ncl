@@ -7,14 +7,14 @@
 ;**********************************************************
 begin
 
-     RT = "/glade/scratch/worthen/FV3_RT/testnew/"
+     RT = "/glade/scratch/worthen/fix_sw/"
   ;   RT = "/glade/scratch/worthen/FV3_RT/testbob/"
   ;   RT = "/glade/scratch/worthen/FV3_RT/test192/"
-   date = "2016-10-03-"
+   date = "2021-03-22-"
 
     res = 96
    cres = ""
-     dt = 900
+     dt = 720
 
   ;  res = 192
   ; cres = "_c192"
@@ -24,14 +24,14 @@ begin
  ;  cres = "_c384"
  ;    dt = 450
 
-   ;dirs = (/"jnk/"/)
-   dirs = (/"testdev/", "testbilin/"/)
+   dirs = (/"base/"/)
+   ;dirs = (/"testdev/", "testbilin/"/)
    ;fsrc = "dststatus.ocn.atm.consd"
-   fsrc = "dststatus.ocn.atm.nstod_consd"
-
+   ;fsrc = "dststatus.ocn.atm.nstod_consd"
+   fsrc="test"
   ;vname = "mesh"
-  vname = "dststatus"
-
+  ;vname = "dststatus"
+   vname = "atmImp_Faxa_swvdr"
   ntile = 6
   ndirs = dimsizes(dirs)
 
@@ -39,7 +39,7 @@ begin
 ; retrieve lat/lon from first coupler history file
 ;**********************************************************
 
-  fname = RT+dirs(0)+"ufs.cpld.cpl.hi."+date+"00900.nc"
+  fname = RT+dirs(0)+"ufs.cpld.cpl.hi.atm."+date+"36000.nc"
   ;fname = RT+dirs(0)+"ufs.cpld.cpl.hi."+date+"03600.nc"
   print("input file "+fname)
   ff = addfile(fname,"r")
@@ -73,13 +73,12 @@ begin
 
 do nd = 0,ndirs-1
   dirsrc = RT+dirs(nd)
-   ifile = fsrc
-
+  ifile = "ufs.cpld.cpl.hi.atm."+date+"36000"
   fname = dirsrc+ifile+".nc"
   print("input file "+fname)
   ff = addfile(fname,"r")
 
-  var1d = ff->$vname$(:)
+  var1d = ff->$vname$(0,0,:)
   printVarSummary(var1d)
 
   ; get the index seq to resort

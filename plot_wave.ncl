@@ -3,41 +3,40 @@
 ;**********************************************************
 begin
 
-     ;RT = "/glade/scratch/worthen/WaveUnstr/str3PE/"
-     ;RT = "/glade/scratch/worthen/WaveUnstr/unstrnoland3PE/"
-     ;RT = "/glade/scratch/worthen/WaveUnstr2/pdlib2PE/"
-     ;RT = "/glade/scratch/worthen/WaveUnstr/pdlibnoland3PE/"
-      RT = "/glade/scratch/worthen/addunstr.2acd891b.ww.33d337356/ATMW/test/"
+ ;RT = "/glade/scratch/worthen/addunstr.2acd891b.ww.33d337356/ATMW/base.noresmP/"
+ ;gridtype="unstr"
+
+ RT = "/glade/derecho/scratch/worthen/atmwav/test/"
+ gridtype="str"
+
 
      filetype="wave history"
      ;filetype="wave coupler"
 
-     polar="false"
-     ;polar="true"
-     ; minlat = 66.0
+     ;polar="false"
+     polar="true"
+     minlat = 50.0
      ; zoom in
-     ;minlat = 88.0
-     ;minlat = 85.0
+     ;minlat = 89.0
+     ;minlat = 80.0
 
      if (filetype .eq. "wave history") then
-       time="61200"
-       ;fname = "ufs.atmw.ww3.hi.2021-03-25-"+time+".nc"
-       fname="avg.nc"
+       ;time="21600"
+                                ;fname = "ufs.atmw.ww3.hi.2021-03-22-"+time+".nc"
+       fname = "20210322.180000.out_grd.ww3.nc"
        f = addfile(RT+fname,"r")
         ;vname = "UAX"
-        ;levs = (/-2,2,.22/)
+        ;levs = (/-20,20,1.0/)
 
         ;vname = "DW"
-        ;levs = (/0,4000.0,200.0/)
-        ;levs = (/0.0,100.0,10.0/)
-        ;vname = "HS"
-        ;levs = (/0,2.0,.02/)
-        ;levs = (/0,.5,.01/)
-        ;levs = (/0.,1.,.05/)
-        ;levs = (/0.,5.0,0.1/)
+        ;levs = (/0,8000.0,500.0/)
 
-       ;vname="EF"
-       ;levs = (/0,2.,.1/)
+        vname = "HS"
+        ;levs = (/0,2.0,.2/)
+        ;levs = (/0,.5,.05/)
+        ;levs = (/0.,1.,.1/)
+        levs = (/0.,5.0,0.2/)
+
        ;vname = "mapsta"
        ;levs = (/-2,2,1/)
 
@@ -45,22 +44,19 @@ begin
         ;levs = (/0.0, 1.0, 0.1/)
         ;vname = "mapsta"
         ;levs = (/-3,3,1/)
-        ;vname = "maptmp"
-        ;levs = (/-5, 3, 1/)
 
         ;vname = "USTX"
         ;levs = (/-1.,1.,0.1/)
 
-        ;vname = "WCC"
-        ;levs = (/0.0, 1., 0.1/)
-       vname = "THM"
-       levs = (/-3.0,3.0,0.1/)
-
-        data = f->$vname$(0,0,:)
-        ;data = data*100.0
-        ;data = f->$vname$(0,18,0,:)
-        data@lon1d = f->lon(0,:)
-        data@lat1d = f->lat(0,:)
+        if(gridtype .eq. "str")then
+          data = f->$vname$(0,:,:)
+          data@lon2d = f->lon(:,:)
+          data@lat2d = f->lat(:,:)
+        else
+          data = f->$vname$(0,0,:)
+          data@lon1d = f->lon(0,:)
+          data@lat1d = f->lat(0,:)
+        end if
         print("plotting "+vname+" from "+RT+fname)
      end if
 
@@ -96,8 +92,8 @@ begin
   wkstype="X11"
   ;wkstype="png"
   wkstitle="unstr.wave"
-  wkstype@wkWidth=1200
-  wkstype@wkHeight=1200
+  wkstype@wkWidth=600
+  wkstype@wkHeight=600
   wks   = gsn_open_wks (wkstype,wkstitle)              ; send graphics to X11 window
 
   res                      = True        ; plot mods desired
@@ -108,10 +104,10 @@ begin
   res@cnFillMode = "RasterFill"
 
   res@gsnStringFontHeightF = 0.01
-  res@cnMissingValPerimOn     = False            ; turn on the missing value perimeter
-  ;res@cnMissingValPerimColor  = "black"           ; outline the perimeter red
-  res@cnMissingValFillPattern = 0               ; choose fill pattern 0 (solid fill)
-  ;res@cnMissingValFillColor   = "gray"          ; color fill missing areas blue
+  res@cnMissingValPerimOn     = False           ; turn on the missing value perimeter
+  res@cnMissingValPerimColor  = "black"           ; outline the perimeter red
+  ;res@cnMissingValFillPattern = 0               ; choose fill pattern 0 (solid fill)
+  res@cnMissingValFillColor   = "gray"          ; color fill missing areas blue
 
   res@cnFillDrawOrder   = "PreDraw"             ; draw contours first
   res@cnFillOn          = True                 ; color fill
@@ -133,8 +129,10 @@ begin
   res@tiMainFontHeightF = .010
   res@tiMainString = fname
   if (filetype .eq. "wave history") then
-    res@sfElementNodes = f->nconn
-    res@sfFirstNodeIndex = 1
+    if(gridtype .eq. "unstr") then
+      res@sfElementNodes = f->nconn
+      res@sfFirstNodeIndex = 1
+    end if
     res@mpFillOn             = False
     res@mpOutlineOn          = False
     res@mpFillOn             = False
@@ -161,25 +159,14 @@ begin
 ;************************************************
 
   mkres = True
-  mkres@gsMarkerSizeF = 2.
+  mkres@gsMarkerSizeF = 5.
   mkres@gsnFrame        = False
   mkres@gsnDraw         = False
   mkres@gsnCoordsAttach = True
 
-  ;mkres@gsnCoordsMaxLat = 80.0
-  ;mskdata=data
-  ;printVarSummary(mskdata)
-  ;mskdata=where(data@lat1d .ge. 80, data@_FillValue, data)
-  ;npole=mask(data,mskdata,0.0)
-  ;npole@lat1d=f->lat(0,:)
-  ;npole@lon1d=f->lon(0,:)
 ;************************************************
 ;
 ;************************************************
-
-  ;mskdata = data
-  ;mskdata = where(mskdata@lat1d .le. 89.0, mskdata, mskdata@_FillValue)
-  ;data = mskdata
 
     res@gsnAddCyclic         = False
 

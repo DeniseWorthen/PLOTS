@@ -12,15 +12,19 @@ begin
 
   ;RT		= "/scratch1/NCEPDEV/stmp2/Denise.Worthen/WaveUnstr2/atmwtrip/"
   ;MD            = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/WaveUnstr2/moddefs3/"
-  RT            = "/glade/scratch/worthen/addunstr.2acd891b.ww.33d337356/"
-  MD            = "/glade/scratch/worthen/addunstr.2acd891b.ww.33d337356/"
-  dirsrc        = "ATMW/base.noresmP/"
+  ;RT            = "/glade/scratch/worthen/addunstr.2acd891b.ww.33d337356/"
+  ;MD            = "/glade/scratch/worthen/addunstr.2acd891b.ww.33d337356/"
+  ;dirsrc        = "ATMW/base.noresmP/"
   ;dirsrc = "CPLD/cd/"
 
-  plotlab = (/"Unstr DomainDecomp, 5PE"/)
+  RT = "/glade/derecho/scratch/worthen/ptout/"
+  MD ="/glade/derecho/scratch/worthen/ptout/mod_defs/"
+  dirsrc="base.pdlib/"
+  plotlab = (/"Unstr DomainDecomp, 30PE"/)
 
   dcmpfile = "emesh.decomp.nc"
   fdcmp = addfile(RT+dirsrc+dcmpfile,"r")
+  print(fdcmp)
   vname = "decomp"
   var1d = fdcmp->$vname$
   vname = "dof"
@@ -32,8 +36,8 @@ begin
   levs		= (/1,1+dmax,1/)
   ;print(fdcmp)
 
-  scrpfile = "moddefs/exp.wise.tnx1v4p.100k.SCRIP.nc"
-  ;scrpfile   = "trip1degmask.SCRIP.nc"
+  scrpfile = "exp.wise.global_270k.SCRIP.nc"
+  ;scrpfile   = "moddefs/exp.wise.trip1degmask.SCRIP.nc"
      sfile	= addfile(MD+scrpfile,"r")
      x		= sfile->grid_center_lon
      y		= sfile->grid_center_lat
@@ -42,9 +46,9 @@ begin
      ;printVarSummary(x)
      ;printVarSummary(cx)
      ;print(sfile)
-     var1d_sort = var1d
-     var1d_sort = var1d(ip)
-     var1d      = var1d_sort
+     ;var1d_sort = var1d
+     ;var1d_sort = var1d(ip)
+     ;var1d      = var1d_sort
      ;printVarSummary(var1d)
 
      var1d@lon1d = x

@@ -7,41 +7,20 @@
 ;**********************************************************
 begin
 
-     ;RT = "/glade/scratch/worthen/lwnet/"
-     RT = "/glade/scratch/worthen/FV3_RT/wave_test/test.pass.12/"
+     RT = "/glade/derecho/scratch/worthen/FV3_RT/rt_26609/"
 
    date = "2021-03-22-"
   ntile = 6
 
     res = 96
-   cres = ""
-     dt = 720
+    cres = ""
+    ;comp = "atm"
+    comp = "lnd"
 
-  ;  res = 192
-  ; cres = "_c192"
-  ;   dt = 720
+    times = (/23760/)
+   dirs = (/"lnd.dev.mesh/"/)
+   fsrc = "ufs.cpld.cpl.hi."
 
-  ;  res = 384
-  ; cres = "_c384"
-  ;   dt = 450
-
-   times = (/64800/)
-  ;times = ispan(900,3600,900)
-  ;times = (/dt, 2*dt, 3*dt/)
-  ;print(times)
-  ; dirs = (/"c96meshoff_compice/" \
-  ;         ,"c96meshoff_compocn/" /)
-   ;dirs = (/"c192meshoff_compice/" \
-   ;        ,"c192meshoff_compocn/" /)
-   ;dirs = (/"testdev/", "testbilin/"/)
-   ;fsrc = "ufs.cpld.cpl.hi."
-   ;dirs = (/"test2/","test3/"/)
-   ;dirs = (/"testdev/","testbilin/"/)
-   ;dirs = (/"cpld_control_c384/"/)
-   dirs = (/"base/", "rest/"/)
-   ;dirs = (/"cpld_control_wave_p7/"/)
-   fsrc = "ufs.cpld.cpl.hi.atm."
-    
   ndirs = dimsizes(dirs)
     nts = dimsizes(times)
 
@@ -56,9 +35,11 @@ do nd = 0,ndirs-1
   print("input file "+fname)
   ff = addfile(fname,"r")
 
+  latvar=comp+"Imp_lat"
+  lonvar=comp+"Imp_lon"
   ;--- read coordinate variables ---
-  lat1d = ff->atmImp_lat(0,0,:)
-  lon1d = ff->atmImp_lon(0,0,:)
+  lat1d = ff->$latvar$(0,0,:)
+  lon1d = ff->$lonvar$(0,0,:)
   lat1d@units = "degrees_N"
   lon1d@units = "degrees_E"
   ;printVarSummary(lat1d)
@@ -85,21 +66,23 @@ do nd = 0,ndirs-1
   vnames = getfilevarnames (ff)
   nvars = dimsizes(vnames)
   valid = new((/nvars/), logical)
+  ;print(comp+"Imp")
+  ;print("Med_frac_"+comp+"_lat")
 
   do ii = 0,nvars-1
-   tf = isStrSubset(vnames(ii), "atmImp") .or. \
-        isStrSubset(vnames(ii), "atmExp") .or. \
-        isStrSubset(vnames(ii), "Med_frac_atm")
+   tf = isStrSubset(vnames(ii), comp+"Imp") .or. \
+        isStrSubset(vnames(ii), comp+"Exp") .or. \
+        isStrSubset(vnames(ii), "Med_frac_"+comp)
     valid(ii) = tf
   end do
   do ii = 0,nvars-1
    vname = vnames(ii)
-   if(vname .eq. "atmImp_lat"       .or. \
-      vname .eq. "atmImp_lon"       .or. \
-      vname .eq. "Med_frac_atm_lat" .or. \
-      vname .eq. "Med_frac_atm_lon" .or. \
-      vname .eq. "atmExp_lat"       .or. \
-      vname .eq. "atmExp_lon")then
+   if(vname .eq. comp+"Imp_lat"       .or. \
+      vname .eq. comp+"Imp_lon"       .or. \
+      vname .eq. "Med_frac_"+comp+"_lat" .or. \
+      vname .eq. "Med_frac_"+comp+"lon" .or. \
+      vname .eq. comp+"Exp_lat"       .or. \
+      vname .eq. comp+"Exp_lon")then
     valid(ii) = False
    end if
   end do
@@ -114,7 +97,7 @@ do nd = 0,ndirs-1
 
   do i = 0, ntile-1
 
-    ofile = dirsrc+fsrc+time+".tile"+sprinti("%d", i+1)+".nc"
+    ofile = dirsrc+fsrc+time+"."+comp+".tile"+sprinti("%d", i+1)+".nc"
     print("output file "+ofile)
     system("rm -f "+ofile)
     fout = addfile(ofile, "c")
@@ -167,7 +150,7 @@ do nd = 0,ndirs-1
      end do
 
      do i = 0, ntile-1
-      ofile = dirsrc+fsrc+time+".tile"+sprinti("%d", i+1)+".nc"
+       ofile = dirsrc+fsrc+time+"."+comp+".tile"+sprinti("%d", i+1)+".nc"
        fout = addfile(ofile, "w")
        fout->$vname$ = (/ var3d(i,:,:) /)
      end do
