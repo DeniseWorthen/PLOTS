@@ -9,12 +9,18 @@
 
 ;**********************************************************
 begin
-     RT = "/work/noaa/stmp/dworthen/stmp/dworthen/WaveUnstr/"
-     MD = "/work/noaa/stmp/dworthen/stmp/dworthen/WaveUnstr/moddefs/"
+     ;RT = "/work/noaa/stmp/dworthen/stmp/dworthen/WaveUnstr/"
+     ;MD = "/work/noaa/stmp/dworthen/stmp/dworthen/WaveUnstr/moddefs/"
+
+     RT="/work2/noaa/stmp/dworthen/stmp/dworthen/ww3pio/"
+     MD="/work2/noaa/stmp/dworthen/stmp/dworthen/ww3pio/mod_defs/"
 
      ;scrpfile  = "with_land_CardDeck.SCRIP.nc"
      ;scrpfile   = "no_land_CardDeck.SCRIP.nc"
-     scrpfile   = "trip1degmask.SCRIP.nc"
+     ;scrpfile   = "trip1degmask.SCRIP.nc"
+     scrpfile = "exp.wise.global_270k.SCRIP.nc"
+     ;scrpfile = "sngl.exp.wise.global_270k.SCRIP.nc"
+
      sfile      = addfile(MD+scrpfile,"r")
      x          = sfile->grid_center_lon
      y          = sfile->grid_center_lat
@@ -23,9 +29,11 @@ begin
 
     ;dirsrc        = "noust3PE/"
     ;plotlab       = "noust3PE"
-    dirsrc        = "pdlib3PE/"
-    plotlab       = "pdlib3PE"
-     
+    ;dirsrc        = "atmw.270k/"
+    ;plotlab       = "atmw.270k"
+    dirsrc        = "atmw.sngl.270k/"
+    plotlab       = "atmw.sngl.270k"
+
     ;dirsrc        = "pdlibnolandtrip3PE/"
     ;dirsrc        = "tripnoland_noust/"
     ;dirsrc        = "tripnoland/"
@@ -44,7 +52,7 @@ begin
      ;fsrc="ufs.cpld.cpl.hi.wav."
 
      date="2021-03-22-"
-     time="25200"
+     time="24480"
      fname=RT+dirsrc+fsrc+date+time+".nc"
      f = addfile(fname,"r")
 
@@ -60,13 +68,13 @@ begin
 
         vname = "USTX"
         levs = (/-1.,1.,0.1/)
-       
+
         ;vname = "PHS"
         ;levs = (/0.,.5,.05/)
 
         ;vname="CHARN"
         ;levs = (/0.,.5,.05/)
-        
+
         data = f->$vname$(0,0,:)
         ;data = f->$vname$(0,0,0,:)
         data@lon1d = f->lon(0,:)
@@ -151,10 +159,10 @@ begin
   ;res@mpMinLonF            = 30.
   ;res@mpMaxLonF            = 40.
 
-  ;if (filetype .eq. "wave history")then
+  if (filetype .eq. "wave history")then
     res@sfXCellBounds = cx(:,0:5)
     res@sfYCellBounds = cy(:,0:5)
-  ;end if
+  end if
 
 ;************************************************
 ;

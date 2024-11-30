@@ -9,22 +9,26 @@
 ;**********************************************************
 begin
 
- RT="/work2/noaa/stmp/dworthen/stmp/dworthen/FV3_RT/rt_721201/"
+ ;RT="/work2/noaa/stmp/dworthen/stmp/dworthen/dststat/"
+ ;RT="/work2/noaa/stmp/dworthen/stmp/dworthen/FV3_RT/rt_721201/"
 
+ RT="/work2/noaa/stmp/dworthen/stmp/dworthen/stripes/"
  nl = str_get_nl()
  nflags = 9
  date = "2021-03-22-22320"
- atmres = 96
+ atmres = 48
 
- dirs = (/"cpld_control_mapconsf_intel/", "cpld_control_bilin_intel/", "cpld_control_bilin_spval_intel/"/)
- plotlabs = (/"ocn->atm, mapped consf", \
-              "ocn->atm, mapped consf and Sa_pslv atm->ocn is mapped bilinear", \
-	      "ocn->atm, mapped consf and Sa_pslv atm->ocn is mapped bilinear + dstMaskValue=ispval_mask for ocn->atm"/)
+ ;dirs = (/"cpld_control_mapconsf_intel/", "cpld_control_bilin_intel/", "cpld_control_bilin_spval_intel/"/)
+ ;plotlabs = (/"ocn->atm, mapped consf", \
+ ;             "ocn->atm, mapped consf and Sa_pslv atm->ocn is mapped bilinear", \
+ ;             "ocn->atm, mapped consf and Sa_pslv atm->ocn is mapped bilinear + dstMaskValue=ispval_mask for ocn->atm"/)
 
+ dirs = (/"bilin.lwnet/"/)
+ plotlabs = (/"ocn->atm, mapped consf"/)
  ntile = 6
  ndirs = dimsizes(dirs)
 
- case = 2
+ case = 0
  vname = "dststatus"
  levs = (/0,9,1/)
 
@@ -45,67 +49,80 @@ begin
 ; retrieve lat/lon from first coupler history file
 ;**********************************************************
 
-  fname = RT+dirs(0)+"ufs.cpld.cpl.hi.atm."+date+".nc"
+;   fname = RT+dirs(0)+"ufs.cpld.cpl.hi.atm."+date+".nc"
+;   print("input file "+fname)
+;   ff = addfile(fname,"r")
+
+;   ;--- read coordinate variables ---
+;   lat3d = ff->atmImp_lat(0,:,:,:)
+;   lon3d = ff->atmImp_lon(0,:,:,:)
+;   lat3d@units = "degrees_N"
+;   lon3d@units = "degrees_E"
+;   delete(ff)
+;   delete(fname)
+
+;   printVarSummary(lat3d)
+
+; ;************************************************
+; ; create tiled dststatus
+; ;************************************************
+
+  dirsrc = RT+dirs(case)
+  ;fsrc = vname+".ocn.atm.consf"
+  fname = dirsrc+"dststatus.nc"
   print("input file "+fname)
   ff = addfile(fname,"r")
 
-  ;--- read coordinate variables ---
-  lat3d = ff->atmImp_lat(0,:,:,:)
-  lon3d = ff->atmImp_lon(0,:,:,:)
-  lat3d@units = "degrees_N"
-  lon3d@units = "degrees_E"
-  delete(ff)
-  delete(fname)
+  vname="dstatm_ocn_atm_consf"
+  var3d = ff->$vname$
+;  printVarSummary(var1d)
 
-  printVarSummary(lat3d)
+;  var3d = new((/ ntile, atmres, atmres /), typeof(var1d), default_fillvalue(typeof(var1d)) )
+;  ;printVarSummary(var3d)
 
-;************************************************
-; create tiled dststatus
-;************************************************
+;  do i = 0, ntile-1
+;    istr = (i*atmres*atmres)
+;    iend = istr+atmres*atmres-1
+;    var3d(i,:,:) = onedtond(var1d(istr:iend), (/ atmres, atmres /))
+;  end do
 
- dirsrc = RT+dirs(case)
- fsrc = vname+".ocn.atm.consf"
- fname = dirsrc+fsrc+".nc"
- print("input file "+fname)
- ff = addfile(fname,"r")
-
- var1d = ff->$vname$(:)
- printVarSummary(var1d)
-
- var3d = new((/ ntile, atmres, atmres /), typeof(var1d), default_fillvalue(typeof(var1d)) )
- ;printVarSummary(var3d)
-
- do i = 0, ntile-1
-   istr = (i*atmres*atmres)
-   iend = istr+atmres*atmres-1
-   var3d(i,:,:) = onedtond(var1d(istr:iend), (/ atmres, atmres /))
- end do
-
- total = 0
- do i = 0,nflags-1
-   total = total+dststatus_counts(var1d,i)
- end do
- print("total count of all dststatus types = "+total+" size of var1d = "+dimsizes(var1d))
+  printVarSummary(var3d)
+  var1d = toint(ndtooned(var3d))
+  total = 0
+  do i = 0,nflags-1
+    total = total+dststatus_counts(var1d,i)
+  end do
+  print("total count of all dststatus types = "+total+" size of var1d = "+dimsizes(var1d))
 
 ;************************************************
 ; create spatchcock plot of a field on atm tiles
 ;************************************************
 
- ; re-arrange tiles that are on their side
- do kk = 0,ntile-1
-    if any((kk .eq. (/ 2 /))) then
-     var3d(kk,:,:) = var3d(kk,:,::-1)
-    end if
+ ; ; re-arrange tiles that are on their side
+ ; do kk = 0,ntile-1
+ ;    if any((kk .eq. (/ 2 /))) then
+ ;     var3d(kk,:,:) = var3d(kk,:,::-1)
+ ;    end if
 
-    if any((kk .eq. (/ 0,1,5 /))) then
-     var3d(kk,:,:) = (/ transpose(var3d(kk,:,:)) /)
-    end if
+ ;    if any((kk .eq. (/ 0,1,5 /))) then
+ ;     var3d(kk,:,:) = (/ transpose(var3d(kk,:,:)) /)
+ ;    end if
 
-    if any((kk .eq. (/ 3,4 /))) then
-     var3d(kk,:,:) = var3d(kk,::-1,:)
-    end if
- end do
+ ;    if any((kk .eq. (/ 3,4 /))) then
+ ;     var3d(kk,:,:) = var3d(kk,::-1,:)
+ ;    end if
+ ; end do
 
+     do kk = 0,ntile-1
+       if any((kk .eq. (/ 3, 4 /))) then
+         var3d(kk,:,:) = (/ transpose(var3d(kk,:,:)) /)
+         var3d(kk,:,:) = var3d(kk,::-1,:)
+       end if
+       if any((kk .eq. (/ 2 /))) then
+         var3d(kk,:,:) = (/ transpose(var3d(kk,:,:)) /)
+         var3d(kk,:,:) = var3d(kk,:,::-1)
+       end if
+    end do
   ;palette = "ncv_roullet"
     palette = "amwg"
     ;palette="WhBlGrYeRe"
