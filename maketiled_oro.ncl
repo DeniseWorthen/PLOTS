@@ -3,33 +3,39 @@
 ;**********************************************************
 begin
 
-   RT="/work2/noaa/stmp/dworthen/stmp/dworthen/dststat/"
+   ;RT="/work2/noaa/stmp/dworthen/stmp/dworthen/dststat/"
+   fixdir="/work/noaa/global/glopara/fix/orog/20240917/"
 
-    atmres = 96
- ;   atmres = 192
- ;   atmres = 384
+    ;ares = "C96"
+    ;adim = 96
+ ;   ares = C192
+ ;   ares = C384
 
-   dirs = (/"test/"/)
-  ntile = 6
+ares = (/"C96", "C192", "C384"/)
+adim = (/96, 192, 384/)
+ores = (/"mx025", "mx050", "mx100"/)
+ntile=6
 
-  ; retrieve orodata file from INPUT directory for masking
-  filelist = systemfunc("ls "+RT+dirs(0)+"INPUT/oro_data.tile*.nc")
-  print(filelist)
-  ofiles = addfiles(filelist,"r")
-  ListSetType(ofiles,"join")
+  ; retrieve orodata file from fix directory
+  do m = 0,dimsizes(ares)-1
+   do n = 0,dimsizes(ores)-1
+     filename = ares(m)+"."+ores(n)+"_oro_data.tile*nc"
+     filelist = systemfunc("ls "+fixdir+ares(m)+"/"+filename)
+     print(filelist)
+     ofiles = addfiles(filelist,"r")
+     ListSetType(ofiles,"join")
 
-  lndfrac = ofiles[:]->land_frac
-  lakfrac = ofiles[:]->lake_frac
-  ;total = la
-  ;total = 0.0
-  total = lndfrac+lakfrac
-  lmask = where(total .eq. 1.0, 1.0, 0.0)
+     lndfrac = ofiles[:]->land_frac
+     lakfrac = ofiles[:]->lake_frac
+
+     total = lndfrac+lakfrac
+     lmask = where(total .eq. 1.0, 1.0, 0.0)
 
 ;**********************************************************
 ;
 ;**********************************************************
 
-    ofile = RT+dirs(0)+"orodata.nc"
+    ofile = ares(m)+"."+ores(n)+".orodata.nc"
     print("output file "+ofile)
     system("rm -f "+ofile)
     fout = addfile(ofile, "c")
@@ -37,7 +43,7 @@ begin
 
     ;--- create dimensions ---
     dimNames = (/ "ntiles", "grid_xt", "grid_yt" /)
-    dimSizes = (/ ntile, atmres, atmres /)
+    dimSizes = (/ ntile, adim(m), adim(m) /)
     dimUnlim = (/ False,  False,  False /)
     filedimdef(fout, dimNames, dimSizes, dimUnlim)
 
@@ -51,12 +57,12 @@ begin
     filevardef(fout,      "mask", typeof(lndfrac), (/"ntiles", "grid_yt", "grid_xt" /))
     setfileoption(fout, "DefineMode", False)
 
-    ;--- write grid variables ---
-    ;fout->grid_xt = (/ lon3d(:,:,:) /)
-    ;fout->grid_yt = (/ lat3d(:,:,:) /)
-
     fout->land_frac = (/lndfrac(:,:,:)/)
     fout->lake_frac = (/lakfrac(:,:,:)/)
     fout->mask = (/lmask(:,:,:)/)
+
+    delete ([/filelist,ofiles,lndfrac,lakfrac,lmask,total/])
+   end do
+  end do
 exit
 end
