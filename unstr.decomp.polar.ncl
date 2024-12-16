@@ -10,8 +10,6 @@
 ;**********************************************************
 begin
 
-  ;RT		= "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/rt_wavunstr2/"
-  ;MD            = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/rt_wavunstr2/moddefs/"
   RT = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/testpr1/"
   MD = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/testpr1/moddefs/"
 
