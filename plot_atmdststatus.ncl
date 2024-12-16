@@ -9,23 +9,26 @@
 ;**********************************************************
 begin
 
- RT="/work2/noaa/stmp/dworthen/stmp/dworthen/FV3_RT/rt_721201/"
+ ;RT="/work2/noaa/stmp/dworthen/stmp/dworthen/FV3_RT/rt_721201/"
+ RT="/work2/noaa/stmp/dworthen/stmp/dworthen/FV3_RT/rt_443270/"
 
  nl = str_get_nl()
  nflags = 9
  date = "2021-03-22-22320"
  atmres = 96
+ dirs=(/"control_p8_atmlnd_intel/"/)
+ plotlats = (/"test"/)
 
- dirs = (/"cpld_control_mapconsf_intel/", "cpld_control_bilin_intel/", "cpld_control_bilin_spval_intel/"/)
- plotlabs = (/"ocn->atm, mapped consf", \
-              "ocn->atm, mapped consf and Sa_pslv atm->ocn is mapped bilinear", \
-	      "ocn->atm, mapped consf and Sa_pslv atm->ocn is mapped bilinear + dstMaskValue=ispval_mask for ocn->atm"/)
+ ;dirs = (/"cpld_control_mapconsf_intel/", "cpld_control_bilin_intel/", "cpld_control_bilin_spval_intel/"/)
+ ;plotlabs = (/"ocn->atm, mapped consf", \
+ ;             "ocn->atm, mapped consf and Sa_pslv atm->ocn is mapped bilinear", \
+ ; "ocn->atm, mapped consf and Sa_pslv atm->ocn is mapped bilinear + dstMaskValue=ispval_mask for ocn->atm"/)
 
  ntile = 6
  ndirs = dimsizes(dirs)
 
  case = 2
- vname = "dststatus"
+ vname = "dstatm_lnd_atm_consf"
  levs = (/0,9,1/)
 
  ; retrieve orodata file from INPUT directory for masking

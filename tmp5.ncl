@@ -10,26 +10,28 @@
 begin
 
  ;RT="/work2/noaa/stmp/dworthen/stmp/dworthen/dststat/"
- ;RT="/work2/noaa/stmp/dworthen/stmp/dworthen/FV3_RT/rt_721201/"
-
- RT="/work2/noaa/stmp/dworthen/stmp/dworthen/stripes/"
+ RT="/work2/noaa/stmp/dworthen/stmp/dworthen/FV3_RT/rt_443270/"
+ ;RT="/work2/noaa/stmp/dworthen/stmp/dworthen/stripes/"
  nl = str_get_nl()
  nflags = 9
  date = "2021-03-22-22320"
- atmres = 48
+ ;atmres = 48
+ atmres = 96
+ dirs=(/"control_p8_atmlnd_intel/"/)
+ plotlabs=(/"test"/)
 
  ;dirs = (/"cpld_control_mapconsf_intel/", "cpld_control_bilin_intel/", "cpld_control_bilin_spval_intel/"/)
  ;plotlabs = (/"ocn->atm, mapped consf", \
  ;             "ocn->atm, mapped consf and Sa_pslv atm->ocn is mapped bilinear", \
  ;             "ocn->atm, mapped consf and Sa_pslv atm->ocn is mapped bilinear + dstMaskValue=ispval_mask for ocn->atm"/)
 
- dirs = (/"bilin.lwnet/"/)
- plotlabs = (/"ocn->atm, mapped consf"/)
+ ;dirs = (/"bilin.lwnet/"/)
+ ;plotlabs = (/"ocn->atm, mapped consf"/)
  ntile = 6
  ndirs = dimsizes(dirs)
 
  case = 0
- vname = "dststatus"
+ vname = "dstatm_lnd_atm_consf"
  levs = (/0,9,1/)
 
  ; retrieve orodata file from INPUT directory for masking
@@ -67,13 +69,14 @@ begin
 ; ; create tiled dststatus
 ; ;************************************************
 
+  case=0
   dirsrc = RT+dirs(case)
   ;fsrc = vname+".ocn.atm.consf"
-  fname = dirsrc+"dststatus.nc"
+  fname = dirsrc+"ufs.cpld.dststatus.nc"
   print("input file "+fname)
   ff = addfile(fname,"r")
 
-  vname="dstatm_ocn_atm_consf"
+  vname="dstatm_lnd_atm_consf"
   var3d = ff->$vname$
 ;  printVarSummary(var1d)
 

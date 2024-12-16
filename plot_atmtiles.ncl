@@ -1,4 +1,4 @@
-0;95;0c;**********************************************************
+;**********************************************************
 ; re-write CMEPS dststatus files for atm
 ;
 ; adapted from code originally written by
@@ -6,47 +6,50 @@
 ;**********************************************************
 begin
 
- RT="/work2/noaa/stmp/dworthen/stmp/dworthen/mapbilin/"
+ ;RT="/work2/noaa/stmp/dworthen/stmp/dworthen/mapbilin/"
+ RT="/work2/noaa/stmp/dworthen/stmp/dworthen/testfix/"
 
  nl = str_get_nl()
  nflags = 9
- date = "2021-03-22-22320"
- atmres = 96
+ date = "2021-03-22-22800"
+ atmres = 48
 
- dirs = (/"base.consf/", "test.bilin/", "test.spval/"/)
+ ;dirs = (/"base.consf/", "test.bilin/", "test.spval/"/)
+ dirs = (/"base.c48/", "fix.c48/"/)
 
  ntile = 6
  ndirs = dimsizes(dirs)
 
- vname = "dststatus"
- levs = (/0,9,1/)
+ vname = "atmExp_So_t"
+ ;vname = "dststatus"
+ ;levs = (/0,9,1/)
 
  ; retrieve orodata file from INPUT directory for masking
- ; filelist = systemfunc("ls "+RT+dirs(0)+"INPUT/oro_data.tile*.nc")
- ; print(filelist)
- ; ofiles = addfiles(filelist,"r")
- ; ListSetType(ofiles,"join")
- ; mskname = "slmsk"
- ; msklonname = "geolon"
- ; msklatname = "geolat"
- ; mskvar = ofiles[:]->$mskname$
- ; mskvar@lon2d = ofiles[0]->$msklonname$
- ; mskvar@lat2d = ofiles[0]->$msklatname$
- ; ;printVarSummary(mskvar)
+ mskfilelist = systemfunc("ls "+RT+dirs(0)+"INPUT/oro_data.tile*.nc")
+ print(mskfilelist)
+ ofiles = addfiles(mskfilelist,"r")
+ ListSetType(ofiles,"join")
+ mskname = "slmsk"
+ msklonname = "geolon"
+ msklatname = "geolat"
+ mskvar = ofiles[:]->$mskname$
+ mskvar@lon2d = ofiles[0]->$msklonname$
+ mskvar@lat2d = ofiles[0]->$msklatname$
+ ;printVarSummary(mskvar)
 
 ;**********************************************************
 ;
 ;**********************************************************
 
- doffile = RT+dirs(0)+"dof.atm.nc"
- doff = addfile(doffile,"r")
- dof = doff->dof(:)
+ ;doffile = RT+dirs(0)+"dof.atm.nc"
+ ;doff = addfile(doffile,"r")
+ ;dof = doff->dof(:)
 
 ;**********************************************************
 ; retrieve lat/lon from first coupler history file
 ;**********************************************************
 
-  fname = RT+dirs(0)+"ufs.cpld.cpl.hi.atm."+date+"22320.nc"
+  fname = RT+dirs(0)+"ufs.cpld.cpl.hi.atm.2021-03-22-22800.nc"
   print("input file "+fname)
   ff = addfile(fname,"r")
 
@@ -57,35 +60,42 @@ begin
   lon3d@units = "degrees_E"
   delete(ff)
   delete(fname)
-
+  wkstitle="test"
+  levs=(/-1,1,.05/)
 ;************************************************
 ; create tiled dststatus
 ;************************************************
 
- case = 0
- dirsrc = RT+dirs(0)
- fsrc = vname+".ocn.atm.consf"
- fname = dirsrc+fsrc+".nc"
- print("input file "+fname)
- ff = addfile(fname,"r")
+ ;case = 0
+ ;dirsrc = RT+dirs(0)
+ ;fsrc = vname+".ocn.atm.consf"
+ ;fname = dirsrc+fsrc+".nc"
+ ;print("input file "+fname)
+ ;ff = addfile(fname,"r")
 
- var1d = ff->$vname$(:)
+ ;var1d = ff->$vname$(:)
  ;printVarSummary(var1d)
 
- var3d = new((/ ntile, atmres, atmres /), typeof(var1d), default_fillvalue(typeof(var1d)) )
+ ;var3d = new((/ ntile, atmres, atmres /), typeof(var1d), default_fillvalue(typeof(var1d)) )
  ;printVarSummary(var3d)
 
- do i = 0, ntile-1
-   istr = (i*atmres*atmres)
-   iend = istr+atmres*atmres-1
-   var3d(i,:,:) = onedtond(var1d(istr:iend), (/ atmres, atmres /))
- end do
+ ;do i = 0, ntile-1
+ ;  istr = (i*atmres*atmres)
+ ;  iend = istr+atmres*atmres-1
+ ;  var3d(i,:,:) = onedtond(var1d(istr:iend), (/ atmres, atmres /))
+ ;end do
 
 ; ;************************************************
 ; ; sort the dststatus according to dof
 ; ;************************************************
 
 ;   dirsrc = RT+dirs(0)
+
+    files=addfiles(RT+dirs+"ufs.cpld.cpl.hi.atm.2021-03-22-22800.nc","r")
+    print(files)
+    var3d = files[1]->$vname$(0,:,:,:) - files[0]->$vname$(0,:,:,:)
+    var3d = 1.0e13*var3d
+    var3d = mask(var3d,mskvar,0.0)
 
 ;   fname = dirsrc+fsrc+".nc"
 ;   print("input file "+fname)
@@ -122,8 +132,9 @@ begin
 
     ;palette = "ncv_roullet"
     ;palette = "amwg"
-    palette="WhBlGrYeRe"
+    ;palette="WhBlGrYeRe"
     ;palette="NCV_jet"
+    palette="BlueWhiteOrangeRed"
    plotlab = vname
 
 ;************************************************
@@ -157,7 +168,7 @@ begin
      res@cnFillPalette     = palette
 
      res@cnMissingValFillPattern = 0               ; choose fill pattern 0 (solid fill)
-     ;res@cnMissingValFillColor   = "gray"          ; color fill missing areas blue
+     res@cnMissingValFillColor   = "gray"          ; color fill missing areas blue
 
      res@cnLevelSelectionMode = "ManualLevels"     ; set the contour levels with the following 3 resources
      res@cnMinLevelValF  = levs(0)                      ; set the minimum contour level
@@ -199,17 +210,18 @@ begin
         res@pmLabelBarWidthF = size*1.8
         res@pmLabelBarHeightF = 0.03
         res@pmLabelBarParallelPosF = 0.97
-        res@cnLabelBarEndStyle = "ExcludeOuterBoxes"
-        res@lbLabelAlignment = "BoxCenters"
+        ;res@cnLabelBarEndStyle = "ExcludeOuterBoxes"
+        ;res@lbLabelAlignment = "BoxCenters"
        else
         res@lbLabelBarOn = False
        end if
        if( kk .eq. 2) then
-        res@gsnLeftString = plotlab+":  "+date+time
+       res@gsnLeftString = ""
+        ;res@gsnLeftString = plotlab+":  "+date+time
        else
         res@gsnLeftString = ""
        end if
-       plot1 = gsn_csm_contour(wks, var3dkk,:,:), res)
+       plot1 = gsn_csm_contour(wks, var3d(kk,:,:), res)
        draw(plot1)
 
        txres@txPosXF = xpos(kk)+0.01
