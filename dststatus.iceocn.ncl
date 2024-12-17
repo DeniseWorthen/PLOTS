@@ -12,15 +12,16 @@ begin
 
     ; RT = "/glade/scratch/worthen/FV3_RT/rt_22529/"
     ; RT = "/glade/scratch/worthen/FV3_RT/wave_test/"
-     RT = "/glade/derecho/scratch/worthen/waveice/"
-
+    ; RT = "/glade/derecho/scratch/worthen/waveice/"
+   RT = "/glade/derecho/scratch/worthen/FV3_RT/rt_47823/"
    nl = str_get_nl()
    nflags = 9
-   dirs = (/"base.ic4/"/)
+   dirs = (/"a2i.bilnr/"/)
+   ;dirs = (/"base.ic4/"/)
    ;dirs = (/"./"/)
   ;   fsrc = "dststatus.atm.ocn.bilnr.nc"
   ;doffile = "dof.ocn.nc"
-  ;   fsrc = "dststatus.atm.ice.consf.nc"
+     fsrc = "dststatus.atm.ice.bilnr.nc"
      ;fsrc = "dststatus.atm.ocn.nstod_consf.nc"
     ;fsrc = "dststatus.atm.ocn.consf_fnorm.nc"
    ; fsrc = "dststatus.atm.ocn.consf.nc"
@@ -31,7 +32,7 @@ begin
    ;  fsrc = "dststatus.atm.wav.consf.nc"
    ;  fsrc = "dststatus.ice.wav.bilnr_nstod.nc"
    ;  fsrc = "dststatus.atm.wav.fillv_bilnr.nc"
-     fsrc = "dststatus.wav.ice.bilnr_nstod.nc"
+   ;  fsrc = "dststatus.wav.ice.bilnr_nstod.nc"
    ;  vname = "mask"
    ;   levs = (/0,2,1/)
    ;  fsrc = "meshmask.nc"
@@ -191,17 +192,17 @@ do nd = 0,ndirs-1
   res@cnMaxLevelValF  = levs(1)                      ; set the maximum contour level
   res@cnLevelSpacingF = levs(2)                      ; set the interval between contours
   res@cnFillPalette   = "amwg"
-
+  ;res@cnFillPalette = "grads_default"
   res@tiMainFontHeightF = .010
   res@tiMainString = fsrc
 
-   res@mpMinLatF    =  66.0                          ; minimum lat to plot
-   res@mpCenterLonF = -45.0
+   ;res@mpMinLatF    =  66.0                          ; minimum lat to plot
+   ;res@mpCenterLonF = -45.0
 ;************************************************
 ;
 ;************************************************
 
-   plot = gsn_csm_contour(wks,data,res)    ; create the plot
+   plot = gsn_csm_contour(wks,data(250:,:100),res)    ; create the plot
    ;plot = gsn_csm_contour_map_polar(wks,data,res)    ; create the plot
 
   draw(plot)
