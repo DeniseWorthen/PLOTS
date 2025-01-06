@@ -8,9 +8,11 @@
   ;MD = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/WW3_input_data_20220624/"
   ;scrpfile   = "no_land_CardDeck.SCRIP.nc"
 
-  MD = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/rt_wavunstr/moddefs/"
+   MD = "/scratch1/NCEPDEV/nems/Denise.Worthen/WORK/WaveIn_unstr4/moddefs/"
+   scrpfile="exp.global_270k.SCRIP.nc"
+  ;MD = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/rt_wavunstr/moddefs/"
   ;scrpfile   = "trip15minmask_dd.SCRIP.nc"
-  scrpfile   = "trip1degmask.SCRIP.nc"
+  ;scrpfile   = "trip1degmask.SCRIP.nc"
   sfile      = addfile(MD+scrpfile,"r")
   x          = sfile->grid_center_lon
   y          = sfile->grid_center_lat
@@ -20,17 +22,17 @@
   ; cheyenne
   ;RT1 = "/glade/scratch/worthen/WaveUnstr/"
   ; hera
-  RT1 = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/rt_wavunstr/"
-
+  ;RT1 = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/rt_wavunstr/"
+  RT1="/scratch1/NCEPDEV/stmp2/Jun.Wang/FV3_RT/rt_3917402/"
   gridtype  = (/"unstructured","unstructured"/)
-   plotlabs = (/"unstr 1deg 30PE"  , "unstr 1deg 20PE"/)
-        rts = (/"test.320b312/", "new/"/)
+   plotlabs = (/"control"  , "restart"/)
+        rts = (/"cpld_control_gfsv17_iau_intel/", "cpld_control_gfsv17_iau_intel_rst/"/)
 
   date = "2021-03-22-"
   ;time = "25200"
-  time = "64080"
-  ;time = "64800"
-  fsrc = "ufs.atmw.cpl.hi.wav."
+  ;time = "64080"
+  time = "68400"
+  fsrc = "ufs.cpld.cpl.hi.wav."
 
   fnames = RT1+rts+fsrc+date+time+".nc"
   files  = addfiles(fnames,"r")
@@ -38,11 +40,13 @@
 
   flds = (/"wavImp_Sw_z0" ,  \
            "wavExp_Sa_u10m", \
-           "wavExp_Sa_v10m"/)
+           "wavExp_Sa_v10m", \
+           "wavImp_Sw_pstokes_y1"/)
 
   fldwgts = (/1.0e3, \
               1., \
-              1./)
+              1., \
+              1.0e2 /)
   lonname = "wavImp_lon"
   latname = "wavImp_lat"
 
@@ -54,20 +58,22 @@
   plotlevs( 0,:) = (/   0.0,    0.5,  0.05/)   ; z0
   plotlevs( 1,:) = (/ -20.0,   20.0,  0.50/)   ; u10m
   plotlevs( 2,:) = (/ -20.0,   20.0,  0.50/)   ; v10m
+  plotlevs( 3,:) = (/ -2.0,     2.0,  0.20/)   ; stokes
 
 ;************************************************
 ;
 ;************************************************
 
   ; pick a field to plot
-  fldtoplot = 0
+  fldtoplot = 3
   levs = plotlevs(fldtoplot,:)
   wgt = fldwgts(fldtoplot)
   wkstitle = flds(fldtoplot)+"_"+date+time
   ;wkstitle = plotlabs(0)
 
-   cmap = "WhBlGrYeRe"
-   ;cmap = "WhiteBlueGreenYellowRed"
+   ;cmap = "WhBlGrYeRe"
+                                ;cmap = "WhiteBlueGreenYellowRed"
+   cmap = "BlWhRe"
    plottitle=flds(fldtoplot)
 
 ;************************************************

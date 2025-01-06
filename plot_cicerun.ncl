@@ -38,11 +38,12 @@ begin
    ;cdate = cyear+"-"+cmon+"-"+cday
    ;rtsrc = RT2+"testpr1/pdlib270k/"
 
-   rtsrc=RT2
+  ; rtsrc=RT2+"FV3_RT/rt_2762476/base.c96.3d/"
+  rtsrc=RT2+"FV3_RT/rt_2762476/warmstart.c96.3d/"
    ; use one file for grid
    ;gf =addfile(rtsrc+"iceic"+idate+"00.01."+idate+"00.nc","r")
    ;icef =addfile(rtsrc+"ice2020071800.01.2020070700.nc","r")
-   icef = addfile(rtsrc+"FV3_RT/cicepr.netcdf.cdf1/cpld_control_p8_intel/history/iceh_ic.2021-03-22-21600.nc","r")
+   icef = addfile(rtsrc+"history/iceh_ic.2021-03-22-21600.nc","r")
    ;print(gf)
    tlatname="TLAT"
    tlonname="TLON"
@@ -58,13 +59,13 @@ begin
   ;print("cdate = "+cdate)
 
   ; ice field
-  varname="aice"
+  ;varname="aice"
   ;levs=(/0.97,1.0,0.001/)
   ;levs=(/0.87,0.95,0.0010/)
   ;levs=(/0.50,1.00,0.010/)
   ;levs=(/0.0, 1.0, 0.02/)
-  ;varname="hi_h"
-  ;levs=(/0.0,3.0,0.1/)
+  varname="hi_h"
+  levs=(/0.0,4.0,0.1/)
   ;levs=(/0.0,2.0,0.1/)
   ;varname="Tsfc_h"
   ;levs=(/-40.0,5.0,1.0/)
@@ -95,21 +96,26 @@ begin
   ;varname="hs_h"
   ;levs=(/0.0,0.42,0.02/)
 
-  ; icef =addfile(rtsrc+"history/iceh_inst."+cyear+"-"+cmon+"-24-21600.nc","r")
+   icef =addfile(rtsrc+"history/iceh_06h.2021-03-25-21600.nc","r")
   ;  icef = addfile(rtsrc+"history/iceh_06h."+cdate+"-00000.nc","r")
-  ;icevar = icef->$varname$(lstep,:,:)
+   icevar = icef->$varname$(lstep,:,:)
+   icevar@lon2d=icef->$tlonname$*rfactor
+   icevar@lat2d=icef->$tlatname$*rfactor
+   icevar@units=""
+   icevar@long_name=""
+
   ;icevar = icevar/100.0
 
-  sst=icef->sst_h(lstep,:,:)
-  icon=icef->aice_h(lstep,:,:)
-  sit=icef->Tsfc_h(lstep,:,:)
-  icevar=(1.0-icon)*sst + icon*sit
-  levs=(/-2.0,1.0,.1/)
-  icevar@lon2d=icef->$tlonname$*rfactor
-  icevar@lat2d=icef->$tlatname$*rfactor
-  printVarSummary(icevar)
-  icevar@units=""
-  icevar@long_name=""
+  ; sst=icef->sst_h(lstep,:,:)
+  ; icon=icef->aice_h(lstep,:,:)
+  ; sit=icef->Tsfc_h(lstep,:,:)
+  ; icevar=(1.0-icon)*sst + icon*sit
+  ; levs=(/-2.0,1.0,.1/)
+  ; icevar@lon2d=icef->$tlonname$*rfactor
+  ; icevar@lat2d=icef->$tlatname$*rfactor
+  ; printVarSummary(icevar)
+  ; icevar@units=""
+  ; icevar@long_name=""
 
   ;       aivar = icef->aice_h(lstep,:,:)
   ; aivar@lon2d = gf->$tlonname$*rfactor
@@ -139,8 +145,8 @@ begin
 ;************************************************
   wkstype="X11"
   ;wkstype="png"
-  wkstype@wkWidth=1200
-  wkstype@wkHeight=1200
+  wkstype@wkWidth=800
+  wkstype@wkHeight=800
   wks   = gsn_open_wks (wkstype,"cice5")              ; send graphics to X11 window
 
   ;gsn_define_colormap(wks,"MPL_Blues")
@@ -194,12 +200,12 @@ begin
   ;res@cnFillPalette        = "BlWhRe"              ; choose colormap
   ;res@cnFillPalette        = "BlueWhiteOrangeRed"              ; choose colormap
   ;res@cnFillPalette        = "NCV_roullet"              ; choose colormap
-  ;res@cnFillPalette        = "WhBlGrYeRe"              ; choose colormap
+  res@cnFillPalette        = "WhBlGrYeRe"              ; choose colormap
 
   ;res@tiMainString = dirname+" "+cday
   ;res@tiMainString = rtsrc+" "+cdate+" "+varname
-  ;res@tiMainFontHeightF = .01
-
+  res@tiMainFontHeightF = .01
+  res@tiMainString = rtsrc
   ;res@gsnCenterStringOrthogonalPosF = .15	    ; raise the CenterString slightly
   ;res@gsnStringFontHeightF = 0.01
   ;res@gsnCenterString = cd_string(times(lstep),"%d %F")
@@ -221,7 +227,7 @@ begin
 
   plot = gsn_csm_contour_map_polar(wks,icevar,res)    ; create the plot
   ;plot = gsn_csm_contour_map(wks,icevar,res)    ; create the plot
-  ;dum= gsn_add_polyline(wks,plot,(/lon1, lon2/) , (/lat1, lat2/) ,pres)
+  dum= gsn_add_polyline(wks,plot,(/lon1, lon2/) , (/lat1, lat2/) ,pres)
   ;pum= gsn_add_polymarker(wks,plot,center_xlon,center_xlat,mkres)
 
   draw(plot)

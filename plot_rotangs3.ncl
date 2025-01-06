@@ -11,7 +11,7 @@ begin
 ;************************************************
 
   ;grdsrc = "/scratch2/NCEPDEV/climate/Denise.Worthen/grids-20210727/"
-  grdsrc = "/scratch1/NCEPDEV/stmp4/Denise.Worthen/CPLD_GRIDGEN/BASELINE/100/"
+  grdsrc = "/scratch1/NCEPDEV/stmp4/Denise.Worthen/CPLD_GRIDGEN/BASELINE/"
 
   ; rad 2 degree
   rad2deg = 180.0d0/acos(-1.0d0)
@@ -19,12 +19,13 @@ begin
    ; arrays of characterstrings to set locations and filenames
    ;  fsrcs => tripole grid file
    ;  csrcs => cice restart file
-    fsrcs = (/ "mx100",  "mx050",  "mx025", "mx072", "mx400"/)
-    csrcs = (/  "1.00",   "0.50",   "0.25",  "0.72",  "4.00"/)
+    fsrcs = (/ "mx100",  "mx050",  "mx025", "mx500"/)
+    csrcs = (/  "1.00",   "0.50",   "0.25",  "5.00"/)
+    dsrcs = (/  "100/",   "050/",   "025/",  "500/"/)
    ; seam longitude for each res
-     lons = (/    60.0,     60.0,     60.0,   73.75,   80.00/)
+     lons = (/    60.0,     60.0,     60.0,  80.00/)
    ; min lat to plot for each res
-  minlats = (/    86.0,     87.0,     89.0,   86.00,   80.00/)
+  minlats = (/    86.0,     87.0,     89.0,  80.00/)
 
   ires = 0 ; 1deg
   ;ires = 1 ; 1/2deg
@@ -33,6 +34,12 @@ begin
   ;ires = 4 ; 4deg
 
   levs = (/-1.6, 1.6, 0.1/)
+  ;minlat = minlats(ires)
+  minlat = 66.0
+
+  grdfile = "tripole."+fsrcs(ires)+".nc"
+  gr =addfile(grdsrc+dsrcs(ires)+grdfile,"r")
+  print(grdsrc+grdfile)
 
   plottitle = "rotangs_"+fsrcs(ires)+"_"+minlats(ires)+"N"
 
@@ -115,9 +122,9 @@ begin
   resP@gsnPanelLabelBar      = True                 ; turn on a common labelbar for the entire panel plot
 
   resP@gsnPanelMainFontHeightF = 0.015           ; new resource added in NCL V6.4.0
-  resP@gsnPanelMainString = plottitle+"  "+grdfile
+  resP@gsnPanelMainString = grdfile
 
-  resP@gsnPanelFigureStrings = (/"angle on Ct","angle on Bu"/)
+  resP@gsnPanelFigureStrings = (/"angle on Ct","-angle on Bu"/)
 ;************************************************
 ;
 ;************************************************
@@ -129,7 +136,7 @@ begin
   lonname="lonCt"
   latname="latCt"
   var = gr->$varname$
-  var = -1.0*var
+  var = var
   var@lon2d=gr->$lonname$
   var@lat2d=gr->$latname$
   var@units=" "
@@ -141,6 +148,7 @@ begin
   lonname="lonBu"
   latname="latBu"
   var = gr->$varname$
+  var = -1.0*var
   var@lon2d=gr->$lonname$
   var@lat2d=gr->$latname$
   var@units=" "

@@ -5,22 +5,47 @@
 
 ;************************************************
 
-  MD = "/work2/noaa/stmp/dworthen/stmp/dworthen/piosbs/"
-  scrpfile = "exp.global_270k.SCRIP.nc"
+  ;MD = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/WW3_input_data_20220624/"
+  ;scrpfile   = "no_land_CardDeck.SCRIP.nc"
+
+  ;MD = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/rt_wavunstr/moddefs/"
+  ;scrpfile   = "trip15minmask_dd.SCRIP.nc"
+  ;scrpfile   = "trip1degmask_dd.SCRIP.nc"
+
+  ;MD = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/addunstr.2acd891b.ww.33d337356/moddefs/"
+                                ;scrpfile = "trip1degmask.SCRIP.nc"
+   MD = "/scratch1/NCEPDEV/nems/Denise.Worthen/WORK/WaveIn_unstr4/moddefs/"
+   scrpfile="exp.global_270k.SCRIP.nc"
   sfile      = addfile(MD+scrpfile,"r")
   x          = sfile->grid_center_lon
   y          = sfile->grid_center_lat
   cx         = sfile->grid_corner_lon
   cy         = sfile->grid_corner_lat
 
-  RT1 = "/work2/noaa/stmp/dworthen/stmp/dworthen/piosbs/"
+  ; cheyenne
+  ;RT1 = "/glade/scratch/worthen/WaveUnstr/"
+  ; hera
+  ;RT1 = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/rt_wavunstr/"
+  ;RT1 = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/addunstr.2acd891b.ww.33d337356/"
 
+  ;gridtype  = (/"unstructured","unstructured"/)
+  ; plotlabs = (/"unstr 1deg 20PE"  , "unstr 1deg 10PE"/)
+  ;      rts = (/"cpld.fix.10PE/", "cpld.fix.20PE/"/)
+
+  ;date = "2021-03-22-"
+  ;time = "32400"
+
+    date = "2021-03-22-"
+  ;time = "25200"
+  ;time = "64080"
+  time = "68400"
+  fsrc = "ufs.cpld.cpl.hi.wav."
+
+    RT1="/scratch1/NCEPDEV/stmp2/Jun.Wang/FV3_RT/rt_3917402/"
   gridtype  = (/"unstructured","unstructured"/)
-   plotlabs = (/"base"  , "rest"/)
-        rts = (/"base.pdlib/", "rest.pdlib/"/)
+   plotlabs = (/"control - restart"/)
+   rts = (/"cpld_control_gfsv17_iau_intel/", "cpld_control_gfsv17_iau_intel_rst/"/)
 
-  date = "2021-03-22-"
-  time = "33120"
   fsrc = "ufs.cpld.cpl.hi.wav."
 
   fnames = RT1+rts+fsrc+date+time+".nc"
@@ -33,10 +58,10 @@
            "wavImp_Sw_pstokes_x2", \
            "wavImp_Sw_pstokes_y2"/)
 
-  fldwgts = (/1.0e12, \
+  fldwgts = (/1.0e3, \
               1., \
               1., \
-              1.0e6, \
+              1.0e8, \
               1.0e6/)
 
   lonname = "wavImp_lon"
@@ -58,7 +83,7 @@
 ;************************************************
 
   ; pick a field to plot
-  fldtoplot = 0
+  fldtoplot = 3
   levs = plotlevs(fldtoplot,:)
   wgt = fldwgts(fldtoplot)
   wkstitle = flds(fldtoplot)+"_"+date+time
