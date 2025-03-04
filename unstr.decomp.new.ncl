@@ -5,10 +5,10 @@
 
 ;************************************************
 
-  RT = "/work2/noaa/stmp/dworthen/stmp/dworthen/ww3pio/"
+  RT = "/work2/noaa/stmp/dworthen/stmp/dworthen/FV3_RT/"
   MD = "/work2/noaa/stmp/dworthen/stmp/dworthen/ww3pio/mod_defs/"
-  ;scrpfile = "exp.wise.global_270k.SCRIP.nc"
-  scrpfile = "sngl.exp.wise.global_270k.SCRIP.nc"
+  scrpfile = "exp.wise.global_270k.SCRIP.nc"
+  ;scrpfile = "sngl.exp.wise.global_270k.SCRIP.nc"
 
   ;RT = "/work2/noaa/stmp/dworthen/stmp/dworthen/rt.coastal.c9d29369/"
   ;MD = "/work/noaa/nems/dworthen/coastal_createmoddefs/moddefs/"
@@ -24,8 +24,8 @@
 
  plotlabs = (/"Unstr 5PE"/)
 
-  ;rts = (/"datm.270k/"/)
-  rts = (/"datm.sngl.270k/"/)
+  rts = (/"rt_3728644/cpld_debug_pdlib_p8_gnu/"/)
+  ;rts = (/"datm.sngl.270k/"/)
   ;rts = (/"ike.bt4.intel.db/"/)
 
   fnames = RT+rts+"emesh.decomp.nc"
@@ -50,8 +50,8 @@
 
   wkstype="X11"
  ; wkstype="png"
-  wkstype@wkWidth=1200
-  wkstype@wkHeight=1200
+  wkstype@wkWidth=600
+  wkstype@wkHeight=600
   wks   = gsn_open_wks (wkstype,wkstitle)       ; send graphics to X11 window
   ; drawNDCGrid(wks)
   plot = new(nplots,graphic)
@@ -90,10 +90,10 @@ begin
   res@cnLevelSpacingF      = pltlevs(2)            ; set the interval between contours
   res@cnFillPalette        = palette
 
-  if (gtype .eq. "unstructured") then
-    res@sfXCellBounds = cx(:,0:5)
-    res@sfYCellBounds = cy(:,0:5)
-  end if
+  ;if (gtype .eq. "unstructured") then
+  ;  res@sfXCellBounds = cx(:,0:5)
+  ;  res@sfYCellBounds = cy(:,0:5)
+  ;end if
 
   res@gsnCenterStringFontHeightF      = 0.012
   res@gsnCenterString                 = name
@@ -168,16 +168,17 @@ end
         data@lon2d = files[ii]->$lonname$(:,:)
         data@lat2d = files[ii]->$latname$(:,:)
       else
-        data = files[ii]->$vname$
+        data = tofloat(files[ii]->$vname$)
         data = data*wgt
+	printVarSummary(data)
 
-        dof = files[ii]->dof
-          ip = dim_pqsort(dof,1)
-          var1d_sort = data
-          var1d_sort = data(ip)
-          data       = var1d_sort
-          data@lon1d = x
-          data@lat1d = y
+        ;dof = files[ii]->dof
+         ; ip = dim_pqsort(dof,1)
+          ;var1d_sort = data
+          ;var1d_sort = data(ip)
+          ;data       = var1d_sort
+          data@lon1d = files[ii]->coordx
+          data@lat1d = files[ii]->coordy
       end if
       plot(ii) = subplot(ii,plotlabs(ii),gtype,data,levs,cmap)
 

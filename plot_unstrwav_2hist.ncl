@@ -5,21 +5,27 @@
 
 ;************************************************
 
-  RT1="/work2/noaa/stmp/dworthen/stmp/dworthen/ww3pio/"
+  ;RT1="/work2/noaa/stmp/dworthen/stmp/dworthen/ww3pio/"
+  RT1="/work2/noaa/stmp/dworthen/stmp/dworthen/ultralow/"
+
   polar="false"
   ;polar="true"
   ; minlat = 66.0
   ; zoom in
   ;minlat = 88.0
-  minlat = 85.0
+  ;minlat = 85.0
 
-  gridtype = (/"unstructured" , "unstructured" /)
-  plotlabs = (/"Unstr, Dual", "Unstr Sngl" /)
-  rts =      (/"atmw.270k/", "atmw.sngl.270k/"  /)
+  ;gridtype = (/"unstructured" , "unstructured" /)
+  ;plotlabs = (/"Unstr, Dual", "Unstr Sngl" /)
+  ;rts =      (/"atmw.270k/", "atmw.sngl.270k/"  /)
+
+  gridtype = "unstructured"
+  plotlabs = "test"
+  rts = "c48.rundir/"
 
   date = "2021-03-22-"
-  time = "24480"
-  fsrc = "ufs.atmw.ww3.hi."
+  time = "32400"
+  fsrc = "ufs.cpld.ww3.hi."
 
   fnames = RT1+rts+fsrc+date+time+".nc"
   files  = addfiles(fnames,"r")
@@ -31,7 +37,8 @@
            "USTX" , \
            "UAX"  , \
            "HS"   , \
-	   "CHARN"/)
+	   "CHARN", \
+	   "mapsta"/)
 
  fldwgts = (/1.0e4, \
              1.0e2,  \
@@ -39,7 +46,8 @@
              1.0e0,  \
              1.0e0,  \
              1.0e0,  \
-	     1.0e3/)
+	     1.0e3,  \
+	     1.0e0 /)
 
   lonname = "lon"
   latname = "lat"
@@ -57,21 +65,22 @@
   plotlevs( 3,:) = (/  -1.0,    1.0,  0.1/)   ; ustx
   plotlevs( 4,:) = (/ -20.0,    20.0,  2./)   ; uax
   plotlevs( 5,:) = (/  0.0,    5.0,  0.5/)   ; hs
-  plotlevs( 5,:) = (/  0.0,    1.0,  0.1/)   ; charn
+  plotlevs( 6,:) = (/  0.0,    1.0,  0.1/)   ; charn
+  plotlevs( 7,:) = (/ -2.0,    2.0,  1.0/)   ; mapsta
 
 ;************************************************
 ;
 ;************************************************
 
   ; pick a field to plot
-  fldtoplot = 5
+  fldtoplot = 7
   levs = plotlevs(fldtoplot,:)
   wgt = fldwgts(fldtoplot)
   wkstitle = flds(fldtoplot)+"_"+date+time
 
-   cmap = "WhiteBlueGreenYellowRed"
+ ;  cmap = "WhiteBlueGreenYellowRed"
  ;  cmap = "BlueWhiteOrangeRed"
-
+   cmap = "amwg"
    plottitle=flds(fldtoplot)
 
 ;************************************************
@@ -80,8 +89,8 @@
 
   wkstype="X11"
  ; wkstype="png"
-  wkstype@wkWidth=1200
-  wkstype@wkHeight=1200
+  wkstype@wkWidth=800
+  wkstype@wkHeight=800
   wks   = gsn_open_wks (wkstype,wkstitle)       ; send graphics to X11 window
   ; drawNDCGrid(wks)
   plot = new(nplots,graphic)
@@ -176,21 +185,21 @@ end
 ; ***************************************************
 
       ;k = 28
-      ii = 1
+      ii = 0
       ;do ii = 0,nplots-1
         vname = flds(fldtoplot)
         gtype = gridtype(ii)
         if (gtype .eq. "structured")then
-        data = files[ii]->$vname$(0,:,:)
-        data = data*wgt
-        data@lon2d = files[ii]->$lonname$(:,:)
-        data@lat2d = files[ii]->$latname$(:,:)
+           data = files[ii]->$vname$(0,:,:)
+           data = data*wgt
+           data@lon2d = files[ii]->$lonname$(:,:)
+           data@lat2d = files[ii]->$latname$(:,:)
       else
         ;data = files[ii]->$vname$(0,k-1,0,:)
-        data = files[ii]->$vname$(0,0,:)
-        data = data*wgt
-        data@lon1d = files[ii]->$lonname$(0,:)
-        data@lat1d = files[ii]->$latname$(0,:)
+	  data = tofloat(files[ii]->$vname$(0,0,:))
+       	  data = data*wgt
+          data@lon1d = files[ii]->$lonname$(0,:)
+          data@lat1d = files[ii]->$latname$(0,:)
       end if
       plot(ii) = subplot(ii,plotlabs(ii),gtype,data,levs,cmap)
       delete(data)

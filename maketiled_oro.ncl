@@ -5,15 +5,20 @@ begin
 
    ;RT="/work2/noaa/stmp/dworthen/stmp/dworthen/dststat/"
    fixdir="/work/noaa/global/glopara/fix/orog/20240917/"
+   ;RT="/work2/noaa/stmp/dworthen/stmp/dworthen/negdvice/rest.2d/INPUT/"
 
     ;ares = "C96"
     ;adim = 96
  ;   ares = C192
  ;   ares = C384
 
-ares = (/"C96", "C192", "C384"/)
-adim = (/96, 192, 384/)
-ores = (/"mx025", "mx050", "mx100"/)
+ares = (/"C192"/)
+adim = (/192/)
+ores = (/"mx025"/)
+
+;ares = (/"C96", "C192", "C384"/)
+;adim = (/96, 192, 384/)
+;ores = (/"mx025", "mx050", "mx100"/)
 ntile=6
 
   ; retrieve orodata file from fix directory
