@@ -5,40 +5,19 @@
 
 ;************************************************
 
-   ;RT = "/work2/noaa/stmp/dworthen/stmp/dworthen/ww3pio/"
-   ;RT="/work2/noaa/stmp/dworthen/stmp/dworthen/FV3_RT/rt_3982207/"
-   ;RT="/work2/noaa/stmp/dworthen/stmp/dworthen/FV3_RT/rt_188291/"
-   ;MD = "/work2/noaa/stmp/dworthen/stmp/dworthen/ww3pio/"
-   ;scrpfile = "exp.wise.global_270k.SCRIP.nc"
+; Plot the decomposition of an unstructured mesh from WW3
 
    RT = "/work2/noaa/stmp/dworthen/stmp/dworthen/ultralow.2/"
-   MD = "/work2/noaa/stmp/dworthen/stmp/dworthen/ultralow.2/"
-   scrpfile = "uglo_900km.SCRIP.nc"
+   ;RT = "/work2/noaa/stmp/dworthen/stmp/dworthen/FV3_RT/rt_188291/"
 
-  ;RT = "/work2/noaa/stmp/dworthen/stmp/dworthen/rt.coastal.c9d29369/"
-  ;MD = "/work/noaa/nems/dworthen/coastal_createmoddefs/moddefs/"
-  ;scrpfile = "bt4.ike.SCRIP.nc"
+   plotlabs = (/"Unstr 2PE"/)
+   rts=(/"warm.48/"/)
+   ;rts=(/"cpld_debug_pdlib_p8_intel/"/)
 
-  sfile      = addfile(MD+scrpfile,"r")
-  x          = sfile->grid_center_lon
-  y          = sfile->grid_center_lat
-  cx         = sfile->grid_corner_lon
-  cy         = sfile->grid_corner_lat
-
- gridtype  = (/"unstructured"/)
-
- plotlabs = (/"Unstr 2PE"/)
-
-  ;rts = (/"rt_3728644/cpld_debug_pdlib_p8_gnu/"/)
-  ;rts = (/"atmw.270k/"/)
-  ;rts = (/"ike.bt4.intel.db/"/)
-  rts=(/"warm.48/"/)
-  ;rts = (/"cpld_debug_pdlib_p8_intel/"/)
-
-  fnames = RT+rts+"emesh.decomp.nc"
-  files  = addfiles(fnames,"r")
-  nplots = dimsizes(gridtype)
-  print(fnames)
+   fnames = RT+rts+"emesh.decomp.nc"
+   files  = addfiles(fnames,"r")
+   nplots = dimsizes(rts)
+   print(fnames)
 
   ; auto-set the max fill level
   dmax = new((/nplots/),integer)
@@ -84,7 +63,7 @@
 
   ;res@mpFillOn           = False
   ;res@mpOutlineOn        = False
-  res@cnMissingValFillColor   = "gray"          ; color fill missing areas blue
+  ;res@cnMissingValFillColor   = "gray"          ; color fill missing areas blue
 
 ;************************************************
 ; add coord marks
@@ -99,18 +78,13 @@
 ;************************************************
 ; the subplot call
 ;************************************************
-function subplot(ii,name,gtype,pltvar,pltlevs,palette)
+function subplot(ii,name,pltvar,nconn,pltlevs,palette)
 begin
   res@cnLevelSelectionMode = "ManualLevels"        ; set the contour levels with the following 3 resources
   res@cnMinLevelValF       = pltlevs(0)            ; set the minimum contour level
   res@cnMaxLevelValF       = pltlevs(1)            ; set the maximum contour level
   res@cnLevelSpacingF      = pltlevs(2)            ; set the interval between contours
   res@cnFillPalette        = palette
-
-  if (gtype .eq. "unstructured") then
-    res@sfXCellBounds = cx(:,0:5)
-    res@sfYCellBounds = cy(:,0:5)
-  end if
 
   res@gsnCenterStringFontHeightF      = 0.012
   res@gsnCenterString                 = name
@@ -119,43 +93,16 @@ begin
   pltvar@units = ""
   pltvar@long_name = ""
 
-  if (gtype .eq. "structured") then
-    res@mpCenterLonF       = 180
-    res@mpFillOn           = False
-    res@mpOutlineOn        = False
-    splot = gsn_csm_contour_map(wks,pltvar,res)    ; create the plot
-    delete(res@mpCenterLonF)
-    delete(res@mpFillOn)
-    delete(res@mpOutlineOn)
-  else
-    res@mpFillOn             = False
-    res@mpOutlineOn          = False
-  end if
+  res@sfElementNodes = nconn
+  res@sfFirstNodeIndex = 1
+  ;res@mpFillOn             = False
+  ;res@mpOutlineOn          = False
   splot = gsn_csm_contour(wks,pltvar,res)    ; create the plot
   ;gsn_coordinates(wks,splot,pltvar,mkres)
   ;delete(res@cnLevels)
   ;delete(res@lbLabelStrings)
   return(splot)
 end
-
-
-;************************************************
-; resources for overlay
-;************************************************
-
-  ores                  = True
-  ores@cnLineThicknessF = 1.0            ; line thickness
-  ores@cnLineColor      = "black"        ; line color
-  ores@cnLineLabelsOn   = False
-  ores@cnLinesOn        = True
-  ores@cnInfoLabelOn    = False
-  ores@gsnDraw          = False ; don't draw
-  ores@gsnFrame         = False ; don't advance frame
-  ores@gsnLeftString    = ""    ; no titles
-  ores@gsnRightString   = ""
-  ;ores@cnLevelSelectionMode = "ManualLevels"
-  ;ores@cnLevels         = (/1,6,1/)
-  ;ores@cnFillPatterns   = (/17,17,17,17/)
 ; ***************************************************
 ; panel resources
 ; **************************************************
@@ -178,33 +125,49 @@ end
 ;
 ; ***************************************************
 
-      wgt = 1.0
+      latname = "coordy"
+      lonname = "coordx"
+     connname = "nconn"
+      vname = "decomp"
       cmap = "cb_9step"
       do ii = 0,nplots-1
-        vname = "decomp"
-        gtype = gridtype(ii)
-        if (gtype .eq. "structured")then
-        data = files[ii]->$vname$(0,:,:)
-        data = data*wgt
-        data@lon2d = files[ii]->$lonname$(:,:)
-        data@lat2d = files[ii]->$latname$(:,:)
-      else
         data = files[ii]->$vname$
-        data = data*wgt
-	;fr_avar = where(aland .eq. 1.0, default_fillvalue(typeof(fr_avar)), atmsgn*fr_avar)
-	;maskvar = where(data .eq. 2.0, data, default_fillvalue(typeof(data)))
-	;data = maskvar*data
-	printVarSummary(data)
-
         dof = files[ii]->dof
         ip = dim_pqsort(dof,1)
-        var1d_sort = data
-        var1d_sort = data(ip)
-        data       = var1d_sort
+
+	var1d_sort = data
+	var1d_sort = data(ip)
+	data = var1d_sort
+
+	cnodes = files[ii]->nconn
+	;printVarSummary(cnodes)
+	print(cnodes(0:9,:))
+	; sort across dim 0
+
+	cnodes_sort = cnodes
+        cnodes_sort(:,:) = cnodes(ip,:)
+	;print(cnodes_sort(0:9,:))
+	;cnodes_sort = cnodes
+	;cnodes_sort = cnodes(ip,:)
+	;printVarSummary(var1d_sort)
+        ;var1d_sort(:,0:2) = var1d_sort(ip,0:2)
+        cnodes     = cnodes_sort
+        print(cnodes(0:9,:))
+
+	x = files[ii]->$lonname$
+	y = files[ii]->$latname$
+
+	x_sort = x
+	x_sort = x(ip)
+	x = x_sort
+
+	y_sort = y
+	y_sort = y(ip)
+	y = y_sort
+
         data@lon1d = x
         data@lat1d = y
-      end if
-      plot(ii) = subplot(ii,plotlabs(ii),gtype,data,levs,cmap)
+        plot(ii) = subplot(ii,plotlabs(ii),data,cnodes,levs,cmap)
 
       delete(data)
     end do

@@ -12,9 +12,9 @@ begin
  ;   ares = C192
  ;   ares = C384
 
-ares = (/"C192"/)
-adim = (/192/)
-ores = (/"mx025"/)
+ares = (/"C48"/)
+adim = (/48/)
+ores = (/"mx500"/)
 
 ;ares = (/"C96", "C192", "C384"/)
 ;adim = (/96, 192, 384/)

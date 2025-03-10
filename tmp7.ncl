@@ -3,11 +3,12 @@
 load "dststatus_counts.ncl"
 ;**********************************************************
 begin
-   RT            = "/work2/noaa/stmp/dworthen/stmp/dworthen/ww3pio/datm.270k/"
+   ;RT            = "/work2/noaa/stmp/dworthen/stmp/dworthen/ww3pio/datm.270k/"
+   RT="/work2/noaa/stmp/dworthen/stmp/dworthen/FV3_RT/rt_188291/cpld_debug_pdlib_p8_intel/"
    nl		= str_get_nl()
    nflags	= 9
    fdst = addfile(RT+"emesh.decomp.nc","r")
-   ;fmsh = addfile("/work2/noaa/stmp/dworthen/stmp/dworthen/dststat/exp.global_270k.SCRIP.nc","r")
+   fmsh = addfile("/work2/noaa/stmp/dworthen/stmp/dworthen/dststat/exp.global_270k.SCRIP.nc","r")
    ;fmsh = addfile("/work/noaa/nems/dworthen/msh2scrip/global_270k_with_mom6mask.msh.SCRIP.nc","r")
    ;fhist = addfile(RT+"datm.gefs.ww3.hi.2011-10-01-03600.nc","r")
 
@@ -16,8 +17,8 @@ begin
   vname = "decomp"
   var1d = fdst->$vname$(:)
   printVarSummary(var1d)
-  var1d@lon1d = fdst->$lonname$(:)
-  var1d@lat1d = fdst->$latname$(:)
+  ;var1d@lon1d = fdst->$lonname$(:)
+  ;var1d@lat1d = fdst->$latname$(:)
 
   dof = fdst->dof
   ip = dim_pqsort(dof,1)
@@ -28,16 +29,16 @@ begin
 
   ;printVarSummary(fhist->nconn)
   ;print(fhist->nconn(0,:))
-  levs = (/0,40,1/)
+  levs = (/0,120,1/)
   plotlab="test"
   ;do i = 0,nflags-1
   ; ret = dststatus_counts(var1d,i)
   ;end do
 
-     ;x          = fmsh->grid_center_lon
-     ;y          = fmsh->grid_center_lat
-     ;cx         = fmsh->grid_corner_lon
-     ;cy         = fmsh->grid_corner_lat
+     x          = fmsh->grid_center_lon
+     y          = fmsh->grid_center_lat
+     cx         = fmsh->grid_corner_lon
+     cy         = fmsh->grid_corner_lat
 ;************************************************
 ; define the map
 ;************************************************
@@ -45,8 +46,8 @@ begin
   wkstype="X11"
   ;wkstype="png"
   wkstitle=vname
-  wkstype@wkWidth=1200
-  wkstype@wkHeight=1200
+  wkstype@wkWidth=800
+  wkstype@wkHeight=800
   wks   = gsn_open_wks (wkstype,wkstitle)              ; send graphics to X11 window
 
   res                      = True        ; plot mods desired
@@ -86,11 +87,11 @@ begin
   res@mpFillOn             = False
   res@gsnAddCyclic         = True
 
-  ;res@sfXCellBounds = cx(:,0:5)
-  ;res@sfYCellBounds = cy(:,0:5)
+  res@sfXCellBounds = cx(:,0:5)
+  res@sfYCellBounds = cy(:,0:5)
 
-  res@sfElementNodes = fdst->nconn
-  res@sfFirstNodeIndex = 1
+  ;res@sfElementNodes = fdst->nconn
+  ;res@sfFirstNodeIndex = 1
   ;res@sfXCellBounds = cx
   ;res@sfYCellBounds = cy
 ;************************************************

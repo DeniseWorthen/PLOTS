@@ -12,19 +12,22 @@ begin
  ;RT="/work2/noaa/stmp/dworthen/stmp/dworthen/FV3_RT/rt_721201/"
  ;RT="/work2/noaa/stmp/dworthen/stmp/dworthen/FV3_RT/rt_443270/"
  ;RT="/work2/noaa/stmp/dworthen/stmp/dworthen/FV3_RT/rt_3728644/"
- RT="/work2/noaa/stmp/dworthen/stmp/dworthen/ultralow/"
+ RT="/work2/noaa/stmp/dworthen/stmp/dworthen/ultralow.2/"
 
  nl = str_get_nl()
  nflags = 9
  date = "2021-03-22-22320"
- dirs=(/"c48.rundir/"/)
+ ;dirs=(/"warm.48/"/)
+ dirs = (/"test/"/)
  plotlabs = (/"test"/)
 
  ; gridtype = "structured"
  ;vname = "dstocn_wav_ocn_bilnr_nstod"
 
  gridtype = "unstructured"
- vname = "dstwav_ocn_wav_bilnr_nstod"
+ ;vname = "dstwav_ocn_wav_bilnr_nstod"
+ vname = "dstwav_atm_wav_bilnr_nstod"
+ ;vname = "dstwav_wavmask"
  lonname = "dstwav_lon"
  latname = "dstwav_lat"
 
@@ -74,6 +77,8 @@ begin
 
      plot = new(1,graphic)
 
+     res@vpWidthF          = 0.70
+     res@vpHeightF         = 0.40
      ;size = 0.22
      ;res@vpWidthF = size
      ;res@vpHeightF = size

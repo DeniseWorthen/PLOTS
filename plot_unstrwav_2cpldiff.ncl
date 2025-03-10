@@ -4,34 +4,29 @@
 ; load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl"
 
 ;************************************************
-  
-  MD = "/work/noaa/stmp/dworthen/stmp/dworthen/WaveUnstr/moddefs/"
-  scrpfile   = "trip1degmask.SCRIP.nc"
+
+  MD = "/work2/noaa/stmp/dworthen/stmp/dworthen/ultralow.2/"
+  scrpfile   = "uglo_900km.SCRIP.nc"
   sfile      = addfile(MD+scrpfile,"r")
   x          = sfile->grid_center_lon
   y          = sfile->grid_center_lat
   cx         = sfile->grid_corner_lon
   cy         = sfile->grid_corner_lat
 
-  ; cheyenne
-  ;RT1 = "/glade/scratch/worthen/WaveUnstr/"
-  ; hera
-  ;RT1 = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/WaveUnstr2/atmwtrip/"
-  ; orion
-  RT1 = "/work/noaa/stmp/dworthen/stmp/dworthen/WaveUnstr/"
+  RT1 = "/work2/noaa/stmp/dworthen/stmp/dworthen/ultralow.2/"
 
  gridtype  = (/"unstructured", \
                "unstructured"/)
 
- plotlabs = (/"Unstr DomainDecomp, 2PE",   \
-              "Unstr DomainDecomp, 3PE"/)
+ plotlabs = (/"rest 48",   \
+              "cntl 48"/)
 
-      rts = (/"pdlib2PE/",      \
-              "pdlib3PE/"/)
+      rts = (/"rest.48/",      \
+              "ctrl.48/"/)
 
   date = "2021-03-22-"
-  time = "23760"
-  fsrc = "ufs.atmw.cpl.hi.wav."
+  time = "36000"
+  fsrc = "ufs.cpld.cpl.hi.wav."
 
   fnames = RT1+rts+fsrc+date+time+".nc"
   files  = addfiles(fnames,"r")
@@ -39,9 +34,9 @@
 
   flds = (/"wavImp_Sw_z0" ,  \
            "wavExp_Sa_u10m", \
-           "wavExp_Sa_v10m"/)
+           "wavExp_Sa_v10m" /)
 
-  fldwgts = (/1.0e13, \
+  fldwgts = (/1.0e11, \
               1., \
               1./)
 
@@ -53,10 +48,10 @@
 
   ; plot levels
   plotlevs = new((/nflds,3/), float)
-  plotlevs( 0,:) = (/   0.0,    1.0,  0.01/)   ; z0
+  plotlevs( 0,:) = (/  -1.0,    1.0,  0.02/)   ; z0
   plotlevs( 1,:) = (/ -20.0,   20.0,  0.50/)   ; u10m
   plotlevs( 2,:) = (/ -20.0,   20.0,  0.50/)   ; v10m
- 
+
 ;************************************************
 ;
 ;************************************************
@@ -68,8 +63,8 @@
   wkstitle = flds(fldtoplot)+"_"+date+time
   ;wkstitle = plotlabs(0)
 
-   ;cmap = "BlueWhiteOrangeRed"
-   cmap = "WhiteBlueGreenYellowRed"
+   cmap = "BlueWhiteOrangeRed"
+   ;cmap = "WhiteBlueGreenYellowRed"
    plottitle=flds(fldtoplot)
 
 ;************************************************
@@ -115,16 +110,16 @@ begin
   res@cnMaxLevelValF       = pltlevs(1)            ; set the maximum contour level
   res@cnLevelSpacingF      = pltlevs(2)            ; set the interval between contours
   res@cnFillPalette        = palette
-  
+
   if (gtype .eq. "unstructured") then
     res@sfXCellBounds = cx(:,0:5)
     res@sfYCellBounds = cy(:,0:5)
   end if
-    
+
   res@gsnCenterStringFontHeightF      = 0.012
   res@gsnCenterString                 = name
   ;res@gsnCenterStringOrthogonalPosF   = -.05
- 
+
   pltvar@units = ""
   pltvar@long_name = ""
 
@@ -136,7 +131,7 @@ begin
     delete(res@mpCenterLonF)
     delete(res@mpFillOn)
     delete(res@mpOutlineOn)
-  else 
+  else
     splot = gsn_csm_contour(wks,pltvar,res)    ; create the plot
   end if
   ;delete(res@cnLevels)
@@ -185,7 +180,7 @@ end
 
   ii = 0
   vname = flds(fldtoplot)
-  gtype = gridtype(ii)  
+  gtype = gridtype(ii)
   data = files[0]->$vname$(0,0,:) - files[1]->$vname$(0,0,:)
   data = abs(data)*wgt
   data@lon1d = files[0]->$lonname$(0,0,:)
