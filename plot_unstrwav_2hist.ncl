@@ -22,11 +22,11 @@
 
   gridtype = "unstructured"
   plotlabs = "test"
-  rts = "warm.48/"
+  rts = "rest.48/"
   ;rts = "cpld_debug_pdlib_p8_intel/"
 
-  date = "2021-03-23-"
-  time = "28800"
+  date = "2021-03-22-"
+  time = "36000"
   ;date = "2021-03-22-"
   ;time = "32400"
   fsrc = "ufs.cpld.ww3.hi."

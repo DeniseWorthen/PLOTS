@@ -5,31 +5,28 @@
 
 ;************************************************
 
-  RT1= "/work2/noaa/stmp/dworthen/stmp/dworthen/ww3pio/"
+  MD = "/work2/noaa/stmp/dworthen/stmp/dworthen/ultralow.2/"
+  scrpfile   = "uglo_900km.SCRIP.nc"
+  sfile      = addfile(MD+scrpfile,"r")
+  x          = sfile->grid_center_lon
+  y          = sfile->grid_center_lat
+  cx         = sfile->grid_corner_lon
+  cy         = sfile->grid_corner_lat
 
-  MD = "mod_defs/"
-  scrpfiles   = (/"exp.wise.global_270k.SCRIP.nc", \
-             "sngl.exp.wise.global_270k.SCRIP.nc"/)
-
-  sfiles      = addfiles(RT1+MD+scrpfiles,"r")
-  print(sfiles)
-  ;x          = sfile->grid_center_lon
-  ;y          = sfile->grid_center_lat
-  ;cx         = sfile->grid_corner_lon
-  ;cy         = sfile->grid_corner_lat
+  RT1 = "/work2/noaa/stmp/dworthen/stmp/dworthen/ultralow.2/"
 
  gridtype  = (/"unstructured", \
                "unstructured"/)
 
- plotlabs = (/"Unstr DomainDecomp, 5PE, dual",   \
-              "Unstr DomainDecomp, 5PE, sngl"/)
+ plotlabs = (/"rest 48",   \
+              "cntl 48"/)
 
-      rts = (/"atmw.270k/", \
-              "atmw.sngl.270k/"  /)
+      rts = (/"rest.48/",      \
+              "ctrl.48/"/)
 
   date = "2021-03-22-"
-  time = "24480"
-  fsrc = "ufs.atmw.cpl.hi.wav."
+  time = "36000"
+  fsrc = "ufs.cpld.cpl.hi.wav."
 
   fnames = RT1+rts+fsrc+date+time+".nc"
   files  = addfiles(fnames,"r")
@@ -37,7 +34,7 @@
 
   flds = (/"wavImp_Sw_z0" ,  \
            "wavExp_Sa_u10m", \
-           "wavExp_Sa_v10m"/)
+           "wavExp_Sa_v10m" /)
 
   fldwgts = (/1.0e3, \
               1., \
@@ -51,7 +48,7 @@
 
   ; plot levels
   plotlevs = new((/nflds,3/), float)
-  plotlevs( 0,:) = (/   -1.0,    1.0,  0.01/)   ; z0
+  plotlevs( 0,:) = (/   0.0,    1.0,  0.02/)   ; z0
   plotlevs( 1,:) = (/ -20.0,   20.0,  0.50/)   ; u10m
   plotlevs( 2,:) = (/ -20.0,   20.0,  0.50/)   ; v10m
 
@@ -66,7 +63,8 @@
   wkstitle = flds(fldtoplot)+"_"+date+time
   ;wkstitle = plotlabs(0)
 
-   cmap = "WhiteBlueGreenYellowRed"
+   cmap = "BlueWhiteOrangeRed"
+   ;cmap = "WhiteBlueGreenYellowRed"
    plottitle=flds(fldtoplot)
 
 ;************************************************
@@ -105,7 +103,7 @@
 ;************************************************
 ; the subplot call
 ;************************************************
-function subplot(ii,name,gtype,pltvar,cx,cy,pltlevs,palette)
+function subplot(ii,name,gtype,pltvar,pltlevs,palette)
 begin
   res@cnLevelSelectionMode = "ManualLevels"        ; set the contour levels with the following 3 resources
   res@cnMinLevelValF       = pltlevs(0)            ; set the minimum contour level
@@ -114,8 +112,8 @@ begin
   res@cnFillPalette        = palette
 
   if (gtype .eq. "unstructured") then
-    res@sfXCellBounds = cx
-    res@sfYCellBounds = cy
+    res@sfXCellBounds = cx(:,0:5)
+    res@sfYCellBounds = cy(:,0:5)
   end if
 
   res@gsnCenterStringFontHeightF      = 0.012
@@ -180,29 +178,33 @@ end
 ;
 ; ***************************************************
 
-      ii=1
-      ;do ii = 0,nplots-1
-        vname = flds(fldtoplot)
-        gtype = gridtype(ii)
-        if (gtype .eq. "structured")then
-        data = files[ii]->$vname$(0,:,:)
-        data = data*wgt
-        data@lon2d = files[ii]->$lonname$(:,:)
-        data@lat2d = files[ii]->$latname$(:,:)
-      else
-        data = files[ii]->$vname$(0,0,:)
-        data = data*wgt
-        cx = sfiles[ii]->grid_corner_lon
-        cy = sfiles[ii]->grid_corner_lat
-	printVarSummary(cx)
-        data@lon1d = files[ii]->$lonname$(0,0,:)
-        data@lat1d = files[ii]->$latname$(0,0,:)
-      end if
-      plot(ii) = subplot(ii,plotlabs(ii),gtype,data,cx,cy,levs,cmap)
-      delete(data)
-      delete(cx)
-      delete(cy)
-    ;end do
+  ;ii = 0
+  ; vname = flds(fldtoplot)
+  ; gtype = gridtype(ii)
+  ; data = files[0]->$vname$(0,0,:) - files[1]->$vname$(0,0,:)
+  ; data = abs(data)*wgt
+  ; data@lon1d = files[0]->$lonname$(0,0,:)
+  ; data@lat1d = files[0]->$latname$(0,0,:)
+  ; plot(ii) = subplot(ii,plotlabs(0)+"-"+plotlabs(1),gtype,data,levs,cmap)
+
+   do ii = 0,nplots-1
+    vname = flds(fldtoplot)
+    gtype = gridtype(ii)
+    if (gtype .eq. "structured")then
+      data = files[ii]->$vname$(0,:,:)
+      data = data*wgt
+      data@lon2d = files[ii]->$lonname$(:,:)
+      data@lat2d = files[ii]->$latname$(:,:)
+    else
+     ;data = files[ii]->$vname$(0,k-1,0,:)
+      data = tofloat(files[ii]->$vname$(0,0,:))
+      data = data*wgt
+      data@lon1d = files[ii]->$lonname$(0,0,:)
+      data@lat1d = files[ii]->$latname$(0,0,:)
+    end if
+    plot(ii) = subplot(ii,plotlabs(ii),gtype,data,levs,cmap)
+    delete(data)
+   end do
 
 ;************************************************
 ; make the panel
