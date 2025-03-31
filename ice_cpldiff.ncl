@@ -19,8 +19,6 @@
  plottype = "ocean"
 
   rad2deg=180.d0/acos(-1.0d0)
-
-  ;compname = "ocn"
   compname = "ice"
 
 ;************************************************
@@ -48,14 +46,15 @@
  ;dirs = (/"cpld.base/", "cpld.sign/" /)
 
  wkstitle = "maskchange"
-  runlabs = (/"srcMask (atm) = 1","srcMask (atm) = ispval"/)
+  runlabs = (/"(ATM srcMask = 1)","(ATM srcMask = ispval)"/)
  ;dirs = (/"use_mean/cpld_control_nowave_noaero_p8_intel/", "use_inst/cpld_control_nowave_noaero_p8_intel/" /)
  ; dirs = (/"use_mean/hafs_regional_atm_ocn_wav_intel/","use_inst/hafs_regional_atm_ocn_wav_intel/"/)
   dirs = (/"base/","mask.consf/"/)
 
-  ;fsrc = "ufs.hafs.cpl.hi.ocn.2019-08-29-21600"
-  ;fsrc = "hi.ocn"
-  fsrc="ufs.cpld.cpl.hi."+compname+".2021-03-22-25200.nc"
+
+  time=25200
+  fsrc="ufs.cpld.cpl.hi."+compname+".2021-03-22-"+time+".nc"
+  ;fsrc="ufs.cpld.cpl.hi."+compname+".2021-03-22-25200.nc"
  ndirs = dimsizes(dirs)
 
   ; add cpl history files on tile
@@ -86,47 +85,23 @@
   palette="BlueWhiteOrangeRed"
   ;palette="BlWhRe"
 
-  if (compname = "ocn") then
-  ; ocn fields
-  ocnflds = (/ "ocnExp_Faxa_rain",  \
-               "ocnExp_Sa_pbot",    \
-               "ocnExp_Sa_shum",    \
-               "ocnExp_Sa_tbot",    \
-               "ocnExp_Sa_z",       \
-               "ocnExp_Faxa_lwnet", \
-               "ocnExp_Faxa_evap",  \
-               "ocnImp_So_t"        \
-            /)
+  flds = (/"iceExp_Sa_tbot"/)
 
-  nflds = dimsizes(ocnflds)
+  nflds = dimsizes(flds)
 
   ; easier plots
-  ocnwgts = (/1.e4,   \
-              1.00,   \
-              1.e4,   \
-              1.00,   \
-              1.00,   \
-              1.00,   \
-              86400. ,\     ; kg/m2/s->mm day
-              1.e2 /)
+  wgts = (/1.e0/)
 
   plotlevs = new((/nflds,3/), float)
-  plotlevs( 0,:) = (/  -0.02,  0.02, 0.002/) ; rain
-  plotlevs( 1,:) = (/  -0.02,  0.02, 0.002/) ; pbot
-  plotlevs( 2,:) = (/  -0.02,  0.02, 0.002/) ; shum
-  plotlevs( 3,:) = (/  -0.02,  0.02, 0.002/) ; tbot
-  plotlevs( 4,:) = (/  -0.02,  0.02, 0.002/) ; zbot
-  plotlevs( 5,:) = (/  -0.02,  0.02, 0.002/) ; lwnet
-  plotlevs( 6,:) = (/  -0.02,  0.02, 0.002/) ; evap
-  plotlevs( 7,:) = (/  -0.10,  0.10, 0.010/) ; sst
+  plotlevs( 0,:) = (/  -0.2,  0.2, 0.02/) ; tbot
 
-  ; retrieve masking
-  mskname = "ocnImp_So_omask"
-  msklonname = "ocnExp_lon"
-  msklatname = "ocnExp_lat"
-  mskvar = files[1]->$mskname$(0,:,:)
-  mskvar@lon2d = files[1]->$msklonname$(0,:,:)
-  mskvar@lat2d = files[1]->$msklatname$(0,:,:)
+ ; retrieve masking
+  ;mskname = "ocnImp_So_omask"
+  ;msklonname = "ocnExp_lon"
+  ;msklatname = "ocnExp_lat"
+  ;mskvar = files[1]->$mskname$(0,:,:)
+  ;mskvar@lon2d = files[1]->$msklonname$(0,:,:)
+  ;mskvar@lat2d = files[1]->$msklatname$(0,:,:)
   ;printVarSummary(mskvar)
 
   plottitle=runlabs(1)+" - "+runlabs(0)
@@ -135,8 +110,8 @@
 ; define the map
 ;************************************************
 
-  ;wkstype="X11"
-  wkstype="png"
+  wkstype="X11"
+  ;wkstype="png"
   wkstype@wkWidth=800
   wkstype@wkHeight=800
   wks   = gsn_open_wks (wkstype,wkstitle)              ; send graphics to X11 window
@@ -209,10 +184,10 @@
 ;************************************************
 
   ;lstep = 6-1
-  variable_to_plot=7
+  variable_to_plot=0
   lstep=0
-  aname = ocnflds(variable_to_plot)
-  wgt = ocnwgts(variable_to_plot)
+  aname = flds(variable_to_plot)
+  wgt = wgts(variable_to_plot)
   print("variable "+aname+"  weight "+wgt)
 
   ; first plot, control values
@@ -222,25 +197,35 @@
   var@lon2d = files[0]->$tlonname$(0,:,:)
   var@lat2d = files[0]->$tlatname$(0,:,:)
 
-    var = files[1]->$aname$(lstep,:,:)-files[0]->$aname$(lstep,:,:)
-    ;printVarSummary(var)
-    avar = var
-    lndonly = avar
-    lndonly = mask(avar*wgt,mskvar,0.0)  ; land only
-    ocnonly = avar
-    ocnonly = mask(avar*wgt,mskvar,1.0)  ; ocean only
+   mvar = files[1]->iceImp_Si_imask(0,:,:)
+   ;print(mvar@_FillValue)
 
-    if(plottype .eq. "land")then
-      avar = lndonly
-      msklab = "Land Points Only"
-    else if(plottype .eq. "ocean")then
-      avar = ocnonly
-      msklab = "Ocean Points Only"
-    else
+   var = files[1]->$aname$(lstep,:,:)-files[0]->$aname$(lstep,:,:)
+   ;print(var@_FillValue)
+   var = where(mvar .eq. 0.0, mvar@_FillValue, var)
+
+   ;print(avar(180,:))
+
+
+   ;printVarSummary(avar)
+    ;avar = var
+    ;lndonly = avar
+    ;lndonly = mask(avar*wgt,mskvar,0.0)  ; land only
+    ;ocnonly = avar
+    ;ocnonly = mask(avar*wgt,mskvar,1.0)  ; ocean only
+
+    ;if(plottype .eq. "land")then
+    ;  avar = lndonly
+    ;  msklab = "Land Points Only"
+    ;else if(plottype .eq. "ocean")then
+    ;  avar = ocnonly
+    ;  msklab = "Ocean Points Only"
+                                ;else
+      avar = var
       avar = var*wgt
       msklab = "All Points"
-    end if
-    end if
+    ;end if
+    ;end if
     levs = plotlevs(variable_to_plot,:)
     avar@lon2d = files[0]->$tlonname$(0,:,:)
     avar@lat2d = files[0]->$tlatname$(0,:,:)
@@ -270,7 +255,7 @@
 
   ;resP@gsnPanelMainFontHeightF = 0.020           ; new resource added in NCL V6.4.0
   ;resP@gsnPanelMainString = plottitle + ",  "+msklab
-  resP@gsnPanelMainString = plottitle + ", scaled by "+wgt
+  resP@gsnPanelMainString = plottitle
 ;************************************************
 ; make the panel
 ;************************************************

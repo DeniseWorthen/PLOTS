@@ -5,131 +5,60 @@
 ;**********************************************************
 begin
 
-  RT            = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/WaveUnstr2/"
-  ;dirsrc        = "unstrnoland3PE/"
-  ;plotlab       = "unstr noland"
-  ;dirsrc        = "pdlibnoland3PE/"
-  ;plotlab       = "pdlib noland"
-  dirsrc        = "tripnoland/"
-  plotlab       = "pdlib noland tripole"
+  RT="/scratch1/NCEPDEV/stmp4/Denise.Worthen/"
 
-   nl = str_get_nl()
-   nflags = 9 
+  ;RT            = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/maskchange/"
+  ;rts = (/"base/", "mask.consf/", "mask.bilnr/"/)
+  ;plotlabs = (/"base", "srcMask (ATM)->spval", "srcMask (ATM)=1, bilnr->ICE"/)
 
-    vname = "dststatus"
-     levs = (/0,9,1/)
-  ;   fsrc = "dststatus.atm.ocn.bilnr_nstod.nc"
-  ;   fsrc = "dststatus.atm.ocn.consf.nc"
-  ;   fsrc = "dststatus.atm.wav.nstod_consf.nc"
-  ;   fsrc = "dststatus.atm.wav.nstod_consf_2.nc"
-     fsrc = "dststatus.wav.ocn.bilnr_nstod.nc"
-  doffile = "dof.ocn.nc"
+  ;rts = "base/"
+  ;plotlabs = "base"
 
-  ; wt0.66  wave
-  ;ni = 540
-  ;nj = 458
-  ; glo 1deg wave
-  ;ni = 360
-  ;nj = 171
-  ; glo 0.5deg wave
-  ;ni = 720
-  ;nj = 321
-  ; mx100
-  ni = 360
-  nj = 320
-  ; mx050
-  ;ni = 720
-  ;nj = 576
-  ; mx025
-  ;ni = 1440
-  ;nj = 1080
-;**********************************************************
-;
-;**********************************************************
+  ;rts = "mask.consf/"
+  ;plotlabs = "srcMask (ATM)->spval"
 
-  dirsrc = RT+dirsrc
-   ifile = fsrc
+  ;rts = "mask.bilnr/"
+  ;plotlabs = "srcMask (ATM)=1, bilnr->ICE"
 
-  fname = dirsrc+ifile
-  print("input file "+fname)
-  ff = addfile(fname,"r")
+  ;rts="sample_cice_run/"
+  ;plotlabs="sample_cice_run"
+  rts = "arct2/"
+  plotlabs="sample_cice_run"
 
-  var1d = ff->$vname$(:)
-  ;printVarSummary(var1d)
-  do i = 0,nflags-1
-   ret = dststatus_counts(var1d,i)
-  end do
+  nl = str_get_nl()
+   nflags = 9
 
-  ; get the index seq to resort
-  doff = addfile(dirsrc+doffile,"r")
-  dof = doff->dof(:)
+   vname = "dstatm_ice_atm_consf"
+ ;vname = "dstice_atm_ice_bilnr"
+ ;vname = "dstice_atm_ice_consf"
+ ;vname = "dstice_atm_ice_nstod_consf"
 
-  ip = dim_pqsort(dof,1)
-  var1d_sort=var1d
-  var1d_sort=var1d(ip)
+    levs = (/0,9,1/)
+    ;fsrc = "ufs.cpld.dststatus.nc"
+    fsrc = "ufs.hafs.dststatus.nc"
 
-;**********************************************************
-; pre-define the output file
-;**********************************************************
+    nplots = dimsizes(rts)
 
-    ofile = dirsrc+"dst."+fsrc
-    print("output file "+ofile)
-    system("rm -f "+ofile)
-    fout = addfile(ofile, "c")
-    setfileoption(fout, "DefineMode", True)
-
-    ;--- create dimensions ---
-    dimNames = (/ "grid_yt", "grid_xt" /)
-    dimSizes = (/    nj,      ni /)
-    dimUnlim = (/ False, False /)
-    filedimdef(fout, dimNames, dimSizes, dimUnlim)
-
-    ;--- create lat,lon variable ---
-    ;filevardef(fout, "grid_yt", "integer", (/ "grid_yt" /))
-    ;filevardef(fout, "grid_xt", "integer", (/ "grid_xt" /))
-
-    ;--- create variable ---
-
-    filevardef(fout, vname, typeof(var1d), (/ "grid_yt", "grid_xt" /))
-    setfileoption(fout, "DefineMode", False)
-
-    ;fout->grid_xt = ispan(1,ni,1)
-    ;fout->grid_yt = ispan(1,nj,1)
-
-;**********************************************************
-; add variables
-;**********************************************************
-
-     var2d = new((/ nj, ni /), typeof(var1d), default_fillvalue(typeof(var1d)) )
-     ;printVarSummary(var3d)
-
-      var2d(:,:) = onedtond(var1d_sort(:), (/ nj, ni /))
-
-      fout->$vname$ = var2d(:,:)
-      delete(fout)
-
-    delete(var1d)
-    delete(var2d)
-
-;************************************************
-; create plot of dststatus
-;************************************************
-
-    ofile = dirsrc+"dst."+fsrc+".nc"
-       ff = addfile(ofile, "r")
-     data = ff->$vname$
-     ;printVarSummary(data)
+    fnames = RT+rts+fsrc
+    files  = addfiles(fnames,"r")
+    print(fnames)
 
 ;************************************************
 ; define the map
 ;************************************************
 
+
   wkstype="X11"
   ;wkstype="png"
   wkstitle=vname
-  wkstype@wkWidth=1200
-  wkstype@wkHeight=1200
+  wkstype@wkWidth=800
+  wkstype@wkHeight=800
   wks   = gsn_open_wks (wkstype,wkstitle)              ; send graphics to X11 window
+
+  ;gsn_define_colormap(wks, "amwg")   ; choose colormap
+  gsn_define_colormap(wks, "amwg_blueyellowred")
+
+  plot = new(nplots,graphic)
 
   res                      = True        ; plot mods desired
   res@gsnDraw              = False       ; do not draw until the end
@@ -139,7 +68,7 @@ begin
   res@cnFillMode = "RasterFill"
 
   res@vpWidthF          = 0.70
-  res@vpHeightF         = 0.40
+  res@vpHeightF         = 0.60
 
   res@gsnStringFontHeightF = 0.01
   res@cnMissingValPerimOn     = False            ; turn on the missing value perimeter
@@ -151,7 +80,8 @@ begin
   res@cnFillOn          = True                  ; color fill
   res@cnLinesOn         = False                 ; no contour lines
   res@cnLineLabelsOn    = False
-  res@lbLabelBarOn      = True
+  res@cnInfoLabelOn      = False
+  res@lbLabelBarOn      = False
   res@cnLabelBarEndStyle = "ExcludeOuterBoxes"
   res@lbLabelAlignment = "BoxCenters"
 
@@ -159,10 +89,40 @@ begin
   res@cnMinLevelValF  = levs(0)                      ; set the minimum contour level
   res@cnMaxLevelValF  = levs(1)                      ; set the maximum contour level
   res@cnLevelSpacingF = levs(2)                      ; set the interval between contours
-  res@cnFillPalette   = "amwg"
+  ;res@cnFillPalette   = "amwg"
+  ;res@cnFillPalette   = "sunshine_9lev"
+ ;res@cnFillPalette   = "GMT_paired"
+ res@cnFillColors = (/-1,8,2,6,7,10,12,14,16/) ; amwg_blueyellowred
+  ;res@cnFillPalette   = "amwg_blueyellowred"
+  ;cmap = read_colormap_file("amwg_blueyellowred")
+  ;ncolors = dimsizes(cmap(:,0))
+  ;res@cnMaxLevelCount = ncolors-1       ; make sure NCL chooses 15 or fewer contour levels
+ ; cmap(0,:) = namedcolor2rgba("white")
+  ;res@cnFillPalette := cmap      ; Use modified RGB/A array
 
   res@tiMainFontHeightF = .010
-  res@tiMainString = fsrc
+  res@tiMainString = plotlabs(0)
+
+; ***************************************************
+; panel resources
+; **************************************************
+
+  resP                       = True     ; modify the panel plot
+  resP@gsnMaximize           = True     ; maximize in frame
+  resP@gsnFrame              = False    ; don't advance frame yet
+  resP@gsnPanelYWhiteSpacePercent = 5
+  resP@gsnPanelYWhiteSpacePercent = 8
+  resP@gsnPanelLabelBar      = True     ; turn on a common labelbar for the entire panel plot
+
+  resP@gsnPanelMainFontHeightF = 0.010  ; new resource added in NCL V6.4.0
+  ;resP@gsnPanelMainString = plottitle
+  resP@gsnMaximize        = True        ; use full page
+
+  ;resP@gsnPanelFigureStrings = (/plotlabs(0)/)
+
+  ;resP@gsnPanelFigureStrings = (/plotlabs(0),plotlabs(1),plotlabs(2)/)
+  resP@amJust = "TopLeft"
+  resP@gsnPanelFigureStringsFontHeightF = 0.008
 
    ;res@mpMinLatF    =  66.0                          ; minimum lat to plot
    ;res@mpCenterLonF = -45.0
@@ -170,11 +130,25 @@ begin
 ;
 ;************************************************
 
-   plot = gsn_csm_contour(wks,data,res)    ; create the plot
-   ;plot = gsn_csm_contour_map_polar(wks,data,res)    ; create the plot
 
-  draw(plot)
-  frame(wks)
+  ii = 0
+  ;do ii = 0,nplots-1
+ ;data = files[ii]->$vname$(200:320,0:180)
+ ;data = files[ii]->$vname$
+ data = files[ii]->$vname$(0,:,:)
+  ;tmp = data
+  ;tmp = where(data .ge. 5.0 .and. data .le. 7.0, 5.0, data)
+  ;data = tmp
+    plot(ii) = gsn_csm_contour(wks,data,res)    ; create the plot
+  ;end do
+
+;************************************************
+; make the panel
+;************************************************
+
+   gsn_panel(wks,plot,(/nplots,1/),resP)
+
+   frame(wks)
 
   if(wkstype .eq. "png")then
    imcmd = "convert -trim "+wkstitle+".png "+wkstitle+".jpg"
