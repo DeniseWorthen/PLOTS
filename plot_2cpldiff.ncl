@@ -3,70 +3,55 @@
 ; load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_code.ncl"
 ; load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl"
 
+load "$NCARG_ROOT/lib/ncarg/nclscripts/contrib/cd_string.ncl"
 ;************************************************
 
-  ;MD = "/work2/noaa/stmp/dworthen/stmp/dworthen/ultralow.2/"
-  ;scrpfile   = "uglo_900km.SCRIP.nc"
-  MD = "/work2/noaa/stmp/dworthen/stmp/dworthen/maskchange/"
-  scrpfile = "exp.wise.global_270k.SCRIP.nc"
+  RT = "/work2/noaa/stmp/dworthen/stmp/dworthen/maskchange/"
+  plotlabs = (/"base",   \
+               "mask"/)
 
-  sfile      = addfile(MD+scrpfile,"r")
-  x          = sfile->grid_center_lon
-  y          = sfile->grid_center_lat
-  cx         = sfile->grid_corner_lon
-  cy         = sfile->grid_corner_lat
+ ;     rts = (/"base/cpld_control_pdlib_p8_intel/", \
+ ;             "mask/cpld_control_pdlib_p8_intel/"/)
 
-  ;RT1 = "/work2/noaa/stmp/dworthen/stmp/dworthen/ultralow.2/"
-  RT1 = "/work2/noaa/stmp/dworthen/stmp/dworthen/maskchange/"
-
- gridtype  = (/"unstructured", \
-               "unstructured"/)
-
- plotlabs = (/"base",   \
-              "mask"/)
-
-      rts = (/"base/cpld_control_gfsv17_intel/",      \
+      rts = (/"base/cpld_control_gfsv17_intel/", \
               "mask/cpld_control_gfsv17_intel/"/)
 
-  date = "2021-03-22-"
-  time = "43200"
-  fsrc = "ufs.cpld.cpl.hi.wav."
-
-  fnames = RT1+rts+fsrc+date+time+".nc"
-  files  = addfiles(fnames,"r")
+  fnames = RT+rts+plotlabs+".hi.ice.nc"
   print(fnames)
+  files=addfiles(fnames,"r")
 
-  flds = (/"wavImp_Sw_z0" ,  \
-           "wavExp_Sa_u10m", \
-           "wavExp_Sa_v10m" /)
+  flds = (/"iceExp_Sa_tbot" /)
 
-  fldwgts = (/1.0e3, \
-              1., \
-              1./)
-
-  lonname = "wavImp_lon"
-  latname = "wavImp_lat"
+  fldwgts = 1.0
+  ;fldwgts = (/1.0e11, \
+  ;            1., \
+  ;            1./)
 
   nflds = dimsizes(flds)
-  nplots = dimsizes(gridtype)
+  nplots = dimsizes(plotlabs)
 
   ; plot levels
   plotlevs = new((/nflds,3/), float)
-  plotlevs( 0,:) = (/   0.0,    1.0,  0.02/)   ; z0
-  plotlevs( 1,:) = (/ -20.0,   20.0,  0.50/)   ; u10m
-  plotlevs( 2,:) = (/ -20.0,   20.0,  0.50/)   ; v10m
+  plotlevs( 0,:) = (/  -0.2,    0.2,  0.02/)   ; Sa_tbot
+ ; plotlevs( 1,:) = (/ -20.0,   20.0,  0.50/)   ; u10m
+ ; plotlevs( 2,:) = (/ -20.0,   20.0,  0.50/)   ; v10m
+
+  maskvar = files[0]->iceImp_Si_imask(0,:,:)
+  printVarSummary(maskvar)
 
 ;************************************************
 ;
 ;************************************************
 
   ; pick a field to plot
-  fldtoplot = 1
+  lstep=5-1
+  fldtoplot = 0
   levs = plotlevs(fldtoplot,:)
   wgt = fldwgts(fldtoplot)
-  wkstitle = flds(fldtoplot)+"_"+date+time
+  wkstitle = flds(fldtoplot)
   ;wkstitle = plotlabs(0)
 
+   times=files[0]->time
    cmap = "BlueWhiteOrangeRed"
    ;cmap = "WhiteBlueGreenYellowRed"
    plottitle=flds(fldtoplot)
@@ -81,7 +66,7 @@
   wkstype@wkHeight=1200
   wks   = gsn_open_wks (wkstype,wkstitle)       ; send graphics to X11 window
   ; drawNDCGrid(wks)
-  plot = new(nplots,graphic)
+  plot = new(1,graphic)
 
   res                      = True		; plot mods desired
   res@gsnDraw              = False		; do not draw until the end
@@ -107,7 +92,7 @@
 ;************************************************
 ; the subplot call
 ;************************************************
-function subplot(ii,name,gtype,pltvar,pltlevs,palette)
+function subplot(ii,name,pltvar,pltlevs,palette)
 begin
   res@cnLevelSelectionMode = "ManualLevels"        ; set the contour levels with the following 3 resources
   res@cnMinLevelValF       = pltlevs(0)            ; set the minimum contour level
@@ -115,29 +100,14 @@ begin
   res@cnLevelSpacingF      = pltlevs(2)            ; set the interval between contours
   res@cnFillPalette        = palette
 
-  if (gtype .eq. "unstructured") then
-    res@sfXCellBounds = cx(:,0:5)
-    res@sfYCellBounds = cy(:,0:5)
-  end if
-
   res@gsnCenterStringFontHeightF      = 0.012
   res@gsnCenterString                 = name
   ;res@gsnCenterStringOrthogonalPosF   = -.05
 
   pltvar@units = ""
   pltvar@long_name = ""
+  splot = gsn_csm_contour(wks,pltvar,res)    ; create the plot
 
-  if (gtype .eq. "structured") then
-    res@mpCenterLonF       = 180
-    res@mpFillOn           = False
-    res@mpOutlineOn        = False
-    splot = gsn_csm_contour_map(wks,pltvar,res)    ; create the plot
-    delete(res@mpCenterLonF)
-    delete(res@mpFillOn)
-    delete(res@mpOutlineOn)
-  else
-    splot = gsn_csm_contour(wks,pltvar,res)    ; create the plot
-  end if
   ;delete(res@cnLevels)
   ;delete(res@lbLabelStrings)
   return(splot)
@@ -174,7 +144,8 @@ end
   resP@gsnPanelMainString = plottitle
   resP@gsnMaximize        = True        ; use full page
 
-  resP@gsnPanelFigureStrings = (/date+time,date+time,date+time/)
+  resP@gsnPanelMainString = plottitle+": "+cd_string(times(lstep),"%Y%N%D%H%M%S")
+  ;resP@gsnPanelFigureStrings = (/date+time,date+time,date+time/)
   resP@amJust = "TopLeft"
   resP@gsnPanelFigureStringsFontHeightF = 0.008
 
@@ -182,33 +153,14 @@ end
 ;
 ; ***************************************************
 
-  ;ii = 0
-  ; vname = flds(fldtoplot)
-  ; gtype = gridtype(ii)
-  ; data = files[0]->$vname$(0,0,:) - files[1]->$vname$(0,0,:)
-  ; data = abs(data)*wgt
-  ; data@lon1d = files[0]->$lonname$(0,0,:)
-  ; data@lat1d = files[0]->$latname$(0,0,:)
-  ; plot(ii) = subplot(ii,plotlabs(0)+"-"+plotlabs(1),gtype,data,levs,cmap)
 
-   do ii = 0,nplots-1
-    vname = flds(fldtoplot)
-    gtype = gridtype(ii)
-    if (gtype .eq. "structured")then
-      data = files[ii]->$vname$(0,:,:)
-      data = data*wgt
-      data@lon2d = files[ii]->$lonname$(:,:)
-      data@lat2d = files[ii]->$latname$(:,:)
-    else
-     ;data = files[ii]->$vname$(0,k-1,0,:)
-      data = tofloat(files[ii]->$vname$(0,0,:))
-      data = data*wgt
-      data@lon1d = files[ii]->$lonname$(0,0,:)
-      data@lat1d = files[ii]->$latname$(0,0,:)
-    end if
-    plot(ii) = subplot(ii,plotlabs(ii),gtype,data,levs,cmap)
-    delete(data)
-   end do
+  ii = 0
+  vname = flds(fldtoplot)
+  data = where(maskvar .eq. 1.0, files[0]->$vname$(lstep,:,:)-files[1]->$vname$(lstep,:,:), maskvar@_FillValue)
+  ;data = abs(data)*wgt
+  ;data@lon1d = files[0]->$lonname$(0,0,:)
+  ;data@lat1d = files[0]->$latname$(0,0,:)
+  plot(ii) = subplot(ii,plotlabs(0)+"-"+plotlabs(1),data,levs,cmap)
 
 ;************************************************
 ; make the panel

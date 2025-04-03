@@ -11,13 +11,18 @@
    ;MD = "/work2/noaa/stmp/dworthen/stmp/dworthen/ww3pio/"
    ;scrpfile = "exp.wise.global_270k.SCRIP.nc"
 
-   RT = "/work2/noaa/stmp/dworthen/stmp/dworthen/ultralow.2/"
-   MD = "/work2/noaa/stmp/dworthen/stmp/dworthen/ultralow.2/"
-   scrpfile = "uglo_900km.SCRIP.nc"
+   ;RT = "/work2/noaa/stmp/dworthen/stmp/dworthen/ultralow.2/"
+   ;MD = "/work2/noaa/stmp/dworthen/stmp/dworthen/ultralow.2/"
+   ;scrpfile = "uglo_900km.SCRIP.nc"
 
   ;RT = "/work2/noaa/stmp/dworthen/stmp/dworthen/rt.coastal.c9d29369/"
   ;MD = "/work/noaa/nems/dworthen/coastal_createmoddefs/moddefs/"
   ;scrpfile = "bt4.ike.SCRIP.nc"
+
+
+  RT = "/work2/noaa/stmp/dworthen/stmp/dworthen/maskchange/"
+  MD = "/work2/noaa/stmp/dworthen/stmp/dworthen/maskchange/"
+  scrpfile = "exp.wise.global_270k.SCRIP.nc"
 
   sfile      = addfile(MD+scrpfile,"r")
   x          = sfile->grid_center_lon
@@ -27,13 +32,13 @@
 
  gridtype  = (/"unstructured"/)
 
- plotlabs = (/"Unstr 2PE"/)
+ plotlabs = (/"Unstr 270K"/)
 
   ;rts = (/"rt_3728644/cpld_debug_pdlib_p8_gnu/"/)
   ;rts = (/"atmw.270k/"/)
   ;rts = (/"ike.bt4.intel.db/"/)
-  rts=(/"warm.48/"/)
-  ;rts = (/"cpld_debug_pdlib_p8_intel/"/)
+  ;rts=(/"warm.48/"/)
+  rts = (/"base/cpld_pdlib_p8_intel/"/)
 
   fnames = RT+rts+"emesh.decomp.nc"
   files  = addfiles(fnames,"r")

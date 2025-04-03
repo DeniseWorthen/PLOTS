@@ -1,5 +1,5 @@
 ;**********************************************************
-; re-write CMEPS dststatus files for atm
+; re-write CMEPS dststatus files
 ;
 ; adapted from code originally written by
 ; Ufuk Turuncoglu turuncu@ucar.edu
@@ -12,22 +12,22 @@ begin
  ;RT="/work2/noaa/stmp/dworthen/stmp/dworthen/FV3_RT/rt_721201/"
  ;RT="/work2/noaa/stmp/dworthen/stmp/dworthen/FV3_RT/rt_443270/"
  ;RT="/work2/noaa/stmp/dworthen/stmp/dworthen/FV3_RT/rt_3728644/"
- RT="/work2/noaa/stmp/dworthen/stmp/dworthen/ultralow.2/"
+ ;RT="/work2/noaa/stmp/dworthen/stmp/dworthen/ultralow.2/"
+ RT="/work2/noaa/stmp/dworthen/stmp/dworthen/maskchange/"
 
  nl = str_get_nl()
  nflags = 9
  date = "2021-03-22-22320"
  ;dirs=(/"warm.48/"/)
- dirs = (/"test/"/)
+ ;dirs = (/"test/"/)
+ ;dirs = "base/cpld_control_gefs_intel/"
+ dirs = "base/cpld_control_gfsv17_intel/"
  plotlabs = (/"test"/)
 
- ; gridtype = "structured"
- ;vname = "dstocn_wav_ocn_bilnr_nstod"
-
- gridtype = "unstructured"
- ;vname = "dstwav_ocn_wav_bilnr_nstod"
+gridtype = "unstructured"
+; gridtype = "structured"
  vname = "dstwav_atm_wav_bilnr_nstod"
- ;vname = "dstwav_wavmask"
+
  lonname = "dstwav_lon"
  latname = "dstwav_lat"
 
@@ -38,10 +38,21 @@ begin
  print("input file "+fname)
  ff = addfile(fname,"r")
 
- data = ff->$vname$(0,:)
   if (gridtype .eq. "unstructured") then
+   data = ff->$vname$(0,:)
    data@lat1d = ff->$latname$(0,:)
    data@lon1d = ff->$lonname$(0,:)
+ else
+   ;ib=800
+   ;ie=1400
+   ;jb=400
+   ;je=719
+   ;data = ff->$vname$(jb:je,ib:ie)
+   ;data@lat2d = ff->$latname$(jb:je,ib:ie)
+   ;data@lon2d = ff->$lonname$(jb:je,ib:ie)
+   data = ff->$vname$(:,:)
+   ;data@lat2d = ff->$latname$(:,:)
+   ;data@lon2d = ff->$lonname$(:,:)
  end if
 
  printVarSummary(data)
@@ -52,10 +63,12 @@ begin
  ;end do
  ;print("total count of all dststatus types = "+total+" size of data = "+dimsizes(data))
   ;palette = "ncv_roullet"
-    palette = "amwg"
+    ;palette = "amwg"
     ;palette="WhBlGrYeRe"
     ;palette="NCV_jet"
+
    plotlab = plotlabs(0)
+   nplots = 1
 
 ;************************************************
 ; define the map
@@ -67,7 +80,9 @@ begin
      wkstype@wkWidth=800
      wkstype@wkHeight=800
      wks   = gsn_open_wks (wkstype,wkstitle)              ; send graphics to X11 window
+     gsn_define_colormap(wks, "amwg_blueyellowred")
 
+     plot = new(nplots,graphic)
      res                      = True        ; plot mods desired
      res@gsnDraw              = False       ; do not draw until the end
      res@gsnFrame             = False       ; do not automatically advance 'frame'
@@ -77,42 +92,89 @@ begin
 
      plot = new(1,graphic)
 
-     res@vpWidthF          = 0.70
-     res@vpHeightF         = 0.40
-     ;size = 0.22
-     ;res@vpWidthF = size
-     ;res@vpHeightF = size
+  res@vpWidthF          = 0.70
+  res@vpHeightF         = 0.60
 
-     res@cnFillDrawOrder   = "PreDraw"             ; draw contours first
-     res@cnFillOn          = True                  ; color fill
-     res@cnLinesOn         = False                 ; no contour lines
-     res@cnLineLabelsOn    = False
-     res@cnInfoLabelOn     = False
-     res@cnFillPalette     = palette
+  res@gsnStringFontHeightF = 0.01
+  res@cnMissingValPerimOn     = False            ; turn on the missing value perimeter
+  res@cnMissingValPerimColor  = "black"           ; outline the perimeter red
+  res@cnMissingValFillPattern = 0               ; choose fill pattern 0 (solid fill)
+  res@cnMissingValFillColor   = "gray"          ; color fill missing areas blue
 
-     res@cnMissingValFillPattern = 0               ; choose fill pattern 0 (solid fill)
-     ;res@cnMissingValFillColor   = "gray"          ; color fill missing areas blue
+  res@cnFillDrawOrder   = "PreDraw"             ; draw contours first
+  res@cnFillOn          = True                  ; color fill
+  res@cnLinesOn         = False                 ; no contour lines
+  res@cnLineLabelsOn    = False
+  res@cnInfoLabelOn      = False
+  res@lbLabelBarOn      = True
+  res@cnLabelBarEndStyle = "ExcludeOuterBoxes"
+  res@lbLabelAlignment = "BoxCenters"
 
-     res@cnLevelSelectionMode = "ManualLevels"     ; set the contour levels with the following 3 resources
-     res@cnMinLevelValF  = levs(0)                      ; set the minimum contour level
-     res@cnMaxLevelValF  = levs(1)                      ; set the maximum contour level
-     res@cnLevelSpacingF = levs(2)                      ; set the interval between contours
+  res@cnLevelSelectionMode = "ManualLevels"     ; set the contour levels with the following 3 resources
+  res@cnMinLevelValF  = levs(0)                      ; set the minimum contour level
+  res@cnMaxLevelValF  = levs(1)                      ; set the maximum contour level
+  res@cnLevelSpacingF = levs(2)                      ; set the interval between contours
+  ;res@cnFillPalette   = "amwg"
+  ;res@cnFillPalette   = "sunshine_9lev"
+  ;res@cnFillPalette   = "GMT_paired"
+  res@cnFillColors = (/-1,8,2,6,7,10,12,14,17,16/) ; amwg_blueyellowred
+  ;res@cnFillPalette   = "amwg_blueyellowred"
+  ;cmap = read_colormap_file("amwg_blueyellowred")
+  ;ncolors = dimsizes(cmap(:,0))
+  ;res@cnMaxLevelCount = ncolors-1       ; make sure NCL chooses 15 or fewer contour levels
+  ; cmap(0,:) = namedcolor2rgba("white")
+  ;res@cnFillPalette := cmap      ; Use modified RGB/A array
 
-     ;res@tmYROn = False
-     ;res@tmXTOn = False
-     ;res@tmYLOn = False
-     ;res@tmXBOn = False
+  res@tiMainFontHeightF = .010
+  res@tiMainString = plotlabs(0)
 
-     res@gsnStringFont = 22
-     res@gsnStringFontHeightF = 0.010
+; ***************************************************
+; panel resources
+; **************************************************
+
+  resP                       = True     ; modify the panel plot
+  resP@gsnMaximize           = True     ; maximize in frame
+  resP@gsnFrame              = False    ; don't advance frame yet
+  resP@gsnPanelYWhiteSpacePercent = 5
+  resP@gsnPanelYWhiteSpacePercent = 8
+  resP@gsnPanelLabelBar      = False     ; turn on a common labelbar for the entire panel plot
+
+  resP@gsnPanelMainFontHeightF = 0.010  ; new resource added in NCL V6.4.0
+  ;resP@gsnPanelMainString = plottitle
+  resP@gsnMaximize        = True        ; use full page
+
+  ;resP@gsnPanelFigureStrings = (/plotlabs(0)/)
+
+  ;resP@gsnPanelFigureStrings = (/plotlabs(0),plotlabs(1),plotlabs(2)/)
+  resP@amJust = "TopLeft"
+  resP@gsnPanelFigureStringsFontHeightF = 0.008
+
+   ;res@mpMinLatF    =  66.0                          ; minimum lat to plot
+   ;res@mpCenterLonF = -45.0
 
 ;************************************************
 ;
 ;************************************************
 
-   plot = gsn_csm_contour(wks,data,res)    ; create the plot
-   draw(plot)
+   if (gridtype .eq. "unstructured") then
+     plot = gsn_csm_contour(wks,data,res)    ; create the plot
+   else
+     ;plot = gsn_csm_contour_map(wks,data,res)
+     plot = gsn_csm_contour(wks,data,res)
+   end if
+
+;************************************************
+; make the panel
+;************************************************
+
+   gsn_panel(wks,plot,(/nplots,1/),resP)
+
    frame(wks)
+
+  if(wkstype .eq. "png")then
+   imcmd = "convert -trim "+wkstitle+".png "+wkstitle+".jpg"
+   system(imcmd)
+  end if
 
 ;************************************************
 ;

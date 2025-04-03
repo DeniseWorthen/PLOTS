@@ -6,8 +6,9 @@
 ;************************************************
 
   ;RT1="/work2/noaa/stmp/dworthen/stmp/dworthen/ww3pio/"
-  RT1="/work2/noaa/stmp/dworthen/stmp/dworthen/ultralow.2/"
+  ;RT1="/work2/noaa/stmp/dworthen/stmp/dworthen/ultralow.2/"
   ;RT1="/work2/noaa/stmp/dworthen/stmp/dworthen/FV3_RT/rt_188291/"
+  RT1="/work2/noaa/stmp/dworthen/stmp/dworthen/maskchange/"
 
   polar="false"
   ;polar="true"
@@ -20,13 +21,16 @@
   ;plotlabs = (/"Unstr, Dual", "Unstr Sngl" /)
   ;rts =      (/"atmw.270k/", "atmw.sngl.270k/"  /)
 
-  gridtype = "unstructured"
-  plotlabs = "test"
-  rts = "rest.48/"
-  ;rts = "cpld_debug_pdlib_p8_intel/"
+  gridtype = (/"unstructured" , "unstructured" /)
+  plotlabs = (/"Base", "Mask" /)
+  rts =      (/"base/cpld_control_gfsv17_intel/", "mask/cpld_control_gfsv17_intel/"  /)
+
+  ;gridtype = "unstructured"
+  ;plotlabs = "test"
+  ;rts = "test"
 
   date = "2021-03-22-"
-  time = "36000"
+  time = "43200"
   ;date = "2021-03-22-"
   ;time = "32400"
   fsrc = "ufs.cpld.ww3.hi."
@@ -190,7 +194,7 @@ end
 
       ;k = 28
       ii = 0
-      ;do ii = 0,nplots-1
+      do ii = 0,nplots-1
         vname = flds(fldtoplot)
         gtype = gridtype(ii)
         if (gtype .eq. "structured")then
@@ -207,7 +211,7 @@ end
       end if
       plot(ii) = subplot(ii,plotlabs(ii),gtype,data,levs,cmap)
       delete(data)
-    ;end do
+    end do
 
 ;************************************************
 ; make the panel

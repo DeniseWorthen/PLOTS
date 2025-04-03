@@ -5,27 +5,33 @@
 
 ;************************************************
 
-  MD = "/work2/noaa/stmp/dworthen/stmp/dworthen/ultralow.2/"
-  scrpfile   = "uglo_900km.SCRIP.nc"
+  MD = "/work2/noaa/stmp/dworthen/stmp/dworthen/maskchange/"
+  scrpfile   = "exp.wise.global_270k.SCRIP.nc"
+  ;scrpfile = "glo.fix_025.SCRIP.nc"
   sfile      = addfile(MD+scrpfile,"r")
   x          = sfile->grid_center_lon
   y          = sfile->grid_center_lat
   cx         = sfile->grid_corner_lon
   cy         = sfile->grid_corner_lat
 
-  RT1 = "/work2/noaa/stmp/dworthen/stmp/dworthen/ultralow.2/"
+  RT1 = "/work2/noaa/stmp/dworthen/stmp/dworthen/maskchange/"
 
  gridtype  = (/"unstructured", \
                "unstructured"/)
 
- plotlabs = (/"rest 48",   \
-              "cntl 48"/)
+ plotlabs = (/"base",   \
+              "mask"/)
 
-      rts = (/"rest.48/",      \
-              "ctrl.48/"/)
+      rts = (/"base/cpld_control_pdlib_p8_intel/", \
+              "mask/cpld_control_pdlib_p8_intel/"/)
+
+ ;     rts = (/"mask.86/cpld_control_gfsv17_intel/", \
+ ;             "mask/cpld_control_gfsv17_intel/"/)
 
   date = "2021-03-22-"
-  time = "36000"
+  time = "25200"
+  ;date = "2021-03-25-"
+  ;time = "23400"
   fsrc = "ufs.cpld.cpl.hi.wav."
 
   fnames = RT1+rts+fsrc+date+time+".nc"
@@ -57,7 +63,7 @@
 ;************************************************
 
   ; pick a field to plot
-  fldtoplot = 0
+  fldtoplot = 1
   levs = plotlevs(fldtoplot,:)
   wgt = fldwgts(fldtoplot)
   wkstitle = flds(fldtoplot)+"_"+date+time
@@ -181,6 +187,7 @@ end
   ii = 0
   vname = flds(fldtoplot)
   gtype = gridtype(ii)
+  ;data=files[0]->$vname$(0,0,:)
   data = files[0]->$vname$(0,0,:) - files[1]->$vname$(0,0,:)
   data = abs(data)*wgt
   data@lon1d = files[0]->$lonname$(0,0,:)
