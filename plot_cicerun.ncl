@@ -1,42 +1,42 @@
 ;************************************************
 ; These files are loaded by default in NCL V6.2.0 and newer
 ; load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_code.ncl"
-; load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl" 
+; load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl"
 
   load "$NCARG_ROOT/lib/ncarg/nclscripts/contrib/cd_string.ncl"
 ;************************************************
 begin
 
-  ;hemi="NH"
-  hemi="SH"
+  hemi="NH"
+  ;hemi="SH"
 
   model = "m6c5"
-  minlat = 66.0
+  minlat = 65.0
   ;minlat = 76.0
   ;minlat = 88.0
   ;minlat = 80.0
 
   ;minlat =  88.0
-  maxlat = -50.0
+  maxlat = -65.0
   ;minlon =  140.0
   ;maxlon =  270.0
 
-  RT4 = "/glade/scratch/worthen/MStone/"
+  RT = "/gpfs/f6/infra-cpu/proj-shared/Denise.Worthen/RT_RUNDIRS/Denise.Worthen/FV3_RT/rt_2185131/"
 
 ;************************************************
 ; read in netCDF file
 ;************************************************
 
-   idate = "2012010100"
-   cyear = "2012"
-    cmon = "01"
-    cday = "23"
+   idate = ""
+   cyear = "2021"
+    cmon = "03"
+    cday = "26"
    cdate = cyear+"-"+cmon+"-"+cday
-   rtsrc = RT4+"cmeps_long_ipd/"
+   rtsrc = RT+"base.10d/"
 
    ; use one file for grid
    ;gf =addfile(rtsrc+"iceic"+idate+"00.01."+idate+"00.nc","r")
-   gf =addfile(rtsrc+"history/iceh_ic."+cyear+"-"+cmon+"-01-00000.nc","r")
+   gf =addfile(rtsrc+"history/iceh_06h."+cyear+"-"+cmon+"-"+cday+"-21600.nc","r")
    ;print(gf)
    tlatname="TLAT"
    tlonname="TLON"
@@ -52,16 +52,17 @@ begin
   print("cdate = "+cdate)
 
   ; ice field
-  varname="aice_h"
+  ;varname="aice_h"
   ;levs=(/0.97,1.0,0.001/)
   ;levs=(/0.87,0.95,0.0010/)
   ;levs=(/0.50,1.00,0.010/)
-  levs=(/0.0, 1.0, 0.02/)
+  ;levs=(/0.0, 1.0, 0.02/)
   ;varname="hi_h"
   ;levs=(/0.0,3.0,0.1/)
   ;levs=(/0.0,2.0,0.1/)
-  ;varname="Tsfc_h"
-  ;levs=(/-40.0,5.0,1.0/)
+  varname="Tsfc_h"
+  ;levs=(/-30.0,0.0,1.0/)
+  levs=(/-40.0,5.0,1.0/)
   ;varname="hi_h"
   ;levs=(/0.0,4.0,0.2/)
   ;varname="sst_h"
@@ -150,7 +151,7 @@ begin
    res@mpCenterLonF = -45
   end if
   if(hemi .eq. "SH")then
-   res@mpMaxLatF    = -50                            ; minimum lat to plot
+   res@mpMaxLatF    = maxlat                            ; minimum lat to plot
    res@mpCenterLonF = 0.0
   end if
 
@@ -165,21 +166,21 @@ begin
   res@cnLinesOn         = False                 ; no contour lines
   res@cnLineLabelsOn    = False
   res@lbLabelBarOn      = True
-  
+
   ;res@cnFillOn          = False                  ; color fill
 
-  ;res@cnLevelSelectionMode = "ManualLevels"     ; set the contour levels with the following 3 resources
-  ;res@cnMinLevelValF  = levs(0)                      ; set the minimum contour level
-  ;res@cnMaxLevelValF  = levs(1)                      ; set the maximum contour level
-  ;res@cnLevelSpacingF = levs(2)                      ; set the interval between contours
+  res@cnLevelSelectionMode = "ManualLevels"     ; set the contour levels with the following 3 resources
+  res@cnMinLevelValF  = levs(0)                      ; set the minimum contour level
+  res@cnMaxLevelValF  = levs(1)                      ; set the maximum contour level
+  res@cnLevelSpacingF = levs(2)                      ; set the interval between contours
 
-   res@cnLevelSelectionMode        = "ExplicitLevels"
-   res@cnLevels                    = (/     0.15,0.50,0.7,0.8,0.85,0.9,0.950/)
-   res@lbLabelStrings              = (/0.00,0.15,0.50,0.7,0.8,0.85,0.9,0.950/)+""
+   ;res@cnLevelSelectionMode        = "ExplicitLevels"
+   ;res@cnLevels                    = (/     0.15,0.50,0.7,0.8,0.85,0.9,0.950/)
+   ;res@lbLabelStrings              = (/0.00,0.15,0.50,0.7,0.8,0.85,0.9,0.950/)+""
 
   ;res@cnFillPalette        = "MPL_rainbow"              ; choose colormap
   ;res@cnFillPalette        = "BlWhRe"              ; choose colormap
-  ;res@cnFillPalette        = "BlueWhiteOrangeRed"              ; choose colormap
+  res@cnFillPalette        = "BlueWhiteOrangeRed"              ; choose colormap
   ;res@cnFillPalette        = "NCV_roullet"              ; choose colormap
   ;res@cnFillPalette        = "WhBlGrYeRe"              ; choose colormap
 

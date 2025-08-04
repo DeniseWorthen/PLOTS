@@ -1,36 +1,44 @@
 ; ***********************************************
-; These files are loaded by default in NCL V6.2.0 and newer
+;rgb:0000/0000/0000; These files are loaded by default in NCL V6.2.0 and newer
 ; load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_code.ncl"
 ; load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl"
 
 ;************************************************
 
   ; cheyenne
-  RT1 = "/glade/scratch/worthen/addunstr.2acd891b.ww.33d337356/ATMW/"
+  ;RT1 = "/glade/scratch/worthen/addunstr.2acd891b.ww.33d337356/ATMW/"
   ; hera
   ;RT1 = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/WaveUnstr2/atmwtrip/"
+  RT1="/gpfs/f5/nggps_emc/scratch/Denise.Worthen/datm.s2sw/"
 
-  ;polar="false"
-  polar="true"
+  polar="false"
+  ;polar="true"
   ; minlat = 66.0
   ; zoom in
   ;minlat = 88.0
-  minlat = 85.0
+  ;minlat = 85.0
 
-  gridtype = (/"unstructured" , "structured" /)
-  plotlabs = (/"Unstr DomainDecomp", "Structured" /)
-  rts =      (/"base.noresmP/", "base.mx100/"  /)
+  gridtype = (/"unstructured" , "unstructured" /)
+  plotlabs = (/"Unstr", "Unstr" /)
+  rts =      (/"base.900/", "test.900/"  /)
+  ;gridtype = "unstructured"
+  ;plotlabs = "test"
+ ;rts = "base.pd.1deg/"
+ ;rts = "base/"
+ ; rts = "ia/"
+ ; rts="test/"
 
-  date = "2021-03-25-"
-  time = "21600"
-  fsrc = "ufs.atmw.ww3.hi."
+  date = "2011-10-01-"
+  time = "07200"
+  ;fsrc = "ufs.atmw.ww3.hi."
+  fsrc = "datm.s2sw.ww3.hi."
 
   fnames = RT1+rts+fsrc+date+time+".nc"
   files  = addfiles(fnames,"r")
   print(fnames)
 
   flds = (/"EF"   , \
-           "USSPX", \
+           "USSX" ,  \
            "ICE"  , \
            "USTX" , \
            "UAX"  , \
@@ -57,13 +65,13 @@
   plotlevs( 2,:) = (/   0.0,    1.0,  0.1/)   ; ice
   plotlevs( 3,:) = (/  -1.0,    1.0,  0.1/)   ; ustx
   plotlevs( 4,:) = (/ -20.0,    20.0,  2./)   ; uax
-  plotlevs( 5,:) = (/  0.0,    5.0,  0.5/)   ; hs
+  plotlevs( 5,:) = (/  0.0,    2.0,  0.2/)   ; hs
 ;************************************************
 ;
 ;************************************************
 
   ; pick a field to plot
-  fldtoplot = 5
+  fldtoplot = 4
   levs = plotlevs(fldtoplot,:)
   wgt = fldwgts(fldtoplot)
   wkstitle = flds(fldtoplot)+"_"+date+time
@@ -79,8 +87,8 @@
 
   wkstype="X11"
  ; wkstype="png"
-  wkstype@wkWidth=1200
-  wkstype@wkHeight=1200
+  wkstype@wkWidth=800
+  wkstype@wkHeight=800
   wks   = gsn_open_wks (wkstype,wkstitle)       ; send graphics to X11 window
   ; drawNDCGrid(wks)
   plot = new(nplots,graphic)
@@ -148,7 +156,10 @@ begin
   pltvar@long_name = ""
 
   splot = gsn_csm_contour_map(wks,pltvar,res)    ; create the plot
-  gsn_coordinates(wks,splot,pltvar,mkres)
+  if (gtype .eq. "unstructured") then
+    delete(res@sfElementNodes)
+  end if
+  ;gsn_coordinates(wks,splot,pltvar,mkres)
   return(splot)
 end
 ; ***************************************************

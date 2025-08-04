@@ -1,0 +1,83 @@
+;**********************************************************
+; write oro_data tiled masks
+;**********************************************************
+begin
+
+   ;fixdir="/work/noaa/global/glopara/fix/orog/20240917/"
+   fixdir="/gpfs/f6/drsa-precip3/world-shared/role.glopara/fix/orog/20240917/"
+
+    ;ares = "C96"
+    ;adim = 96
+ ;   ares = C192
+ ;   ares = C384
+
+;ares = (/"C192"/)
+;adim = (/192/)
+;ores = (/"mx025"/)
+
+   ares="C96"
+   adim=96
+   ores="mx100"
+
+;ares = (/"C96", "C192", "C384"/)
+;adim = (/96, 192, 384/)
+;ores = (/"mx025", "mx050", "mx100"/)
+ntile=6
+
+  ; retrieve orodata file from fix directory
+  do m = 0,dimsizes(ares)-1
+   do n = 0,dimsizes(ores)-1
+     filename = ares(m)+"."+ores(n)+"_oro_data.tile*nc"
+     filelist = systemfunc("ls "+fixdir+ares(m)+"/"+filename)
+     print(filelist)
+     ofiles = addfiles(filelist,"r")
+     ListSetType(ofiles,"join")
+
+     lndfrac = ofiles[:]->land_frac
+     lakfrac = ofiles[:]->lake_frac
+
+     lon2d = ofiles[:]->geolon
+     lat2d = ofiles[:]->geolat
+
+     total = lndfrac+lakfrac
+     lmask = where(total .eq. 1.0, 1.0, 0.0)
+
+;**********************************************************
+;
+;**********************************************************
+
+    ofile = ares(m)+"."+ores(n)+".orodata.nc"
+    print("output file "+ofile)
+    system("rm -f "+ofile)
+    fout = addfile(ofile, "c")
+    setfileoption(fout, "DefineMode", True)
+
+    ;--- create dimensions ---
+    dimNames = (/ "ntiles", "grid_xt", "grid_yt" /)
+    dimSizes = (/ ntile, adim(m), adim(m) /)
+    dimUnlim = (/ False,  False,  False /)
+    filedimdef(fout, dimNames, dimSizes, dimUnlim)
+
+    ;vname = "land_frac"
+    filevardef(fout, "grid_xt", typeof(lndfrac), (/"ntiles", "grid_yt", "grid_xt" /))
+    filevardef(fout, "grid_yt", typeof(lndfrac), (/"ntiles", "grid_yt", "grid_xt" /))
+
+    ;--- create variable ---
+    filevardef(fout, "land_frac", typeof(lndfrac), (/"ntiles", "grid_yt", "grid_xt" /))
+    filevardef(fout, "lake_frac", typeof(lndfrac), (/"ntiles", "grid_yt", "grid_xt" /))
+    filevardef(fout,      "mask", typeof(lndfrac), (/"ntiles", "grid_yt", "grid_xt" /))
+    filevardef(fout,    "geolon", typeof(lndfrac), (/"ntiles", "grid_yt", "grid_xt" /))
+    filevardef(fout,    "geolat", typeof(lndfrac), (/"ntiles", "grid_yt", "grid_xt" /))
+    setfileoption(fout, "DefineMode", False)
+
+    fout->land_frac = (/lndfrac(:,:,:)/)
+    fout->lake_frac = (/lakfrac(:,:,:)/)
+    fout->mask = (/lmask(:,:,:)/)
+    fout->geolon = (/lon2d(:,:,:)/)
+    fout->geolat = (/lat2d(:,:,:)/)
+
+    delete ([/filelist,ofiles,lndfrac,lakfrac,lmask,total/])
+   end do
+  end do
+exit
+end

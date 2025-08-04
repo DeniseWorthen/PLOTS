@@ -7,9 +7,9 @@
 ;************************************************
 begin
 
-  polar = "T"
-  hemi="NH"
-  ;hemi="SH"
+  polar = "F"
+  ;hemi="NH"
+  hemi="SH"
 
   model = "m6c5"
   minlat = 60.0
@@ -51,8 +51,8 @@ begin
 
   ; ice field, stddev
   varname="aice_h"
-  wgt = 1.0e3
-  levs = (/0.0, 1.0, 0.02/)
+  wgt = 1.0e5
+  levs = (/-1.0, 1.0, 0.02/)
   ;levs = (/0.0, 1.2, .02/)
 
   fnames = RT+runs+"."+varname+"."+cdate+".stddev.nc"
@@ -79,7 +79,7 @@ begin
   wkstype@wkHeight=1200
   wks   = gsn_open_wks (wkstype,wkstitle)              ; send graphics to X11 window
 
-  plot = new(nplots,graphic)
+  plot = new(1,graphic)
   res                      = True        ; plot mods desired
   res@gsnDraw              = False       ; do not draw until the end
   res@gsnFrame             = False       ; do not automatically advance 'frame'
@@ -104,7 +104,7 @@ begin
   else
     res@vpWidthF          = 0.70
     res@vpHeightF         = 0.50
-    res@mpMinLatF            =  -80      ; range to zoom in on
+    ;res@mpMinLatF            =  -80      ; range to zoom in on
     res@mpMaxLatF            =  -50.0
     res@mpShapeMode = "FreeAspect"
      ;size = 3.00
@@ -135,7 +135,7 @@ begin
   ;res@cnFillPalette        = "MPL_rainbow"              ; choose colormap
   ;res@cnFillPalette        = "BlWhRe"              ; choose colormap
   ;res@cnFillPalette        = "NCV_banded"              ; choose colormap
-  res@cnFillPalette        = "NCV_jet"              ; choose colormap
+  res@cnFillPalette        = "BlueWhiteOrangeRed"              ; choose colormap
   ;res@cnFillPalette        = "tbrVar1"
 
   ;res@tiMainString = dirname+" "+cday
@@ -169,12 +169,12 @@ begin
 ;
 ;************************************************
 
-  do ii = 0,nplots-1
-   icevar = files[ii]->$varname$(0,:,:)
+   icevar = files[0]->$varname$(0,:,:) - files[1]->$varname$(0,:,:)
    ;printVarSummary(icevar)
    icevar@units=""
    icevar@long_name=""
 
+   ii = 0
    icevar = icevar*wgt
    icevar@lon2d=files[ii]->$tlonname$
    icevar@lat2d=files[ii]->$tlatname$
@@ -184,14 +184,13 @@ begin
     else
      plot(ii) = gsn_csm_contour_map(wks,icevar,res)    ; create the plot
     end if
-  end do
 
 ;************************************************
 ; make the panel
 ;************************************************
 
    ;gsn_panel(wks,plot,(/nplots,1/),resP)
-  gsn_panel(wks,plot,(/1,nplots/),resP)
+  gsn_panel(wks,plot,(/1,1/),resP)
    frame(wks)
 
 ;************************************************

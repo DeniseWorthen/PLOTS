@@ -13,10 +13,12 @@
   ;RT = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/addunstr.2acd891b.ww.33d337356/"
   ;MD = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/FV3_RT/addunstr.2acd891b.ww.33d337356/"
 
-  RT = "/glade/derecho/scratch/worthen/ptout/"
-  MD = "/glade/derecho/scratch/worthen/ptout/mod_defs/"
+  RT = "/gpfs/f5/nggps_emc/scratch/Denise.Worthen/datm.s2sw/"
+  MD = "/gpfs/f5/nggps_emc/scratch/Denise.Worthen/datm.s2sw/mod_defs/"
 
-  scrpfile   = "exp.wise.global_270k.SCRIP.nc"
+  ;scrpfile   = "exp.wise.global_270k.SCRIP.nc"
+  ;scrpfile = "exp.wise.trip1degmask.SCRIP.nc"
+  scrpfile = "uglo_900km.SCRIP.nc"
 
   sfile      = addfile(MD+scrpfile,"r")
   x          = sfile->grid_center_lon
@@ -24,11 +26,16 @@
   cx         = sfile->grid_corner_lon
   cy         = sfile->grid_corner_lat
 
- gridtype  = (/"unstructured"/)
+  use_scrip = "false"
+  gridtype = "unstructured"
+  plotlabs = "test"
+  ;rts="base.pd.1deg/"
+  ;rts="base/"
+  rts="test.900/"
 
- plotlabs = (/"Unstr, 30PE"/)
-
-  rts = (/"base.pdlib/"/)
+  ;gridtype  = (/"unstructured","unstructured"/)
+  ;plotlabs = (/"Unstr, 5PE", "Unstr, 5PE"/)
+  ;rts = (/"base/", "ia/"/)
   fnames = RT+rts+"emesh.decomp.nc"
   files  = addfiles(fnames,"r")
   nplots = dimsizes(gridtype)
@@ -51,8 +58,8 @@
 
   wkstype="X11"
  ; wkstype="png"
-  wkstype@wkWidth=1200
-  wkstype@wkHeight=1200
+  wkstype@wkWidth=800
+  wkstype@wkHeight=800
   wks   = gsn_open_wks (wkstype,wkstitle)       ; send graphics to X11 window
   ; drawNDCGrid(wks)
   plot = new(nplots,graphic)
@@ -92,9 +99,15 @@ begin
   res@cnFillPalette        = palette
 
   if (gtype .eq. "unstructured") then
-    res@sfXCellBounds = cx(:,0:5)
-    res@sfYCellBounds = cy(:,0:5)
+    if (use_scrip .eq. "true") then
+      res@sfXCellBounds = cx(:,0:5)
+      res@sfYCellBounds = cy(:,0:5)
+    else
+      res@sfElementNodes = files[ii]->nconn
+      res@sfFirstNodeIndex = 1
+    end if
   end if
+  res@mpFillOn             = False
 
   res@gsnCenterStringFontHeightF      = 0.012
   res@gsnCenterString                 = name
@@ -171,14 +184,20 @@ end
       else
         data = files[ii]->$vname$
         data = data*wgt
-
-        dof = files[ii]->dof
+        data@lon1d = files[ii]->coordx
+        data@lat1d = files[ii]->coordy
+        if (use_scrip .eq. "true") then
+          dof = files[ii]->dof
           ip = dim_pqsort(dof,1)
           var1d_sort = data
           var1d_sort = data(ip)
           data       = var1d_sort
           data@lon1d = x
           data@lat1d = y
+        else
+          data@lon1d = files[ii]->coordx
+          data@lat1d = files[ii]->coordy
+        end if
       end if
       plot(ii) = subplot(ii,plotlabs(ii),gtype,data,levs,cmap)
 

@@ -1,0 +1,31 @@
+ ! NOAA/PMEL TMAP
+ ! FERRET v7.6 (optimized)
+ ! Linux 5.14.21-150500.55.65_13.0.73-cray_ - 04/21/25
+ ! 16-Jul-25 10:47     
+
+set data /gpfs/f6/infra-cpu/world-shared/Denise.Worthen/c192.restart/base.c192/RESTART/20210322.070000.sfc_data.tile4.nc
+shade snodl
+shade weasdl
+set data /gpfs/f6/infra-cpu/world-shared/Denise.Worthen/sfs_restart/base.c192/RESTART/19940501.010000.sfc_data.tile4.nc
+shade weasdl
+shade if abs(weasdl) lt 1e10 then weasdl
+shade/d=1 if abs(weasdl) lt 1e10 then weasdl
+shade if abs(weasdl) lt 1e10 then weasdl
+cancel data/all
+set data /gpfs/f6/infra-cpu/world-shared/Denise.Worthen/c192.restart/base.c192/RESTART/20210322.070000.sfc_data.tile6.nc
+shade if abs(weasdl) lt 1e10 then weasdl
+set data /gpfs/f6/infra-cpu/world-shared/Denise.Worthen/sfs_restart/base.c192/RESTART/19940501.010000.sfc_data.tile6.nc
+shade if abs(weasdl) lt 1e10 then weasdl
+shade/d=1
+shade/d=2
+list/i=96/d=2
+list/i=96/d=2 weasdl
+shade if abs(weasdl) lt 1e10 then weasdl
+shade/d=1
+shade/d=1 if abs(snodl) lt 1e10 the snodl
+shade/d=1 if abs(snodl) lt 1e10 then snodl
+shade/d=2
+set data /gpfs/f6/infra-cpu/world-shared/Denise.Worthen/sfs_restart/rest.c192/RESTART/19940501.011000.sfc_data.tile6.nc
+shade/d=3
+shade
+quit

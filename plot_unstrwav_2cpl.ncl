@@ -1,5 +1,5 @@
 ; ***********************************************
-; These files are loaded by default in NCL V6.2.0 and newer
+11;rgb:0000/0000/0000; These files are loaded by default in NCL V6.2.0 and newer
 ; load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_code.ncl"
 ; load "$NCARG_ROOT/lib/ncarg/nclscripts/csm/gsn_csm.ncl"
 
@@ -9,8 +9,11 @@
   ;scrpfile   = "no_land_CardDeck.SCRIP.nc"
   ;MD = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/WaveUnstr2/moddefs3/"
 
-  MD = "/glade/scratch/worthen/addunstr.2acd891b.ww.33d337356/moddefs/"
-  scrpfile   = "trip1degmask.SCRIP.nc"
+ ;MD = "/glade/scratch/worthen/addunstr.2acd891b.ww.33d337356/moddefs/"
+RT1="/gpfs/f5/nggps_emc/scratch/Denise.Worthen/datm.s2sw/"
+MD="/gpfs/f5/nggps_emc/scratch/Denise.Worthen/datm.s2sw/mod_defs/"
+
+  scrpfile   = "exp.wise.trip1degmask.SCRIP.nc"
   sfile      = addfile(MD+scrpfile,"r")
   x          = sfile->grid_center_lon
   y          = sfile->grid_center_lat
@@ -18,7 +21,7 @@
   cy         = sfile->grid_corner_lat
 
   ; cheyenne
-  RT1 = "/glade/scratch/worthen/FV3_RT/"
+  ;RT1 = "/glade/scratch/worthen/FV3_RT/"
   ;RT1 = "/glade/scratch/worthen/addunstr.2acd891b.ww.33d337356/ATMW/"
   ; hera
   ;RT1 = "/scratch1/NCEPDEV/stmp2/Denise.Worthen/WaveUnstr2/atmwtrip/"
@@ -29,14 +32,20 @@
  ;rts =      (/"ustjsea.nofix.10pe/base/" , "ustjsea.nofix.10pe/cd.base/" ,  "ustjsea.nofix.10pe/str/"     /)
  ;rts =      (/"ustjsea.fix.10pe/base/" , "ustjsea.fix.10pe/cd.base/" ,  "ustjsea.fix.10pe/str/"     /)
 
- gridtype = (/"unstructured"           , "unstructured"/)
- plotlabs = (/"Unstr, 30PE, pre-wise", "Unstr, 30PE, post-wise"/)
- rts =      (/"prewisepr/base/"             ,    "wisepr/base/"/)
+ ;gridtype = (/"unstructured"           , "unstructured"/)
+ ;plotlabs = (/"Unstr, 30PE, pre-wise", "Unstr, 30PE, post-wise"/)
+ ;rts =      (/"prewisepr/base/"             ,    "wisepr/base/"/)
 
-  date = "2021-03-22-"
-  time = "23760"
-  fsrc = "ufs.atmw.cpl.hi.wav."
+  gridtype="unstructured"
+  plotlabs="test"
+  rts="base.pd.1deg/"
 
+  date = "2011-10-01-"
+  time="04500"
+  fsrc="datm.s2sw.cpl.hi.wav."
+
+  ;time = "23760"
+  ;fsrc = "ufs.atmw.cpl.hi.wav."
   fnames = RT1+rts+fsrc+date+time+".nc"
   files  = addfiles(fnames,"r")
   print(fnames)
@@ -79,8 +88,8 @@
 
   wkstype="X11"
  ; wkstype="png"
-  wkstype@wkWidth=1200
-  wkstype@wkHeight=1200
+  wkstype@wkWidth=800
+  wkstype@wkHeight=800
   wks   = gsn_open_wks (wkstype,wkstitle)       ; send graphics to X11 window
   ; drawNDCGrid(wks)
   plot = new(nplots,graphic)

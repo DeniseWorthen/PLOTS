@@ -5,53 +5,53 @@
 ;**********************************************************
 begin
 
-  RT="/glade/derecho/scratch/worthen/testfix/"
+  RT="/gpfs/f6/infra-cpu/world-shared/Denise.Worthen/sfs_restart/"
 
   nl = str_get_nl()
   nflags = 9
   date = "2021-03-22-22800"
-  atmres = 48
+  atmres = 192
 
-  dirs = (/"base.c48/", "fix.c48/"/)
+  dirs = (/"IC.CORe/"/)
 
   ntile = 6
   ndirs = dimsizes(dirs)
-  vname = "atmExp_So_t"
+  vname = "tsea"
   wkstitle = "test"
  ; retrieve orodata file from INPUT directory for masking
-  mskfilelist = systemfunc("ls "+RT+dirs(0)+"INPUT/oro_data.tile*.nc")
+  ;mskfilelist = systemfunc("ls "+RT+dirs(0)+"INPUT/oro_data.tile*.nc")
  ;print(mskfilelist)
-  ofiles = addfiles(mskfilelist,"r")
-  ListSetType(ofiles,"join")
-  mskname = "slmsk"
-  msklonname = "geolon"
-  msklatname = "geolat"
-  mskvar = ofiles[:]->$mskname$
-  mskvar@lon2d = ofiles[0]->$msklonname$
-  mskvar@lat2d = ofiles[0]->$msklatname$
+  ;ofiles = addfiles(mskfilelist,"r")
+  ;ListSetType(ofiles,"join")
+  ;mskname = "slmsk"
+  ;msklonname = "geolon"
+  ;msklatname = "geolat"
+  ;mskvar = ofiles[:]->$mskname$
+  ;mskvar@lon2d = ofiles[0]->$msklonname$
+  ;mskvar@lat2d = ofiles[0]->$msklatname$
  ;printVarSummary(mskvar)
 
 ;**********************************************************
 ; retrieve lat/lon from first coupler history file
 ;**********************************************************
 
-  fname = "ufs.cpld.cpl.hi.atm.2021-03-22-22800.nc"
-  files = addfiles(RT+dirs+"ufs.cpld.cpl.hi.atm.2021-03-22-22800.nc","r")
+  filelist=systemfunc("ls "+RT+dirs(0)+"sfc_data.tile*.nc")
+  files = addfiles(filelist,"r")
+  ListSetType(files,"join")
 
-  ;--- read coordinate variables ---
-  lat3d = files[0]->atmImp_lat(0,:,:,:)
-  lon3d = files[0]->atmImp_lon(0,:,:,:)
+  varname = "tsea"
+  lonname = "geolon"
+  latname = "geolat"
+
+  var3d = files[:]->$varname$(:,0,:,:)
+  lon3d = files[:]->$lonname$(:,:,:)
+  lat3d = files[:]->$latname$(:,:,:)
+  printVarSummary(var3d)
   lat3d@units = "degrees_N"
   lon3d@units = "degrees_E"
-  levs=(/-1,1,.05/)
+  levs=(/280,300,2/)
 
-  ;print(files)
-  var3d = files[1]->$vname$(0,:,:,:) - files[0]->$vname$(0,:,:,:)
-  var3d = 1.0e13*var3d
-  var3d = mask(var3d,mskvar,0.0)
-
-  build="v8.8.0b03:  "
-  plotlab=build+dirs(1)+"-"+dirs(0)+"  "+vname
+  plotlab="test"
 ;************************************************
 ; create spatchcock plot of a field on atm tiles
 ;************************************************
@@ -68,8 +68,8 @@ begin
    end if
  end do
 
- palette="BlueWhiteOrangeRed"
-
+ ;palette="BlueWhiteOrangeRed"
+ palette="NCV_jet"
 ;************************************************
 ; define the map
 ;************************************************
