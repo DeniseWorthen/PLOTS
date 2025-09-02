@@ -19,12 +19,14 @@
    atmfiles = addfiles(RT1+rt+"sfcf240."+tiles+".nc","r")
 
  ; atm fields
-   atmfld ="tisfc"
+  ;atmfld ="tisfc"
+  atmfld = "tmpsfc"
    tlonname="grid_xt"
    tlatname="grid_yt"
  ; plot levels
    plotlevs = new((/ntiles,3/), float)
-   plotlevs( 0,:) = (/  -38.0, 2.0, 0.5/)
+   ;plotlevs( 0,:) = (/  -38.0, 2.0, 0.5/)
+   plotlevs( 0,:) = (/-2.0, 8.0, 0.2/)
    plotlevs( 1,:) = (/  -30.0, 2.0, 0.5/)
    cmap="BlueWhiteOrangeRed"
 
@@ -117,7 +119,8 @@ end
 ;
 ; ***************************************************
 
-  do ii = 0,ntiles
+  ii =0
+  ;do ii = 0,ntiles-1
     maskvar="land"
     mvar=atmfiles[ii]->$maskvar$(0,:,:)
 
@@ -128,17 +131,17 @@ end
     fld@_long_name=""
     fld@lon2d = atmfiles[ii]->$tlonname$
     fld@lat2d = atmfiles[ii]->$tlatname$
-    print(tiles(ii))
+    ;print(tiles(ii))
     plot(ii) = subplot(ii,"sfcf "+"at "+hours(ii),fld,levs,cmap,tiles(ii))
-  end do
+  ;end do
 
 ;************************************************
 ; make the panel
 ;************************************************
 
   ;gsn_panel(wks,plot,(/3,1/),resP)
-  gsn_panel(wks,plot,(/1,ntiles/),resP)
-
+  ;gsn_panel(wks,plot,(/1,ntiles/),resP)
+    gsn_panel(wks,plot,(/1,1/),resP)
   frame(wks)
 
 ;************************************************
