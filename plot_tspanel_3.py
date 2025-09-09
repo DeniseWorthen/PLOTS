@@ -79,6 +79,7 @@ for ax in axs:
 #fig.tight_layout()
 plt.show()
 
-plt.savefig("test", dpi=150)
+#plt.savefig("test", dpi=150)
+exit()
 
 #print("Plot saved as min_atmExp_Faipt_lwup_tiles3_6.png")
