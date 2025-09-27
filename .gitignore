@@ -3,4 +3,4 @@ TEST
 *.png
 *.jpg
 *.jnl
-*.~
+*~
