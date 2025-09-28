@@ -4,16 +4,18 @@ import numpy as np
 
 # Load dataset
 
-dirsrc="/gpfs/f6/infra-cpu/world-shared/Denise.Worthen/freerun2021/"
+#dirsrc="/gpfs/f6/infra-cpu/world-shared/Denise.Worthen/freerun2021/"
+dirsrc="/scratch3/NCEPDEV/stmp/Denise.Worthen/residual.ice/"
+
+data = np.loadtxt(dirsrc+"heaterror.sfs.dev.dat")
+#print(data.shape[0])
+
 
 start_date = '2021-05-01 06:00:00'
-end_date = '2021-08-16 00:00:00'
+#end_date = '2021-06-16 00:00:00'
 
-time_axis = xr.date_range(start=start_date, end=end_date, freq='6H')
+time_axis = xr.date_range(start=start_date, periods=len(data), freq='6h')
 #print(time_axis)
-
-data = np.loadtxt(dirsrc+"heat.dev.dat")
-#print(data.shape[0])
 
 #print(data)
 #hen="arwt heat error"
