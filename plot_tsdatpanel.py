@@ -28,14 +28,17 @@ varunits="m^3"
 
 runnames = np.array(['base',
                      'zap: dyn_area_min=1.-3, dyn_mass_min=1.e-2',
-                     'zap: dyn_area_min=1.-7, dyn_mass_min=1.e-6'])
+                     'zap: dyn_area_min=1.-7, dyn_mass_min=1.e-6',
+                     'zap: dyn_area_min=1.-11, dyn_mass_min=1.e-10']
+                    )
 #print(runnames)
 
 data1 = np.loadtxt(dirsrc+filename+".sfs.dev.dat")
 data2 = np.loadtxt(dirsrc+filename+".sfs.run1.dat")
 data3 = np.loadtxt(dirsrc+filename+".sfs.run2.dat")
-#data4 = np.loadtxt(dirsrc+filename+".sfs.run3.dat")
+data4 = np.loadtxt(dirsrc+filename+".sfs.run3.dat")
 
+#lens=np.array([len(data1),len(data2),len(data3)])
 lens=np.array([len(data1),len(data2),len(data3),len(data4)])
 minlen=np.min(lens)
 #print(minlen)
@@ -52,7 +55,9 @@ ds = xr.Dataset(
     "valn2": (("time"), data2[0:minlen, 0]),
     "vals2": (("time"), data2[0:minlen, 1]),
     "valn3": (("time"), data3[0:minlen, 0]),
-    "vals3": (("time"), data3[0:minlen, 1])
+    "vals3": (("time"), data3[0:minlen, 1]),
+    "valn4": (("time"), data4[0:minlen, 0]),
+    "vals4": (("time"), data4[0:minlen, 1])
     },
    coords={"time": time_axis}
 )
@@ -68,15 +73,15 @@ reg="Arctic"
 var1=ds["valn1"]
 var2=ds["valn2"]
 var3=ds["valn3"]
-#var4=ds["valn4"]
+var4=ds["valn4"]
 tvals=ds["time"]
 
 axs[ii].set_title(varname+": "+reg)
-axs[ii].plot(tvals, var1, label=runnames[0],col=k)
-axs[ii].plot(tvals, var2, label=runnames[1],ls='--',col=r)
-axs[ii].plot(tvals, var3, label=runnames[2],ls='-.',col=b)
-#axs[ii].plot(tvals, var4, label=runnames[3],ls=':',col=g)
-plt.ylabel(varunits)
+axs[ii].plot(tvals, var1, label=runnames[0])
+axs[ii].plot(tvals, var2, label=runnames[1],ls='--')
+axs[ii].plot(tvals, var3, label=runnames[2],ls='-.')
+axs[ii].plot(tvals, var4, label=runnames[3],ls=':')
+axs[ii].set_ylabel(varunits)
 
 # panel 2
 ii=1
@@ -84,14 +89,14 @@ reg="Antarctic"
 var1=ds["vals1"]
 var2=ds["vals2"]
 var3=ds["vals3"]
-#var4=ds["valn4"]
+var4=ds["vals4"]
 tvals=ds["time"]
 axs[ii].set_title(varname+": "+reg)
-axs[ii].plot(tvals, var1, label=runnames[0],col=k)
-axs[ii].plot(tvals, var2, label=runnames[1],ls='--',col=r)
-axs[ii].plot(tvals, var3, label=runnames[2],ls='-.',col=b)
-#axs[ii].plot(tvals, var4, label=runnames[3],ls=':',col=g)
-plt.ylabel(varunits)
+axs[ii].plot(tvals, var1, label=runnames[0])
+axs[ii].plot(tvals, var2, label=runnames[1],ls='--')
+axs[ii].plot(tvals, var3, label=runnames[2],ls='-.')
+axs[ii].plot(tvals, var4, label=runnames[3],ls=':')
+axs[ii].set_ylabel(varunits)
 axs[ii].set_xlabel("Time")
 
 # Add grid and legends to subplots
