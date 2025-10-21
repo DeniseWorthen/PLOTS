@@ -3,49 +3,44 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 # Load dataset
+dirsrc="/Users/toby/GitHub/Lockbox/"
 
-#dirsrc="/gpfs/f6/infra-cpu/world-shared/Denise.Worthen/freerun2021/"
-dirsrc="/Users/max/Github/PLOTS/"
+#data1 = np.loadtxt(dirsrc+"tst1/rhinit.dat")
+#data2 = np.loadtxt(dirsrc+"tst2/rhinit.dat")
 
-#start_date = '2021-05-01 06:00:00'
-#end_date = '2021-08-16 00:00:00'
+data1 = np.loadtxt(dirsrc+"tst1/post_ocn.dat")
+data2 = np.loadtxt(dirsrc+"tst2/post_ocn.dat")
 
-#time_axis = xr.date_range(start=start_date, end=end_date, freq='6H')
-#print(time_axis)
+pecnt=data1[:,0]
 
-data = np.loadtxt(dirsrc+"fakedat.dat")
-#print(data.shape[0])
-#print(data)
-
-#print(data)
-#hen="arwt heat error"
-
-pecnt=data[:,0]
-
-print(data)
+#print(data1)
 #print(pecnt)
 
-ds = xr.Dataset(
-    {"mean": (("pecnt"), data[:, 1]),
-     "min": (("pecnt"),  data[:, 2]),
-     "max": (("pecnt"),  data[:, 4])},
+ds1 = xr.Dataset(
+    {"mean": (("pecnt"), data1[:, 1]),
+     "min": (("pecnt"),  data1[:, 2]),
+     "max": (("pecnt"),  data1[:, 3])},
     coords={"pecnt": pecnt}
 )
 
-var1=ds["mean"]
-varmin=ds["min"]
-varmax=ds["max"]
-#var2=ds["hes"]
-#tvals=ds["time"]
-print(var1)
-print(varmin)
-print(varmax)
+ds2 = xr.Dataset(
+    {"mean": (("pecnt"), data2[:, 1]),
+     "min": (("pecnt"),  data2[:, 2]),
+     "max": (("pecnt"),  data2[:, 3])},
+    coords={"pecnt": pecnt}
+)
+
+#var1=ds["mean"]
+#varmin=ds["min"]
+#varmax=ds["max"]
 
 #print(ds)
 plt.figure(figsize=(10, 6))
-#plt.plot(pecnt,var1,label="arwt heat error: Antarctic")
+
+plt.plot(pecnt,ds1["mean"],marker='o',label="RHinit")
+plt.plot(pecnt,ds2["mean"],marker='o',label="RHinit, mapfiles")
 #plt.fill_between(var1,varmin,varmax)
-plt.scatter(pecnt,var1,label="arwt heat error: Arctic")
+#plt.scatter(pecnt,var1,label="arwt heat error: Arctic")
 #plt.plot(pecnt,var2,label="arwt heat error: Antarctic")
 
 #plt.title(ds1title)
