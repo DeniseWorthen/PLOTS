@@ -57,8 +57,12 @@ for i, fpath in zip(indices, selected_files):
     arr = np.loadtxt(fpath)
     if arr.ndim != 1:
         raise ValueError(f"Expected single-column files; got shape {arr.shape} for {fpath}")
-    if len(arr) != len(tvals):
-        raise ValueError(f"Length mismatch: {os.path.basename(fpath)} has {len(arr)} points, expected {len(tvals)}")
+
+    # Handle different row counts: pad with NaNs if shorter, truncate if longer
+    if len(arr) < len(tvals):
+        arr = np.pad(arr, (0, len(tvals) - len(arr)), mode='constant', constant_values=np.nan)
+    elif len(arr) > len(tvals):
+        arr = arr[:len(tvals)]
 
     label = f"file {i}: {os.path.basename(fpath)}"
     plt.plot(tvals, arr, label=label, linewidth=1)
