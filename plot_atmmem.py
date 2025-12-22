@@ -30,8 +30,11 @@ stride = 10
 data_dir = os.path.join(dirsrc, subdir)
 all_files = sorted([f for f in glob.glob(os.path.join(data_dir, file_glob)) if os.path.isfile(f)])
 
+# Filter to files with XXXX >= 6912
+all_files = [f for f in all_files if int(os.path.basename(f).split('.')[-2]) >= 6912]
+
 if not all_files:
-    raise FileNotFoundError(f"No files found under {data_dir} matching pattern '{file_glob}'")
+    raise FileNotFoundError(f"No files found under {data_dir} matching pattern '{file_glob}' with index >= 6912")
 
 # Load first file to establish time axis length
 first = np.loadtxt(all_files[0])
