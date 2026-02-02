@@ -4,6 +4,21 @@ import numpy as np
 import cmaps
 import geocat.viz as gv
 
+
+dirsrc="path to output"
+nfiles=[gdf.get(dirsrc+"file1.nc"), gdf.get(dirsrc+"file2.nc")]
+
+nds = xr.open_mfdataset(
+    nfiles,
+    concat_dim='case',
+    combine='nested',
+)
+
+# 2. Calculate New Variable (Speed)
+# Formula: spd = sqrt(u^2 + v^2)
+# Xarray handles the broadcasting and element-wise math automatically.
+nds = nds.assign(spd = np.sqrt(nds['uvel_h']**2 + nds['vvel_h']**2))
+
 # 1. Define your variable registry (Pre-defined ranges)
 var_settings = {
     "aice_h": {"range": (0, 1, 0.1), "cmap": cmaps.WhiteBlueGreenYellowRed},
