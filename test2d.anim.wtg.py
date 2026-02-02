@@ -1,3 +1,4 @@
+import os
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import xarray as xr
@@ -16,13 +17,13 @@ var_settings = {
 # --- 2. USER INPUTS ---
 target_var = "icespd"
 minice = 0.1              # Minimum ice concentration threshold for masking
-x_start, x_end = 1, 150    # 1-based indices
-y_start, y_end = 1, 150    # 1-based indices
+x_start, x_end = 200, 250    # 1-based indices
+y_start, y_end = 280, 320    # 1-based indices
 
 # --- 3. DATA SETUP ---
-dirsrc = "path to output"
-nfiles = [gdf.get(dirsrc + "file1.nc"), gdf.get(dirsrc + "file2.nc")]
-nds = xr.open_mfdataset(nfiles, concat_dim='case', combine='nested')
+dirsrc = "/scratch4/NCEPDEV/stmp/Denise.Worthen/cgrid/mx100/"
+files = os.path.join(dirsrc, 'hi*.ice.nc')
+nds = xr.open_mfdataset(files, concat_dim='case', combine='nested')
 
 # Calculate icespd only if requested
 if target_var == "icespd" and "icespd" not in nds:
@@ -48,8 +49,8 @@ def update(frame):
 
     for i in range(2):
         # Select spatial slices
-        data_slice = nds[target_var].isel(case=i, T=frame, X=x_slice, Y=y_slice)
-        aice_mask = nds['aice_h'].isel(case=i, T=frame, X=x_slice, Y=y_slice)
+        data_slice = nds[target_var].isel(case=i, time=frame, ni=x_slice, nj=y_slice)
+        aice_mask = nds['aice_h'].isel(case=i, time=frame, ni=x_slice, nj=y_slice)
 
         # Apply the threshold mask using the minice variable
         masked_data = data_slice.where(aice_mask >= minice)
@@ -64,7 +65,7 @@ def update(frame):
                                  righttitle=f"Mask: aice < {minice}")
     return axs
 
-ani = animation.FuncAnimation(fig, update, frames=len(nds.T), interval=200)
+ani = animation.FuncAnimation(fig, update, frames=len(nds.time), interval=200)
 ani.save(f'{target_var}_masked_animation.gif', writer='pillow', fps=5)
 
 plt.show()

@@ -1,18 +1,16 @@
+import os
 import matplotlib.pyplot as plt
 import xarray as xr
 import numpy as np
 import cmaps
 import geocat.viz as gv
+import geocat.datafiles as gdf
 
 
-dirsrc="path to output"
-nfiles=[gdf.get(dirsrc+"file1.nc"), gdf.get(dirsrc+"file2.nc")]
+dirsrc = "/scratch4/NCEPDEV/stmp/Denise.Worthen/cgrid/mx100/"
+files = os.path.join(dirsrc, 'hi*.ice.nc')
 
-nds = xr.open_mfdataset(
-    nfiles,
-    concat_dim='case',
-    combine='nested',
-)
+nds = xr.open_mfdataset(files, concat_dim='case', combine='nested')
 
 # 2. Calculate New Variable (Speed)
 # Formula: spd = sqrt(u^2 + v^2)
@@ -23,7 +21,7 @@ nds = nds.assign(spd = np.sqrt(nds['uvel_h']**2 + nds['vvel_h']**2))
 var_settings = {
     "aice_h": {"range": (0, 1, 0.1), "cmap": cmaps.WhiteBlueGreenYellowRed},
     "hi_h":   {"range": (0, 5, 0.5), "cmap": cmaps.BlAqGrYeOrRe},
-    "temp":   {"range": (-2, 30, 2), "cmap": cmaps.NCV_jet},
+    "Tsfc_h":   {"range": (-2, 30, 2), "cmap": cmaps.NCV_jet},
 }
 
 # 2. USER SELECTION: Pick one variable name
@@ -43,7 +41,7 @@ fig, axs = plt.subplots(1, 2, figsize=(15, 7), constrained_layout=True)
 
 for i in range(2):
     # Dynamically select variable from nds
-    data_slice = nds[target_var].isel(case=i, T=time_idx)
+    data_slice = nds[target_var].isel(case=i, time=time_idx)
 
     im = data_slice.plot(
         ax=axs[i],
