@@ -1,9 +1,0 @@
- ! NOAA/PMEL TMAP
- ! FERRET v7.6 (optimized)
- ! Linux 5.14.21-150500.55.65_13.0.73-cray_ - 04/21/25
- ! 11-Jul-25 14:14     
-
-set data C192.mx025.orodata.nc
-show data
-shade/k=6 land_frac
-quit
