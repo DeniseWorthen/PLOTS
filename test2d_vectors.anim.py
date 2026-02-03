@@ -19,6 +19,7 @@ skip = 2                  # Plot every Nth vector (to avoid overcrowding)
 # Animation control
 create_animation = False  # Set to True to create animation, False for single frame
 frame = 1                 # Which time index to plot (1-based) when create_animation=False
+case_labels = ["Case 1", "Case 2"]  # Descriptive labels for each case
 
 # --- 2. COORDINATE CONVERSION ---
 x_slice = slice(x_start - 1, x_end)
@@ -44,14 +45,15 @@ def plot_frame(frame_idx):
         # Plot vectors (quiver plot)
         q = axs[i].quiver(X[::skip, ::skip], Y[::skip, ::skip], 
                           u_data.values[::skip, ::skip], v_data.values[::skip, ::skip],
-                          scale=1.0, scale_units='xy', angles='xy')
+                          scale=0.1, scale_units='xy', angles='xy')
         
         # Add colorbar showing magnitude
         magnitude = np.sqrt(u_data**2 + v_data**2)
-        im = axs[i].contourf(X, Y, magnitude.values, levels=15, cmap='viridis', alpha=0.5)
+        im = axs[i].pcolormesh(X, Y, magnitude.values, cmap='viridis', alpha=0.5, shading='nearest')
+        fig.colorbar(im, ax=axs[i], orientation='vertical', label='Speed (m/s)')
         
         gv.set_titles_and_labels(axs[i],
-                                 maintitle=f"Case {i+1}: Velocity Vectors",
+                     maintitle=f"{case_labels[i]}: Velocity Vectors",
                                  lefttitle=f"Time Index: {frame_idx + 1}")
         axs[i].set_aspect('equal')
         
