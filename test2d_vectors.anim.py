@@ -48,7 +48,15 @@ artists_to_remove = {'quiver': [None, None], 'pcolormesh': [None, None]}
 
 def plot_frame(frame_idx):
     """Plot vectors for a given frame index"""
+    # Store axis limits to preserve them
+    ax_limits = [(ax.get_xlim(), ax.get_ylim()) for ax in axs]
+    
     for ax in axs: ax.clear()
+    
+    # Restore axis limits
+    for i, ax in enumerate(axs):
+        ax.set_xlim(ax_limits[i][0])
+        ax.set_ylim(ax_limits[i][1])
 
     # Get formatted time string for this frame
     time_str = time_values[frame_idx].strftime('%Y %m %d %H')
@@ -78,7 +86,12 @@ def plot_frame(frame_idx):
 
         # Add quiver key
         axs[i].quiverkey(q, 0.9, 0.95, 0.1, '0.1 m/s', labelpos='E', coordinates='figure')
+        
+        gv.set_titles_and_labels(axs[i],
+                                 maintitle=f"{case_labels[i]}: Velocity Vectors")
+        axs[i].set_aspect('equal')
 
+    fig_title.set_text(f'Time: {time_str}')
     fig.colorbar(im, ax=axs, orientation='vertical', label='Speed (m/s)')
     return axs
 
