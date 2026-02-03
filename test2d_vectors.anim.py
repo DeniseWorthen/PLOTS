@@ -20,6 +20,7 @@ skip = 2                  # Plot every Nth vector (to avoid overcrowding)
 create_animation = False  # Set to True to create animation, False for single frame
 frame = 1                 # Which time index to plot (1-based) when create_animation=False
 case_labels = ["Case 1", "Case 2"]  # Descriptive labels for each case
+speed_cmap = "viridis"   # Colormap for speed shading
 
 # --- 2. COORDINATE CONVERSION ---
 x_slice = slice(x_start - 1, x_end)
@@ -49,8 +50,7 @@ def plot_frame(frame_idx):
         
         # Add colorbar showing magnitude
         magnitude = np.sqrt(u_data**2 + v_data**2)
-        im = axs[i].pcolormesh(X, Y, magnitude.values, cmap='viridis', alpha=0.5, shading='nearest')
-        fig.colorbar(im, ax=axs[i], orientation='vertical', label='Speed (m/s)')
+        im = axs[i].pcolormesh(X, Y, magnitude.values, cmap=speed_cmap, alpha=0.5, shading='nearest')
         
         gv.set_titles_and_labels(axs[i],
                      maintitle=f"{case_labels[i]}: Velocity Vectors",
@@ -60,6 +60,7 @@ def plot_frame(frame_idx):
         # Add quiver key
         axs[i].quiverkey(q, 0.9, 0.95, 0.1, '0.1 m/s', labelpos='E', coordinates='figure')
     
+    fig.colorbar(im, ax=axs, orientation='vertical', label='Speed (m/s)')
     return axs
 
 if create_animation:
