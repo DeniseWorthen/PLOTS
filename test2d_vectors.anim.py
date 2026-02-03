@@ -22,6 +22,8 @@ skip = 2                  # Plot every Nth vector (to avoid overcrowding)
 # Animation control
 create_animation = False  # Set to True to create animation, False for single frame
 frame = 1                 # Which time index to plot (1-based) when create_animation=False
+start_frame = 1           # Start frame for animation (1-based) when create_animation=True
+end_frame = None          # End frame for animation (1-based) when create_animation=True (None = last frame)
 case_labels = ["AC", "CC"]  # Descriptive labels for each case
 speed_cmap = cmaps.ncl_default  # Colormap for speed shading
 speed_vmin = 0.0         # Minimum speed for colorbar
@@ -37,6 +39,12 @@ time_values = pd.to_datetime(nds['time'].values)
 # --- 3. PLOTTING LOGIC ---
 fig, axs = plt.subplots(1, 2, figsize=(16, 8))
 fig.subplots_adjust(left=0.08, right=0.92, bottom=0.1, top=0.9, wspace=0.3)
+
+# Create persistent figure title
+fig_title = fig.suptitle('', fontsize=14, fontweight='bold')
+
+# Store artists for cleanup
+artists_to_remove = {'quiver': [None, None], 'pcolormesh': [None, None]}
 
 def plot_frame(frame_idx):
     """Plot vectors for a given frame index"""
@@ -59,27 +67,27 @@ def plot_frame(frame_idx):
         q = axs[i].quiver(X[::skip, ::skip], Y[::skip, ::skip],
                           u_data.values[::skip, ::skip], v_data.values[::skip, ::skip],
                           scale=0.1, scale_units='xy', angles='xy')
+        artists_to_remove['quiver'][i] = q
 
         # Add colorbar showing magnitude
         magnitude = np.sqrt(u_data**2 + v_data**2)
         speed_norm = Normalize(vmin=speed_vmin, vmax=speed_vmax)
         im = axs[i].pcolormesh(X, Y, magnitude.values, cmap=speed_cmap, alpha=0.5, shading='nearest',
                                norm=speed_norm)
-
-        gv.set_titles_and_labels(axs[i],
-                     maintitle=f"{case_labels[i]}: Velocity Vectors")
-        axs[i].set_aspect('equal')
+        artists_to_remove['pcolormesh'][i] = im
 
         # Add quiver key
         axs[i].quiverkey(q, 0.9, 0.95, 0.1, '0.1 m/s', labelpos='E', coordinates='figure')
 
     fig.colorbar(im, ax=axs, orientation='vertical', label='Speed (m/s)')
-    fig.suptitle(f'Time: {time_str}', fontsize=14, fontweight='bold')
     return axs
 
 if create_animation:
     # Create animation
-    ani = animation.FuncAnimation(fig, plot_frame, frames=len(nds.time), interval=200)
+    if end_frame is None:
+        end_frame = len(nds.time)
+    frame_range = range(start_frame - 1, end_frame)  # Convert to 0-based indices
+    ani = animation.FuncAnimation(fig, plot_frame, frames=frame_range, interval=200)
     ani.save('velocity_vectors_comparison.gif', writer='pillow', fps=5)
     print("Animation saved as velocity_vectors_comparison.gif")
 else:
