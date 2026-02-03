@@ -87,7 +87,10 @@ for case_i in range(2):
     pts_transect = np.column_stack([x_line, y_line])
     transect_values = griddata(points_valid, values_valid, pts_transect, method='linear')
     
-    plt.plot(dist, transect_values, lw=2, label=case_labels[case_i])
+    # Plot with different markers for each case
+    markers = ['o', 's']  # circle, square
+    plt.plot(dist, transect_values, lw=1, marker=markers[case_i], 
+             markersize=4, markevery=5, label=case_labels[case_i])
 plt.xlabel("Distance along transect (grid units)")
 plt.ylabel("Ice speed (m/s)")
 plt.title(f"Ice speed along transect: ({x1},{y1}) to ({x2},{y2})\nTime {frame_index}")
