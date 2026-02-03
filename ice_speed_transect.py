@@ -2,6 +2,7 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 import xarray as xr
+import pandas as pd
 from scipy.interpolate import griddata
 
 # --- USER SETTINGS ---
@@ -29,6 +30,9 @@ v_name = "vvelN_h"
 # ---------------------
 
 nds = xr.open_mfdataset(files, concat_dim="case", combine="nested")
+
+# Extract and convert time axis
+time_values = pd.to_datetime(nds['time'].values)
 
 # Convert to 0-based indices
 x1_i, y1_i = x1 - 1, y1 - 1
@@ -63,6 +67,9 @@ transect_values = griddata(points_valid, values_valid, pts_transect, method='lin
 # Distance along the transect (index-based)
 dist = np.sqrt((x_line - x_line[0])**2 + (y_line - y_line[0])**2)
 
+# Get formatted time string
+time_str = time_values[frame_i].strftime('%Y %m %d %H')
+
 # Plot both cases
 plt.figure(figsize=(10, 4))
 
@@ -93,7 +100,7 @@ for case_i in range(2):
              markersize=4, markevery=5, label=case_labels[case_i])
 plt.xlabel("Distance along transect (grid units)")
 plt.ylabel("Ice speed (m/s)")
-plt.title(f"Ice speed along transect: ({x1},{y1}) to ({x2},{y2})\nTime {frame_index}")
+plt.title(f"Ice speed along transect: ({x1},{y1}) to ({x2},{y2})\nTime: {time_str}")
 plt.legend()
 plt.grid(True, alpha=0.3)
 plt.tight_layout()
