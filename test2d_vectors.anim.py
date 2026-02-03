@@ -24,6 +24,7 @@ create_animation = True  # Set to True to create animation, False for single fra
 frame = 1                 # Which time index to plot (1-based) when create_animation=False
 start_frame = 10           # Start frame for animation (1-based) when create_animation=True
 end_frame = None          # End frame for animation (1-based) when create_animation=True (None = last frame)
+display_frames = True     # Display frames sequentially when create_animation=True (set False to just save GIF)
 case_labels = ["AC", "CC"]  # Descriptive labels for each case
 speed_cmap = cmaps.ncl_default  # Colormap for speed shading
 speed_vmin = 0.0         # Minimum speed for colorbar
@@ -135,13 +136,17 @@ if create_animation:
         fig_title_temp.set_text(f'Time: {time_str}')
         fig_temp.colorbar(im, ax=axs_temp, orientation='vertical', label='Speed (m/s)')
         
+        if display_frames:
+            # Display frame with pause
+            plt.pause(0.2)
+        
         # Save frame
         frame_file = os_module.path.join(temp_dir, f'frame_{len(frame_files):04d}.png')
         fig_temp.savefig(frame_file, dpi=100, bbox_inches='tight')
         frame_files.append(frame_file)
         plt.close(fig_temp)
         
-        print(f"Saved frame {len(frame_files)}/{len(frame_range)}")
+        print(f"Saved time index {frame_idx + 1} ({len(frame_files)}/{len(frame_range)})")
     
     # Create GIF from frames
     from PIL import Image
@@ -158,5 +163,4 @@ if create_animation:
 else:
     # Plot single frame
     plot_frame(frame - 1)  # Convert 1-based to 0-based index
-
-plt.show()
+    plt.show()
