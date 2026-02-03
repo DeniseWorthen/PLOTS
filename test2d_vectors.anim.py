@@ -48,14 +48,12 @@ artists_to_remove = {'quiver': [None, None], 'pcolormesh': [None, None]}
 
 def plot_frame(frame_idx):
     """Plot vectors for a given frame index"""
-    # Remove old artists without clearing axes (prevents transform issues)
-    for i, ax in enumerate(axs):
-        # Remove pcolormesh (QuadMesh)
-        while ax.collections:
-            ax.collections[0].remove()
-        # Remove quiver plots
-        while ax.quivers:
-            ax.quivers[0].remove()
+    # Remove old artists
+    for i in range(2):
+        if artists_to_remove['quiver'][i] is not None:
+            artists_to_remove['quiver'][i].remove()
+        if artists_to_remove['pcolormesh'][i] is not None:
+            artists_to_remove['pcolormesh'][i].remove()
 
     # Get formatted time string for this frame
     time_str = time_values[frame_idx].strftime('%Y %m %d %H')
@@ -74,12 +72,14 @@ def plot_frame(frame_idx):
         q = axs[i].quiver(X[::skip, ::skip], Y[::skip, ::skip],
                           u_data.values[::skip, ::skip], v_data.values[::skip, ::skip],
                           scale=0.1, scale_units='xy', angles='xy')
+        artists_to_remove['quiver'][i] = q
 
         # Add colorbar showing magnitude
         magnitude = np.sqrt(u_data**2 + v_data**2)
         speed_norm = Normalize(vmin=speed_vmin, vmax=speed_vmax)
         im = axs[i].pcolormesh(X, Y, magnitude.values, cmap=speed_cmap, alpha=0.5, shading='nearest',
                                norm=speed_norm)
+        artists_to_remove['pcolormesh'][i] = im
 
         # Add quiver key
         axs[i].quiverkey(q, 0.9, 0.95, 0.1, '0.1 m/s', labelpos='E', coordinates='figure')
