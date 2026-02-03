@@ -4,6 +4,8 @@ import matplotlib.animation as animation
 from matplotlib.colors import Normalize
 import xarray as xr
 import numpy as np
+import cmaps
+import pandas as pd
 import geocat.datafiles as gdf
 import geocat.viz as gv
 
@@ -20,8 +22,8 @@ skip = 2                  # Plot every Nth vector (to avoid overcrowding)
 # Animation control
 create_animation = False  # Set to True to create animation, False for single frame
 frame = 1                 # Which time index to plot (1-based) when create_animation=False
-case_labels = ["Case 1", "Case 2"]  # Descriptive labels for each case
-speed_cmap = "viridis"   # Colormap for speed shading
+case_labels = ["AC", "CC"]  # Descriptive labels for each case
+speed_cmap = cmaps.ncl_default  # Colormap for speed shading
 speed_vmin = 0.0         # Minimum speed for colorbar
 speed_vmax = 0.5         # Maximum speed for colorbar
 
@@ -29,43 +31,49 @@ speed_vmax = 0.5         # Maximum speed for colorbar
 x_slice = slice(x_start - 1, x_end)
 y_slice = slice(y_start - 1, y_end)
 
+# Extract and convert time axis
+time_values = pd.to_datetime(nds['time'].values)
+
 # --- 3. PLOTTING LOGIC ---
 fig, axs = plt.subplots(1, 2, figsize=(15, 7), constrained_layout=True)
 
 def plot_frame(frame_idx):
     """Plot vectors for a given frame index"""
     for ax in axs: ax.clear()
-    
+
+    # Get formatted time string for this frame
+    time_str = time_values[frame_idx].strftime('%Y %m %d %H')
+
     for i in range(2):
         # Extract vector components
         u_data = nds['uvelN_h'].isel(case=i, time=frame_idx, ni=x_slice, nj=y_slice)
         v_data = nds['vvelN_h'].isel(case=i, time=frame_idx, ni=x_slice, nj=y_slice)
-        
+
         # Create coordinate meshgrid
         x_coords = np.arange(u_data.shape[1])
         y_coords = np.arange(u_data.shape[0])
         X, Y = np.meshgrid(x_coords, y_coords)
-        
+
         # Plot vectors (quiver plot)
-        q = axs[i].quiver(X[::skip, ::skip], Y[::skip, ::skip], 
+        q = axs[i].quiver(X[::skip, ::skip], Y[::skip, ::skip],
                           u_data.values[::skip, ::skip], v_data.values[::skip, ::skip],
                           scale=0.1, scale_units='xy', angles='xy')
-        
+
         # Add colorbar showing magnitude
         magnitude = np.sqrt(u_data**2 + v_data**2)
         speed_norm = Normalize(vmin=speed_vmin, vmax=speed_vmax)
         im = axs[i].pcolormesh(X, Y, magnitude.values, cmap=speed_cmap, alpha=0.5, shading='nearest',
                                norm=speed_norm)
-        
+
         gv.set_titles_and_labels(axs[i],
-                     maintitle=f"{case_labels[i]}: Velocity Vectors",
-                                 lefttitle=f"Time Index: {frame_idx + 1}")
+                     maintitle=f"{case_labels[i]}: Velocity Vectors")
         axs[i].set_aspect('equal')
-        
+
         # Add quiver key
         axs[i].quiverkey(q, 0.9, 0.95, 0.1, '0.1 m/s', labelpos='E', coordinates='figure')
-    
+
     fig.colorbar(im, ax=axs, orientation='vertical', label='Speed (m/s)')
+    fig.suptitle(f'Time: {time_str}', fontsize=14, fontweight='bold')
     return axs
 
 if create_animation:
