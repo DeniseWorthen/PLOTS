@@ -19,6 +19,9 @@ num_points = 100  # number of samples along the transect
 case_index = 1
 frame_index = 1
 
+# Case labels for legend
+case_labels = ["Case 1", "Case 2"]
+
 # Velocity components to use for speed
 u_name = "uvelN_h"
 v_name = "vvelN_h"
@@ -60,12 +63,35 @@ transect_values = griddata(points_valid, values_valid, pts_transect, method='lin
 # Distance along the transect (index-based)
 dist = np.sqrt((x_line - x_line[0])**2 + (y_line - y_line[0])**2)
 
-# Plot
+# Plot both cases
 plt.figure(figsize=(10, 4))
-plt.plot(dist, transect_values, lw=2)
+
+for case_i in range(2):
+    # Get speed field for this case
+    u = nds[u_name].isel(case=case_i, time=frame_i)
+    v = nds[v_name].isel(case=case_i, time=frame_i)
+    spd = np.sqrt(u**2 + v**2)
+    
+    # Use scipy's griddata to interpolate, which handles NaN values by interpolating from valid neighbors
+    # Create grid of all points
+    yi, xi = np.meshgrid(np.arange(spd.shape[0]), np.arange(spd.shape[1]))
+    points = np.column_stack([xi.ravel(), yi.ravel()])
+    values = spd.values.ravel()
+    
+    # Remove NaN points
+    valid = ~np.isnan(values)
+    points_valid = points[valid]
+    values_valid = values[valid]
+    
+    # Interpolate transect using linear interpolation on valid points
+    pts_transect = np.column_stack([x_line, y_line])
+    transect_values = griddata(points_valid, values_valid, pts_transect, method='linear')
+    
+    plt.plot(dist, transect_values, lw=2, label=case_labels[case_i])
 plt.xlabel("Distance along transect (grid units)")
 plt.ylabel("Ice speed (m/s)")
-plt.title(f"Ice speed along transect: ({x1},{y1}) to ({x2},{y2})\nCase {case_index}, Time {frame_index}")
+plt.title(f"Ice speed along transect: ({x1},{y1}) to ({x2},{y2})\nTime {frame_index}")
+plt.legend()
 plt.grid(True, alpha=0.3)
 plt.tight_layout()
 plt.show()
