@@ -35,7 +35,8 @@ y_slice = slice(y_start - 1, y_end)
 time_values = pd.to_datetime(nds['time'].values)
 
 # --- 3. PLOTTING LOGIC ---
-fig, axs = plt.subplots(1, 2, figsize=(15, 7), constrained_layout=True)
+fig, axs = plt.subplots(1, 2, figsize=(16, 8))
+fig.subplots_adjust(left=0.08, right=0.92, bottom=0.1, top=0.9, wspace=0.3)
 
 def plot_frame(frame_idx):
     """Plot vectors for a given frame index"""
