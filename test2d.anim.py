@@ -1,3 +1,4 @@
+import os
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import xarray as xr
@@ -6,24 +7,22 @@ import cmaps
 import geocat.datafiles as gdf
 import geocat.viz as gv
 
+dirsrc = "/gpfs/f6/infra-cpu/proj-shared/Denise.Worthen"
+files = os.path.join(dirsrc, 'hi*.ice.nc')
+
+nds = xr.open_mfdataset(files, concat_dim='case', combine='nested')
+
 # --- 1. CONFIGURATION REGISTRY ---
 var_settings = {
     "aice_h": {"range": (0, 1, 0.1), "cmap": cmaps.WhiteBlueGreenYellowRed},
     "hi_h":   {"range": (0, 5, 0.5), "cmap": cmaps.BlAqGrYeOrRe},
-    "spd":    {"range": (0, 2, 0.2), "cmap": cmaps.precip2_17lev},
+    "spd":    {"range": (0, .1, 0.01), "cmap": cmaps.BlueWhiteOrangeRed},
 }
 
 # --- 2. USER INPUTS (1-BASED) ---
 target_var = "spd"
-x_start, x_end = 1, 150   # 1-based indices
-y_start, y_end = 1, 150   # 1-based indices
-
-# --- 3. DATA SETUP ---
-dirsrc = "path to output"
-nfiles = [gdf.get(dirsrc + "file1.nc"), gdf.get(dirsrc + "file2.nc")]
-
-# Open dataset lazily using open_mfdataset
-nds = xr.open_mfdataset(nfiles, concat_dim='case', combine='nested')
+x_start, x_end = 1, 66   # 1-based indices
+y_start, y_end = 1, 71   # 1-based indices
 
 # AUTOMATIC CHECK: Only calculate spd if requested
 if target_var == "spd" and "spd" not in nds:
@@ -45,7 +44,7 @@ def update(frame):
     for ax in axs: ax.clear()
 
     for i in range(2):
-        data_slice = nds[target_var].isel(case=i, T=frame, X=x_slice, Y=y_slice)
+        data_slice = nds[target_var].isel(case=i, time=frame, ni=x_slice, nj=y_slice)
 
         im = data_slice.plot(ax=axs[i], cmap=settings["cmap"], levels=clevels,
                              extend='both', add_colorbar=False)
@@ -55,7 +54,7 @@ def update(frame):
                                  lefttitle=f"Time Index: {frame + 1}")
     return axs
 
-ani = animation.FuncAnimation(fig, update, frames=len(nds.T), interval=200)
+ani = animation.FuncAnimation(fig, update, frames=len(nds.time), interval=200)
 
 # Save as GIF
 ani.save(f'{target_var}_comparison.gif', writer='pillow', fps=5)

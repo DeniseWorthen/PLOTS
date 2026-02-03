@@ -7,7 +7,7 @@ import geocat.viz as gv
 import geocat.datafiles as gdf
 
 
-dirsrc = "/scratch4/NCEPDEV/stmp/Denise.Worthen/cgrid/mx100/"
+dirsrc = "/gpfs/f6/infra-cpu/proj-shared/Denise.Worthen"
 files = os.path.join(dirsrc, 'hi*.ice.nc')
 
 nds = xr.open_mfdataset(files, concat_dim='case', combine='nested')
@@ -15,7 +15,7 @@ nds = xr.open_mfdataset(files, concat_dim='case', combine='nested')
 # 2. Calculate New Variable (Speed)
 # Formula: spd = sqrt(u^2 + v^2)
 # Xarray handles the broadcasting and element-wise math automatically.
-nds = nds.assign(spd = np.sqrt(nds['uvel_h']**2 + nds['vvel_h']**2))
+nds = nds.assign(spd = np.sqrt(nds['uvelN_h']**2 + nds['vvelN_h']**2))
 
 # 1. Define your variable registry (Pre-defined ranges)
 var_settings = {
