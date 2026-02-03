@@ -20,9 +20,9 @@ y_start, y_end = 1, 71   # 1-based indices
 skip = 2                  # Plot every Nth vector (to avoid overcrowding)
 
 # Animation control
-create_animation = False  # Set to True to create animation, False for single frame
+create_animation = True  # Set to True to create animation, False for single frame
 frame = 1                 # Which time index to plot (1-based) when create_animation=False
-start_frame = 1           # Start frame for animation (1-based) when create_animation=True
+start_frame = 10           # Start frame for animation (1-based) when create_animation=True
 end_frame = None          # End frame for animation (1-based) when create_animation=True (None = last frame)
 case_labels = ["AC", "CC"]  # Descriptive labels for each case
 speed_cmap = cmaps.ncl_default  # Colormap for speed shading
