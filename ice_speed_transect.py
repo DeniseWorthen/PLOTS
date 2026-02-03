@@ -18,7 +18,11 @@ num_points = 100  # number of samples along the transect
 
 # Which case/time to plot (1-based)
 case_index = 1
-frame_index = 1
+frame_index = 100
+
+# Time averaging option
+time_average = False      # Set True to average over all time steps
+minice = 0.15            # Minimum ice concentration threshold for averaging
 
 # Case labels for legend
 case_labels = ["Case 1", "Case 2"]
@@ -67,36 +71,75 @@ transect_values = griddata(points_valid, values_valid, pts_transect, method='lin
 # Distance along the transect (index-based)
 dist = np.sqrt((x_line - x_line[0])**2 + (y_line - y_line[0])**2)
 
-# Get formatted time string
-time_str = time_values[frame_i].strftime('%Y %m %d %H')
+# Get formatted time string (for single frame mode)
+if not time_average:
+    time_str = time_values[frame_i].strftime('%Y %m %d %H')
+else:
+    time_str = "Time averaged"
 
 # Plot both cases
 plt.figure(figsize=(10, 4))
 
 for case_i in range(2):
-    # Get speed field for this case
-    u = nds[u_name].isel(case=case_i, time=frame_i)
-    v = nds[v_name].isel(case=case_i, time=frame_i)
-    spd = np.sqrt(u**2 + v**2)
-    
-    # Use scipy's griddata to interpolate, which handles NaN values by interpolating from valid neighbors
-    # Create grid of all points
-    yi, xi = np.meshgrid(np.arange(spd.shape[0]), np.arange(spd.shape[1]))
-    points = np.column_stack([xi.ravel(), yi.ravel()])
-    values = spd.values.ravel()
-    
-    # Remove NaN points
-    valid = ~np.isnan(values)
-    points_valid = points[valid]
-    values_valid = values[valid]
-    
-    # Interpolate transect using linear interpolation on valid points
-    pts_transect = np.column_stack([x_line, y_line])
-    transect_values = griddata(points_valid, values_valid, pts_transect, method='linear')
-    
+    if time_average:
+        # Time-averaged mode with ice concentration threshold
+        transect_sum = np.zeros(num_points)
+        transect_count = np.zeros(num_points)
+
+        for t_i in range(len(nds.time)):
+            # Get speed and ice concentration for this time
+            u = nds[u_name].isel(case=case_i, time=t_i)
+            v = nds[v_name].isel(case=case_i, time=t_i)
+            spd = np.sqrt(u**2 + v**2)
+            aice = nds['aice_h'].isel(case=case_i, time=t_i)
+
+            # Interpolate both speed and ice concentration
+            yi, xi = np.meshgrid(np.arange(spd.shape[0]), np.arange(spd.shape[1]))
+            points = np.column_stack([xi.ravel(), yi.ravel()])
+
+            # Speed interpolation
+            values_spd = spd.values.ravel()
+            valid_spd = ~np.isnan(values_spd)
+            pts_transect = np.column_stack([x_line, y_line])
+            transect_spd = griddata(points[valid_spd], values_spd[valid_spd], pts_transect, method='linear')
+
+            # Ice concentration interpolation
+            values_aice = aice.values.ravel()
+            valid_aice = ~np.isnan(values_aice)
+            transect_aice = griddata(points[valid_aice], values_aice[valid_aice], pts_transect, method='linear')
+
+            # Only accumulate where aice > minice
+            mask = transect_aice > minice
+            transect_sum[mask] += transect_spd[mask]
+            transect_count[mask] += 1
+
+        # Compute average (avoid divide by zero)
+        transect_values = np.where(transect_count > 0, transect_sum / transect_count, np.nan)
+    else:
+        # Single time frame mode
+        # Get speed field for this case
+        u = nds[u_name].isel(case=case_i, time=frame_i)
+        v = nds[v_name].isel(case=case_i, time=frame_i)
+        spd = np.sqrt(u**2 + v**2)
+
+        # Use scipy's griddata to interpolate, which handles NaN values by interpolating from valid neighbors
+        # Create grid of all points
+        yi, xi = np.meshgrid(np.arange(spd.shape[0]), np.arange(spd.shape[1]))
+        points = np.column_stack([xi.ravel(), yi.ravel()])
+        values = spd.values.ravel()
+
+        # Remove NaN points
+        valid = ~np.isnan(values)
+        points_valid = points[valid]
+        values_valid = values[valid]
+
+        # Interpolate transect using linear interpolation on valid points
+        pts_transect = np.column_stack([x_line, y_line])
+        transect_values = griddata(points_valid, values_valid, pts_transect, method='linear')
+
     # Plot with different markers for each case
     markers = ['o', 's']  # circle, square
-    plt.plot(dist, transect_values, lw=1, marker=markers[case_i], 
+    plt.plot(dist, transect_values, lw=1, marker=markers[case_i],
              markersize=4, markevery=5, label=case_labels[case_i])
 plt.xlabel("Distance along transect (grid units)")
 plt.ylabel("Ice speed (m/s)")
