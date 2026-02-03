@@ -26,9 +26,10 @@ start_frame = 1           # Start frame for animation (1-based) when create_anim
 end_frame = 10            # End frame for animation (1-based) when create_animation=True (None = last frame)
 display_frames = True     # Display frames sequentially when create_animation=True (set False to just save GIF)
 case_labels = ["AC", "CC"]  # Descriptive labels for each case
-speed_cmap = cmaps.ncl_default  # Colormap for speed shading
-speed_vmin = 0.0         # Minimum speed for colorbar
-speed_vmax = 0.5         # Maximum speed for colorbar
+bkgd_fld = None           # Background field to shade (None = speed/magnitude, or set to field name like 'aice_h', 'hi_h')
+speed_cmap = cmaps.ncl_default  # Colormap for background shading
+bkgd_vmin = 0.0          # Minimum value for colorbar
+bkgd_vmax = 0.5          # Maximum value for colorbar
 
 # --- 2. COORDINATE CONVERSION ---
 x_slice = slice(x_start - 1, x_end)
@@ -75,18 +76,26 @@ def plot_frame(frame_idx):
                           scale=0.1, scale_units='xy', angles='xy')
         artists_to_remove['quiver'][i] = q
 
-        # Add colorbar showing magnitude
-        magnitude = np.sqrt(u_data**2 + v_data**2)
-        speed_norm = Normalize(vmin=speed_vmin, vmax=speed_vmax)
-        im = axs[i].pcolormesh(X, Y, magnitude.values, cmap=speed_cmap, alpha=0.5, shading='nearest',
-                               norm=speed_norm)
+        # Get background field for shading
+        if bkgd_fld is None:
+            # Use speed/magnitude by default
+            bkgd_data = np.sqrt(u_data**2 + v_data**2)
+            bkgd_label = 'Speed (m/s)'
+        else:
+            # Use specified field
+            bkgd_data = nds[bkgd_fld].isel(case=i, time=frame_idx, ni=x_slice, nj=y_slice)
+            bkgd_label = bkgd_fld
+
+        bkgd_norm = Normalize(vmin=bkgd_vmin, vmax=bkgd_vmax)
+        im = axs[i].pcolormesh(X, Y, bkgd_data.values, cmap=speed_cmap, alpha=0.5, shading='nearest',
+                               norm=bkgd_norm)
         artists_to_remove['pcolormesh'][i] = im
 
         # Add quiver key
         axs[i].quiverkey(q, 0.9, 0.95, 0.1, '0.1 m/s', labelpos='E', coordinates='figure')
 
     fig_title.set_text(f'Time: {time_str}')
-    fig.colorbar(im, ax=axs, orientation='vertical', label='Speed (m/s)')
+    fig.colorbar(im, ax=axs, orientation='vertical', label=bkgd_label)
     return axs
 
 if create_animation:
@@ -123,18 +132,26 @@ if create_animation:
                                    u_data.values[::skip, ::skip], v_data.values[::skip, ::skip],
                                    scale=0.1, scale_units='xy', angles='xy')
 
-            # Add background magnitude
-            magnitude = np.sqrt(u_data**2 + v_data**2)
-            speed_norm = Normalize(vmin=speed_vmin, vmax=speed_vmax)
-            im = axs_temp[i].pcolormesh(X, Y, magnitude.values, cmap=speed_cmap, alpha=0.5, shading='nearest',
-                                        norm=speed_norm)
+            # Get background field for shading
+            if bkgd_fld is None:
+                # Use speed/magnitude by default
+                bkgd_data = np.sqrt(u_data**2 + v_data**2)
+                bkgd_label = 'Speed (m/s)'
+            else:
+                # Use specified field
+                bkgd_data = nds[bkgd_fld].isel(case=i, time=frame_idx, ni=x_slice, nj=y_slice)
+                bkgd_label = bkgd_fld
+            
+            bkgd_norm = Normalize(vmin=bkgd_vmin, vmax=bkgd_vmax)
+            im = axs_temp[i].pcolormesh(X, Y, bkgd_data.values, cmap=speed_cmap, alpha=0.5, shading='nearest',
+                                        norm=bkgd_norm)
 
             axs_temp[i].quiverkey(q, 0.9, 0.95, 0.1, '0.1 m/s', labelpos='E', coordinates='figure')
             gv.set_titles_and_labels(axs_temp[i], maintitle=f"{case_labels[i]}: Velocity Vectors")
             axs_temp[i].set_aspect('equal')
 
         fig_title_temp.set_text(f'Time: {time_str}')
-        fig_temp.colorbar(im, ax=axs_temp, orientation='vertical', label='Speed (m/s)')
+        fig_temp.colorbar(im, ax=axs_temp, orientation='vertical', label=bkgd_label)
 
         if display_frames:
             # Display frame - wait for click to advance
