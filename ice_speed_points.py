@@ -163,7 +163,24 @@ def plot_transect(points_xy_1based, transect_label, u_names, v_names):
         axes[1].set_axis_off()
 
     plt.tight_layout()
-    plt.show()
+    import argparse
+
+    # ...existing code...
+
+    if __name__ == "__main__":
+        parser = argparse.ArgumentParser(description="Plot and save ice speed points.")
+        parser.add_argument('--no-display', action='store_true', help='Do not display the figure, only save it.')
+        parser.add_argument('--outfile', type=str, default=None, help='Filename to save the figure (default: no save).')
+        args = parser.parse_args()
+
+        # ...existing code...
+
+        # Save the figure if requested
+        if args.outfile:
+            plt.savefig(args.outfile)
+        # Show the figure unless --no-display is set
+        if not args.no_display:
+            plt.show()
 
 
 plot_transect(points_xy_1based, "Transect 1", u_names_default, v_names_default)
