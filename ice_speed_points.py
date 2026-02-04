@@ -119,7 +119,7 @@ def plot_transect(points_xy_1based, transect_label, u_names, v_names):
         axes[0].plot(dist, values, lw=1, marker=markers[case_i],
                      markersize=4, markevery=1, label=case_labels[case_i])
 
-    axes[0].set_xlabel("Point index along list")
+    axes[0].set_xlabel("Transect Point")
     axes[0].set_ylabel("Ice speed (m/s)")
     if speed_stat == "instant":
         title_suffix = f"Time: {time_str}"
