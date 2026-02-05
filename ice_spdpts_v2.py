@@ -99,25 +99,43 @@ def plot_transect(points_xy_1based, transect_label, u_names, v_names):
 
     fig, axes = plt.subplots(1, 2, figsize=(14, 5))
 
+    # Define colors and markers for each case
+    colors = ["tab:blue", "tab:orange", "tab:green"]
+    markers = ["o", "s", "^"]
+
     for case_i in range(len(case_labels)):
-        u = nds[u_names[case_i]].isel(case=case_i)
-        v = nds[v_names[case_i]].isel(case=case_i)
-
-        if speed_stat == "instant" and "time" in u.dims:
-            u = u.isel(time=frame_i)
-            v = v.isel(time=frame_i)
-
-        spd = np.sqrt(u ** 2 + v ** 2)
-        if speed_stat == "mean" and "time" in spd.dims:
-            spd = spd.mean("time", skipna=True)
-        elif speed_stat == "max" and "time" in spd.dims:
-            spd = spd.max("time", skipna=True)
-
-        values = spd.values[ys, xs]
-
-        markers = ["o", "s", "^"]
-        axes[0].plot(dist, values, lw=1, marker=markers[case_i],
-                     markersize=4, markevery=1, label=case_labels[case_i])
+        if case_i == 0:
+            # Case 1: use icespd_h only
+            spd = nds["icespd_h"].isel(case=case_i)
+            if speed_stat == "instant" and "time" in spd.dims:
+                spd = spd.isel(time=frame_i)
+            if speed_stat == "mean" and "time" in spd.dims:
+                spd = spd.mean("time", skipna=True)
+            elif speed_stat == "max" and "time" in spd.dims:
+                spd = spd.max("time", skipna=True)
+            values = spd.values[ys, xs]
+            axes[0].plot(dist, values, lw=1, marker=markers[case_i],
+                         markersize=4, markevery=1, label=case_labels[case_i], color=colors[case_i])
+        else:
+            # Cases 2 and 3: plot both N and E
+            spdN = nds["icespdN_h"].isel(case=case_i)
+            spdE = nds["icespdE_h"].isel(case=case_i)
+            if speed_stat == "instant" and "time" in spdN.dims:
+                spdN = spdN.isel(time=frame_i)
+                spdE = spdE.isel(time=frame_i)
+            if speed_stat == "mean" and "time" in spdN.dims:
+                spdN = spdN.mean("time", skipna=True)
+                spdE = spdE.mean("time", skipna=True)
+            elif speed_stat == "max" and "time" in spdN.dims:
+                spdN = spdN.max("time", skipna=True)
+                spdE = spdE.max("time", skipna=True)
+            valuesN = spdN.values[ys, xs]
+            valuesE = spdE.values[ys, xs]
+            # N: solid, E: dotted, same color/marker
+            axes[0].plot(dist, valuesN, lw=1, marker=markers[case_i],
+                         markersize=4, markevery=1, label=f"{case_labels[case_i]} N", color=colors[case_i])
+            axes[0].plot(dist, valuesE, lw=1, marker=markers[case_i],
+                         markersize=4, markevery=1, label=f"{case_labels[case_i]} E", color=colors[case_i], linestyle=':')
 
     axes[0].set_xlabel("Transect Point")
     axes[0].set_ylabel("Ice speed (m/s)")
@@ -142,12 +160,12 @@ def plot_transect(points_xy_1based, transect_label, u_names, v_names):
         axes[1].set_facecolor("0.8")
         axes[1].pcolormesh(tmask, cmap="Greys_r", shading="nearest")
         if len(xs) > 1:
-            colors = ["green"] + ["yellow"] * (len(xs) - 2) + ["red"]
+            ptcolors = ["green"] + ["yellow"] * (len(xs) - 2) + ["red"]
         elif len(xs) == 1:
-            colors = ["green"]
+            ptcolors = ["green"]
         else:
-            colors = []
-        axes[1].scatter(xs, ys, c=colors, s=20, edgecolors="black", linewidths=0.5)
+            ptcolors = []
+        axes[1].scatter(xs, ys, c=ptcolors, s=20, edgecolors="black", linewidths=0.5)
         axes[1].set_xlabel("i")
         axes[1].set_ylabel("j")
         axes[1].xaxis.set_major_formatter(
@@ -176,9 +194,9 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     figs = []
-    figs.append(plot_transect(points_xy_1based, "Transect 1", u_names_default, v_names_default))
-    figs.append(plot_transect(points_xy_1based_2, "Transect 2", u_names_default, v_names_default))
-    figs.append(plot_transect(points_xy_1based_3, "Transect 3", u_names_transect3, v_names_transect3))
+    figs.append(plot_transect(points_xy_1based, "Transect 1"))
+    figs.append(plot_transect(points_xy_1based_2, "Transect 2"))
+    figs.append(plot_transect(points_xy_1based_3, "Transect 3"))
 
     # Save all figures to a multipage PDF if requested
     if args.outfile:
