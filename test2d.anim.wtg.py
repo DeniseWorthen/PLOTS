@@ -27,7 +27,7 @@ nds = xr.open_mfdataset(files, concat_dim='case', combine='nested')
 
 # Calculate icespd only if requested
 if target_var == "icespd" and "icespd" not in nds:
-    nds = nds.assign(icespd = np.sqrt(nds['uvel_h']**2 + nds['vvel_h']**2))
+    nds = nds.assign(icespd = np.sqrt(nds['uvelN_h']**2 + nds['vvelN_h']**2))
 
 # --- 4. COORDINATE CONVERSION & PLOT SETTINGS ---
 x_slice = slice(x_start - 1, x_end)

@@ -51,13 +51,7 @@ speed_stat = "mean"
 # Case labels for legend
 case_labels = ["A:B", "A:C", "C:C"]
 
-# Velocity components to use for speed (per case)
-u_names_default = ["uvel_h", "uvelN_h", "uvelN_h"]
-v_names_default = ["vvel_h", "vvelN_h", "vvelN_h"]
 
-# Velocity components for third transect (per case)
-u_names_transect3 = ["uvel_h", "uvelE_h", "uvelE_h"]
-v_names_transect3 = ["vvel_h", "vvelE_h", "vvelE_h"]
 
 # Global index offsets for tmask plot
 i_offset = 200
@@ -91,7 +85,7 @@ if speed_stat not in {"instant", "mean", "max"}:
     raise ValueError("speed_stat must be one of: 'instant', 'mean', 'max'")
 
 
-def plot_transect(points_xy_1based, transect_label, u_names, v_names):
+def plot_transect(points_xy_1based, transect_label):
     points = np.array([(x - 1, y - 1) for x, y in points_xy_1based], dtype=int)
     xs = points[:, 0]
     ys = points[:, 1]
@@ -206,5 +200,4 @@ if __name__ == "__main__":
                 plt.close(fig)
     # Show all figures unless --no-display is set
     if not args.no_display:
-        for fig in figs:
-            fig.show()
+        plt.show()

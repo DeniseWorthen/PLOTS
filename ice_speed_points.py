@@ -1,6 +1,7 @@
 import os
 import numpy as np
 import matplotlib.pyplot as plt
+plt.rcParams['toolbar'] = 'none'
 import matplotlib.ticker as mticker
 import xarray as xr
 import pandas as pd
@@ -97,7 +98,7 @@ def plot_transect(points_xy_1based, transect_label, u_names, v_names):
     ys = points[:, 1]
     dist = np.arange(len(points))
 
-    fig, axes = plt.subplots(1, 2, figsize=(14, 5))
+    fig, axes = plt.subplots(1, 2, figsize=(12.6, 4.5))
 
     for case_i in range(len(case_labels)):
         u = nds[u_names[case_i]].isel(case=case_i)
@@ -124,9 +125,9 @@ def plot_transect(points_xy_1based, transect_label, u_names, v_names):
     if speed_stat == "instant":
         title_suffix = f"Time: {time_str}"
     elif speed_stat == "mean":
-        title_suffix = f"Time-mean over {time_range_str}"
+        title_suffix = f"Time-mean: {time_range_str}"
     else:
-        title_suffix = f"Time-maximum over {time_range_str}"
+        title_suffix = f"Time-maximum: {time_range_str}"
 
     axes[0].set_title(f"Ice speed along specified points ({transect_label})\n{title_suffix}")
     axes[0].legend()
@@ -188,5 +189,4 @@ if __name__ == "__main__":
                 plt.close(fig)
     # Show all figures unless --no-display is set
     if not args.no_display:
-        for fig in figs:
-            fig.show()
+        plt.show()
