@@ -1,96 +1,79 @@
-import xarray as xr
-import matplotlib.pyplot as plt
+import os
 import numpy as np
+import xarray as xr
+import xgcm
+import argparse
 
-# Load dataset
+# --- USER SETTINGS ---
+dirsrc = "/scratch4/NCEPDEV/stmp/Denise.Worthen/cgrid/mx100"
+files = os.path.join(dirsrc, "hi*.ice.nc")
 
-dirsrc="/gpfs/f6/infra-cpu/world-shared/Denise.Worthen/freerun2021/"
+# Open dataset
+nds = xr.open_mfdataset(files, concat_dim="case", combine="nested")
 
-ds1title="base"
-ds1 = xr.open_dataset(dirsrc+"ice.dev.nc")
+# Replace _FillValue with 0 for all relevant variables (land treatment)
+for vname in ['uvel_h', 'vvel_h', 'uvelE_h', 'vvelN_h']:
+    if vname in nds:
+        fill_value = nds[vname].attrs.get('_FillValue', None)
+        if fill_value is not None:
+            nds[vname] = nds[vname].where(nds[vname] != fill_value, 0)
+        nds[vname] = nds[vname].fillna(0)
 
-ds2title="floediam"
-ds2 = xr.open_dataset(dirsrc+"ice.ec.nc")
+# Set up xgcm grid for Arakawa C/F grid with only 'center' locations (since all variables are on (nj, ni))
+coords = {
+    'X': {'center': 'ni'},
+    'Y': {'center': 'nj'}
+}
+grid = xgcm.Grid(nds, periodic=False, coords=coords, autoparse_metadata=False)
 
-varname="aice_h"
+# --- Argument parsing for debug ---
+parser = argparse.ArgumentParser(description="Debug center value calculation for u/v fields.")
+parser.add_argument('--i', type=int, help='1-based i index (ni)')
+parser.add_argument('--j', type=int, help='1-based j index (nj)')
+parser.add_argument('--t', type=int, help='1-based time index')
+parser.add_argument('--case', type=int, help='1-based case index')
+args = parser.parse_args()
 
-lmin=0
-lmax=360
+def print_debug_case1(i, j, t, case):
+    # 1-based to 0-based
+    i0, j0, t0, c0 = i-1, j-1, t-1, case-1
+    # uvel_h, vvel_h on corners, need 4 points for each (simulate corners by averaging 4 adjacent points)
+    uvals = []
+    vvals = []
+    for dj in [0,1]:
+        for di in [0,1]:
+            uval = nds['uvel_h'].isel(ni=i0+di, nj=j0+dj, time=t0, case=c0).values
+            vval = nds['vvel_h'].isel(ni=i0+di, nj=j0+dj, time=t0, case=c0).values
+            uvals.append(uval)
+            vvals.append(vval)
+    print(f"Case 1 center at (i={i}, j={j}, t={t}, case={case}):")
+    print("  uvel_h corners:", uvals)
+    print("  vvel_h corners:", vvals)
+    print("  u_center =", np.mean(uvals))
+    print("  v_center =", np.mean(vvals))
 
-var1=ds1[varname].isel(time=slice(lmin,lmax))
-var2=ds2[varname].isel(time=slice(lmin,lmax))
-tvals=ds1.time.isel(time=slice(lmin,lmax))
+def print_debug_case23(i, j, t, case):
+    # 1-based to 0-based
+    i0, j0, t0, c0 = i-1, j-1, t-1, case-1
+    # uvelE_h: need (i-1,j) and (i,j)
+    u_left = nds['uvelE_h'].isel(ni=i0-1, nj=j0, time=t0, case=c0).values if i0-1 >= 0 else np.nan
+    u_right = nds['uvelE_h'].isel(ni=i0, nj=j0, time=t0, case=c0).values
+    u_center = np.nanmean([u_left, u_right])
+    # vvelN_h: top = (i,j), bottom = (i,j-1)
+    v_top = nds['vvelN_h'].isel(ni=i0, nj=j0, time=t0, case=c0).values
+    v_bottom = nds['vvelN_h'].isel(ni=i0, nj=j0-1, time=t0, case=c0).values if j0-1 >= 0 else np.nan
+    v_center = np.nanmean([v_top, v_bottom])
+    print(f"Case 2/3 center at (i={i}, j={j}, t={t}, case={case}):")
+    print(f"  uvelE_h: left (i-1,j)={u_left}, right (i,j)={u_right}")
+    print(f"  vvelN_h: top (i,j)={v_top}, bottom (i,j-1)={v_bottom}")
+    print(f"  u_center = {u_center}")
+    print(f"  v_center = {v_center}")
 
-#var1=ds1[varname]
-#var2=ds2[varname]
-#tvals=ds1.time
-#print("print var1 max")
-#print(var1.max().item())
-#print("print var1 values")
-#print(var1.sel(nj=120,ni=60))
+if args.i and args.j and args.t and args.case:
+    print_debug_case1(args.i, args.j, args.t, args.case)
+    print_debug_case23(args.i, args.j, args.t, args.case)
 
-ice01=xr.where(var1>0.0, 1, 0)
-ice02=xr.where(var2>0.0, 1, 0)
-#print("print ice01 values")
-#print(ice01.sel(nj=120,ni=60))
-
-icet1=xr.where(var1<=1.0e-6, 1, 0)
-icet2=xr.where(var2<=1.0e-6, 1, 0)
-
-#print("print icet1 values")
-#print(icet1.sel(nj=120,ni=60))
-#print(icet1.max().item())
-
-tot1=ice01.sum(dim=['ni','nj'])
-tot2=ice02.sum(dim=['ni','nj'])
-#print("print tot1 values")
-#print(tot1)
-
-cnt1=(ice01*icet1).sum(dim=['ni','nj'])
-cnt2=(ice02*icet2).sum(dim=['ni','nj'])
-#print("print cnt1 values")
-#print(cnt1)
-
-
-# # Plot both on same figure
-# nrow=2
-# ncol=1
-plt.figure(figsize=(10, 6))
-plt.plot(tvals, cnt1, label="daitt_h")
-plt.grid(True)
-plt.legend()
-plt.tight_layout()
-
-plt.show()
-
-# # panel 1
-# sub1 = fig.add_subplot(nrow,ncol,1)
-# sub1.set_ylim(vmin,vmax)
-# sub1.plot(tvals, var1, label=varname1)
-# sub1.plot(tvals, var2, label=varname2)
-# sub1.set_title(ds1title)
-# sub1.set_ylabel(var1.attrs.get("units", ""))
-# sub1.set_xlabel("Time")
-
-# # panel 2
-# var1=ds2[varname1].isel(ni=ii,nj=jj,time=slice(lmin,lmax))
-# var2=ds2[varname2].isel(ni=ii,nj=jj,time=slice(lmin,lmax))
-# tvals=ds2.time.isel(time=slice(lmin,lmax))
-
-# sub2 = fig.add_subplot(nrow,ncol,2)
-# sub2.set_ylim(vmin,vmax)
-# sub2.plot(tvals, var1, label=varname1)
-# sub2.plot(tvals, var2, label=varname2)
-# sub2.set_title(ds2title)
-# sub2.set_ylabel(var1.attrs.get("units", ""))
-# sub2.set_xlabel("Time")
-
-
-# plt.grid(True)
-# plt.legend()
-# plt.tight_layout()
-# plt.show()
-
-# plt.savefig("test", dpi=150)
-
-# #print("Plot saved as min_atmExp_Faii_lwup_tiles3_6.png")
+# --- CASE 1: Corners to Center (uvel_h, vvel_h on corners) ---
+# For plotting, you may want to average 4 adjacent points to simulate corners
+# --- CASE 2/3: East/North Faces to Center (uvelE_h, vvelN_h) ---
+# For plotting, use the simple average as above
