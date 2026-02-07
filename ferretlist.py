@@ -1,9 +1,9 @@
 import xarray as xr
 import pandas as pd
 
-class FerretStyle:
+class ferlist:
     def __init__(self, filepath, var_name):
-        self.ds = xr.open_dataset(filepath)
+        self.ds = xr.open_dataset(filepath, engine='netcdf4', cache=False)
         self.data = self.ds[var_name]
         # Common convention for 4D: (Time, Depth, Lat, Lon) -> (l, k, j, i)
         self.dims = self.data.dims
@@ -11,39 +11,71 @@ class FerretStyle:
     def list(self, i=(1,1), j=(1,1), k=1, l=1):
         """
         Mimics list/i=1:4/j=1:4/k=5/l=10
-        i, j, k, l can be a single int or a tuple (start, end)
+        Handles variables with 2, 3, or 4 dimensions.
         """
         def get_selector(val):
-            # If user provides (start, end), return a 0-based slice
             if isinstance(val, tuple):
                 return slice(val[0]-1, val[1])
-            # If user provides a single int, return 0-based index
             return val - 1
 
-        # Select the data
-        # Mapping: dims[0]=l, dims[1]=k, dims[2]=j, dims[3]=i
-        subset = self.data.isel({
-            self.dims[0]: get_selector(l),
-            self.dims[1]: get_selector(k),
-            self.dims[2]: get_selector(j),
-            self.dims[3]: get_selector(i)
-        })
+        # Build selector dict based on number of dims, always mapping last two dims to i/j
+        selectors = {}
+        dims = self.dims
+        # Map last two dims to i/j
+        if len(dims) >= 2:
+            # Build selectors for all dims, defaulting to full range if not specified
+            sel_list = [None] * len(dims)
+            # Assign selectors for i and j (last two dims)
+            sel_list[-1] = get_selector(i)
+            sel_list[-2] = get_selector(j)
+            # If 3rd and 4th dims exist, assign k and l
+            if len(dims) == 3:
+                sel_list[0] = get_selector(l)
+            if len(dims) == 4:
+                sel_list[0] = get_selector(l)
+                sel_list[1] = get_selector(k)
+            # Build selector dict
+            selectors = {dim: sel for dim, sel in zip(dims, sel_list) if sel is not None}
+        else:
+            raise ValueError(f"Unsupported number of dimensions: {len(dims)}")
 
-        # Convert to Pandas
-        # drop_vars removes coordinate metadata (like lat/lon values) to force index-based view
+        subset = self.data.isel(selectors)
         df = subset.drop_vars(subset.coords, errors='ignore').to_pandas()
 
-        # Update labels to be 1-based and named i, j
+        # Update labels to reflect actual i/j values requested, if DataFrame
         if isinstance(df, pd.DataFrame):
-            df.index = df.index + 1
-            df.columns = df.columns + 1
+            # Determine i/j values from selectors for last two dims
+            i_sel = sel_list[-1]
+            j_sel = sel_list[-2]
+            if isinstance(i_sel, slice):
+                i_start = i_sel.start + 1 if i_sel.start is not None else 1
+                i_stop = i_sel.stop
+                i_vals = list(range(i_start, i_stop+1)) if i_stop is not None else df.columns + 1
+            else:
+                i_vals = [i_sel + 1]
+            if isinstance(j_sel, slice):
+                j_start = j_sel.start + 1 if j_sel.start is not None else 1
+                j_stop = j_sel.stop
+                j_vals = list(range(j_start, j_stop+1)) if j_stop is not None else df.index + 1
+            else:
+                j_vals = [j_sel + 1]
+            if len(j_vals) == len(df.index):
+                df.index = j_vals
+            else:
+                df.index = df.index + 1
+            if len(i_vals) == len(df.columns):
+                df.columns = i_vals
+            else:
+                df.columns = df.columns + 1
             df.index.name = 'j'
             df.columns.name = 'i'
 
         return df
 
 # --- Usage Examples ---
-# f = FerretStyle('my_data.nc', 'temp')
+## Example usage:
+# fs = ferlist('my_data.nc', 'temp')
+# print(fs.list(i=(1,4), j=(1,4), k=5, l=10))
 
 # 1. List i=1:4, j=1:4 at a specific depth (k=5) and time (l=10)
 # print(f.list(i=(1,4), j=(1,4), k=5, l=10))
